@@ -1,6 +1,6 @@
 ## Setup Instructions for Python Environment
 
-1. Clone the repository
+1. Clone the repository/Update project
 2. Create virtual environment: \`python -m venv venv\`
 3. Activate virtual environment:
    - Mac/Linux: \`source venv/bin/activate\`
