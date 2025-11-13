@@ -6,10 +6,11 @@
    - Mac/Linux: \`source venv/bin/activate\`
    - Windows: \`venv\\Scripts\\activate\`
 4. Install dependencies: \`pip install -r requirements.txt\`
-5. Copy \`.env.example\` to \`.env\` and fill in your database credentials
-6. Run: \`uvicorn main:app --reload\`
+5. Copy \`.env.example\` to \`.env\` and fill in database credentials
+6. Test connection: run database.py or test_db.py
+7. (\`uvicorn main:app --reload\`) not possible yet
 
-### Best practice when installing a new package:
+### Best practice when installing a new package (für high performer):
 pip install new-package\
 pip freeze > requirements.txt\
 git add requirements.txt\
