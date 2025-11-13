@@ -16,8 +16,8 @@ engine = create_engine(DATABASE_URL)
 # Create session factory
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
-# Base class for models
-Base = declarative_base()
+# Base class for models (uncomment when first mapping and controllers are implemented)
+# Base = declarative_base()
 
 # Dependency for getting database session
 def get_db():
