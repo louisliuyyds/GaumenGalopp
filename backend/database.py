@@ -44,3 +44,4 @@ def get_db():
 # except Exception as e:
 #     print(f"❌ Database connection failed!")
 #     print(f"Error: {e}")
+
