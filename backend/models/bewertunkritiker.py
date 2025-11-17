@@ -1,9 +1,8 @@
 # Importieren Sie 'Base' aus Ihrer database.py
 # (Sie müssen 'Base = declarative_base()' in database.py aktivieren)
-from .database import Base 
+from GaumenGalopp.backend.database import Base 
 from sqlalchemy import Column, Integer, SmallInteger, String, Date, ForeignKey
-
-from GaumenGalopp.backend.models import kritiker
+from sqlalchemy.orm._orm_constructors import relationship
 
 # Diese Definition basiert exakt auf 2_Datenmodell [cite: 149-158]
 class Bewertunkritike(Base):
@@ -11,7 +10,9 @@ class Bewertunkritike(Base):
 
     bewertunkritikeid = Column("bewertunkritikeid", Integer, primary_key=True, index=True)
     kritikerid = Column("kritikerid", Integer, ForeignKey("KRITIKER.kritikerid"))
+    kritiker = relationship("Kritiker", back_populates="bewertunkritike")
     gerichtid = Column("gerichtid", Integer, ForeignKey("GERICHT.gerichtID"))
+    gericht = relationship("Gericht", back_populates="bewertunkritike")
     rating = Column("rating", SmallInteger)
 
     def to_dict(self):

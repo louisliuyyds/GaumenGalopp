@@ -1,7 +1,8 @@
 # Importieren Sie 'Base' aus Ihrer database.py
 # (Sie müssen 'Base = declarative_base()' in database.py aktivieren)
-from .database import Base 
-from sqlalchemy import Column, Integer, String, Date, ForeignKey
+from GaumenGalopp.backend.database import Base 
+from sqlalchemy import Column, Integer, SmallInteger, String, Date, ForeignKey
+from sqlalchemy.orm._orm_constructors import relationship
 
 # Diese Definition basiert exakt auf 2_Datenmodell [cite: 149-158]
 class Adresse(Base):
