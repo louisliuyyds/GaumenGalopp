@@ -1,6 +1,5 @@
 # Importieren Sie 'Base' aus Ihrer database.py
 # (Sie müssen 'Base = declarative_base()' in database.py aktivieren)
-import re
 
 from sqlalchemy.orm._orm_constructors import relationship
 from GaumenGalopp.backend.database import Base 

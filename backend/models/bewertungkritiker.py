@@ -4,20 +4,19 @@ from GaumenGalopp.backend.database import Base
 from sqlalchemy import Column, Integer, SmallInteger, String, Date, ForeignKey
 from sqlalchemy.orm._orm_constructors import relationship
 
-# Diese Definition basiert exakt auf 2_Datenmodell [cite: 149-158]
-class Bewertunkritike(Base):
-    __tablename__ = "bewertunkritike"
+class Bewertungkritiker(Base):
+    __tablename__ = "bewertungkritiker"
 
-    bewertunkritikeid = Column("bewertunkritikeid", Integer, primary_key=True, index=True)
+    bewertungkritikerid = Column("bewertungkritikerid", Integer, primary_key=True, index=True)
     kritikerid = Column("kritikerid", Integer, ForeignKey("KRITIKER.kritikerid"))
-    kritiker = relationship("Kritiker", back_populates="bewertunkritike")
+    kritiker = relationship("Kritiker", back_populates="bewertungkritiker")
     gerichtid = Column("gerichtid", Integer, ForeignKey("GERICHT.gerichtID"))
-    gericht = relationship("Gericht", back_populates="bewertunkritike")
+    gericht = relationship("Gericht", back_populates="bewertungkritiker")
     rating = Column("rating", SmallInteger)
 
     def to_dict(self):
         return {
-            "bewertunkritikeid": self.bewertunkritikeid,
+            "bewertungkritikerid": self.bewertungkritikerid,
             "kritikerid": self.kritikerid,
             "gerichtid": self.gerichtid,
             "rating": self.rating,

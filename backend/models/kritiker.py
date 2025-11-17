@@ -4,7 +4,6 @@ from sqlalchemy.orm._orm_constructors import relationship
 from GaumenGalopp.backend.database import Base 
 from sqlalchemy import Column, Integer, String, Date, ForeignKey
 
-# Diese Definition basiert exakt auf 2_Datenmodell [cite: 149-158]
 class Kritiker(Base):
     __tablename__ = "KRITIKER"
 
