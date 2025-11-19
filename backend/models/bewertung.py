@@ -15,7 +15,7 @@ class Bewertung(Base):
     gericht = relationship("Gericht", back_populates="bewertung")
     rating = Column("rating", Integer)
     kommentar = Column("kommentar", String(500))
-    erstelltam = Column("erstelltam", DateTime)
+    erstelltam = Column("erstelltam", Date)
 
     def to_dict(self):
         return {

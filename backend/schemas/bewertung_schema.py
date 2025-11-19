@@ -7,16 +7,13 @@ from GaumenGalopp.backend.models import kunde
 
 # What data comes IN when creating a bewertung
 class BewertungCreate(BaseModel):
-    kundendid: int
-    gerichtid: int
     rating: int
     kommentar: str
     erstelltam: Date
 
 # What data comes IN when updating
 class BewertungUpdate(BaseModel):
-    kundeid: Optional[int] = None
-    gerichtid: Optional[int] = None
+    
     kommentar: Optional[str] = None
     rating: Optional[int] = None
     erstelltam: Optional[Date] = None

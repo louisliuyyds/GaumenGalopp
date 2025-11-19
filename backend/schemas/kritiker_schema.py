@@ -6,8 +6,6 @@ from GaumenGalopp.backend.models import kritiker
 
 # What data comes IN when creating a Kritiker
 class KritikerCreate(BaseModel):
-    kritikerid: int
-    kundenid: int
     beschreibung: str
     kritikername: str
 
@@ -15,13 +13,9 @@ class KritikerCreate(BaseModel):
 class KritikerUpdate(BaseModel):
     kritikername: Optional[str] = None
     beschreibung: Optional[str] = None
-    kundenid: Optional[int] = None
-    kritikerid: Optional[int] = None
 
 # What data goes OUT to the frontend
 class KritikerResponse(BaseModel):
-    kritikerid: int
-    kundenid: int
     beschreibung: str
     kritikername: str
 

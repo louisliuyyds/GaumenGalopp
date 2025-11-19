@@ -40,7 +40,7 @@ def create_Kritiker(
     db: Session = Depends(get_db)
 ):
     service = KritikerService(db)
-    new_kritiker = service.create(Kritiker.dict())
+    new_kritiker = service.create(Kritiker.model_dump())
     return new_kritiker
 
 # PUT /api/kritikers/{id} - Update kritiker
@@ -53,7 +53,7 @@ def update_kritiker(
     service = KritikerService(db)
     updated_kritiker = service.update(
         kritiker_id,
-        kritiker_update.dict(exclude_unset=True)
+        kritiker_update.model_dump(exclude_unset=True)
     )
     
     if not updated_kritiker:
