@@ -58,7 +58,7 @@ def create_restaurant_oeffnungszeit(
     db: Session = Depends(get_db)
 ):
     service = RestaurantOeffnungszeitService(db)
-    new_item = service.create(item.dict())
+    new_item = service.create(item.model_dump())
     return new_item
 
 # PUT /api/restaurant-oeffnungszeit/{restaurant_id}/{oeffnungszeit_id}/{gueltig_von} - Update
@@ -75,7 +75,7 @@ def update_restaurant_oeffnungszeit(
         restaurant_id,
         oeffnungszeit_id,
         gueltig_von,
-        item_update.dict(exclude_unset=True)
+        item_update.model_dump(exclude_unset=True)
     )
     
     if not updated_item:

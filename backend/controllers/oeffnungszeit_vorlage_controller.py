@@ -39,7 +39,7 @@ def create_oeffnungszeit_vorlage(
     db: Session = Depends(get_db)
 ):
     service = OeffnungszeitVorlageService(db)
-    new_vorlage = service.create(vorlage.dict())
+    new_vorlage = service.create(vorlage.model_dump())
     return new_vorlage
 
 # PUT /api/oeffnungszeit-vorlagen/{id} - Update oeffnungszeit_vorlage
@@ -52,7 +52,7 @@ def update_oeffnungszeit_vorlage(
     service = OeffnungszeitVorlageService(db)
     updated_vorlage = service.update(
         oeffnungszeit_id,
-        vorlage_update.dict(exclude_unset=True)
+        vorlage_update.model_dump(exclude_unset=True)
     )
     
     if not updated_vorlage:

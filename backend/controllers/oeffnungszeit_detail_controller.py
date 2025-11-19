@@ -39,7 +39,7 @@ def create_oeffnungszeit_detail(
     db: Session = Depends(get_db)
 ):
     service = OeffnungszeitDetailService(db)
-    new_detail = service.create(detail.dict())
+    new_detail = service.create(detail.model_dump())
     return new_detail
 
 # PUT /api/oeffnungszeit-details/{id} - Update oeffnungszeit_detail
@@ -52,7 +52,7 @@ def update_oeffnungszeit_detail(
     service = OeffnungszeitDetailService(db)
     updated_detail = service.update(
         detail_id,
-        detail_update.dict(exclude_unset=True)
+        detail_update.model_dump(exclude_unset=True)
     )
     
     if not updated_detail:

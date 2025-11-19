@@ -39,7 +39,7 @@ def create_restaurant(
     db: Session = Depends(get_db)
 ):
     service = RestaurantService(db)
-    new_restaurant = service.create(restaurant.dict())
+    new_restaurant = service.create(restaurant.model_dump())
     return new_restaurant
 
 # PUT /api/restaurants/{id} - Update restaurant
@@ -52,7 +52,7 @@ def update_restaurant(
     service = RestaurantService(db)
     updated_restaurant = service.update(
         restaurant_id,
-        restaurant_update.dict(exclude_unset=True)
+        restaurant_update.model_dump(exclude_unset=True)
     )
     
     if not updated_restaurant:
