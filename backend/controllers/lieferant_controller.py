@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from typing import List
 from ..database import get_db
-from ..schemas import lieferant as schemas
+from ..schemas import lieferant_schemas as schemas
 from ..services.lieferant_services import LieferantService
 
 router = APIRouter(prefix="/lieferanten", tags=["Lieferanten"])
