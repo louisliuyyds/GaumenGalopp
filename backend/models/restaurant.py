@@ -1,6 +1,6 @@
 from sqlalchemy import Column, Integer, String, Float, Boolean, DateTime, ForeignKey
 from sqlalchemy.orm import relationship
-from Code.GaumenGalopp.backend.database import Base
+from database import Base
 
 class Restaurant(Base):
     __tablename__ = 'restaurant'
