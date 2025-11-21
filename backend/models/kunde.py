@@ -1,32 +1,34 @@
-# Importieren Sie 'Base' aus Ihrer database.py
-# (Sie müssen 'Base = declarative_base()' in database.py aktivieren)
+# models/restaurant.py
+from sqlalchemy import Column, Integer, String, Float, Boolean, DateTime, ForeignKey, Date
+from sqlalchemy.orm import relationship
+from database import Base
+from datetime import datetime
 
-from sqlalchemy.orm._orm_constructors import relationship
-from GaumenGalopp.backend.database import Base 
-from sqlalchemy import Column, Integer, String, Date, ForeignKey
 
-# Diese Definition basiert exakt auf 2_Datenmodell [cite: 149-158]
+
 class Kunde(Base):
-    __tablename__ = "KUNDE"
+    __tablename__ = 'kunde'
 
-    kundenID = Column("kundenid", Integer, primary_key=True, index=True)
-    vorname = Column("vorname", String(50))
-    nachname = Column("nachname", String(50))
-    adresseID = Column("adresseid", Integer, ForeignKey("ADRESSE.adresseID"))
-    adresse = relationship("Adresse", back_populates="kunden") 
-    geburtsdatum = Column("geburtsdatum", Date)
-    telefonnummer = Column("telefonnummer", String(20))
-    email = Column("email", String(255))
-    namenskuerzel = Column("namenskuerzel", String(100)) # Wichtig für Business Rule [cite: 338]
+    kundenid = Column(Integer, primary_key=True, autoincrement=True)
+    vorname = Column(String(50), nullable=False)
+    nachname = Column(String(50), nullable=False)
+    adressid = Column(Integer, ForeignKey('adresse.adresseid'), nullable=False) #Foreign key
+    geburtsdatum = Column(Date)
+    telefonnummer = Column(String(20))
+    email = Column(String(255))
+    namenskuerzel = Column(String(100))
+
+    adresse = relationship("adresse", back_populates="kunden")
+
 
     def to_dict(self):
         return {
-            "kundenID": self.kundenID,
+            "kundenid": self.kundenid,
             "vorname": self.vorname,
             "nachname": self.nachname,
-            "adressID": self.adressID,
+            "adressid": self.adressid,
             "geburtsdatum": self.geburtsdatum,
             "telefonnummer": self.telefonnummer,
             "email": self.email,
-            "namenskuerzel": self.namenskuerzel,
+            "namenskuerzel": self.namenskuerzel
         }

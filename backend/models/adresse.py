@@ -1,19 +1,18 @@
-# Importieren Sie 'Base' aus Ihrer database.py
-# (Sie müssen 'Base = declarative_base()' in database.py aktivieren)
-from GaumenGalopp.backend.database import Base 
-from sqlalchemy import Column, Integer, SmallInteger, String, Date, ForeignKey
-from sqlalchemy.orm._orm_constructors import relationship
-
+from sqlalchemy import Column, Integer, String
+from sqlalchemy.orm import relationship
+from GaumenGalopp.backend.database import Base
 
 class Adresse(Base):
-    __tablename__ = "adresse"
+    __tablename__ = 'adresse'
 
-    adresseid = Column("adresseid", Integer, primary_key=True, index=True)
-    straße = Column("strasse", String(100))
-    land = Column("land", String(50))
-    ort = Column("ort", String(50))
-    hausnummer = Column("hausnummer", String(10))
-    postleitzahl = Column("postleitzahl", String(10))
+    adresseid = Column(Integer, primary_key=True, autoincrement=True)
+    straße = Column(String(100), nullable=False)
+    land = Column(String(100), nullable=False)
+    ort = Column(String(100), nullable=False)
+    hausnummer = Column(String(10), nullable=False)
+    postleitzahl = Column(String(10), nullable=False)
+
+    kunden = relationship("kunde", back_populates="adresse")
 
     def to_dict(self):
         return {
@@ -22,5 +21,5 @@ class Adresse(Base):
             "land": self.land,
             "ort": self.ort,
             "hausnummer": self.hausnummer,
-            "postleitzahl": self.postleitzahl,
+            "postleitzahl": self.postleitzahl
         }
