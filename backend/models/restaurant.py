@@ -1,8 +1,7 @@
 # models/restaurant.py
 from sqlalchemy import Column, Integer, String, ForeignKey
 from sqlalchemy.orm import relationship
-from database import Base
-
+from ...backend.database import Base
 
 class Restaurant(Base):
     __tablename__ = 'restaurant'
