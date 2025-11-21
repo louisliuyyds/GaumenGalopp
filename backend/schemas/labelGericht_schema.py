@@ -15,5 +15,3 @@ class LabelGerichtResponse(BaseModel):
 
     class Config:
         from_attributes = True
-
-LabelGerichtResponse.model_rebuild()
