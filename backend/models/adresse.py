@@ -1,5 +1,6 @@
 from sqlalchemy import Column, Integer, String
 from sqlalchemy.orm import relationship
+from GaumenGalopp.backend.database import Base
 
 class Adresse(Base):
     __tablename__ = 'adresse'
