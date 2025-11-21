@@ -1,36 +1,25 @@
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
-from ..models.bestellposition import Bestellposition
-from typing import List, Optional, Any
+from typing import List
+from ..database import get_db
+from ..schemas import bestellposition_schemas as schemas
+from ..services.bestellposition_services import BestellpositionService
+
+router = APIRouter(prefix="/bestellpositionen", tags=["Bestellpositionen"])
+
+@router.post("/", response_model=schemas.BestellpositionResponse, status_code=status.HTTP_201_CREATED)
+def add_position(data: schemas.BestellpositionCreate, db: Session = Depends(get_db)):
+    return BestellpositionService(db).create(data.model_dump())
 
 
-class BestellpositionService:
-    def __init__(self, db: Session):
-        self.db = db
+@router.get("/bestellung/{bestellungid}", response_model=List[schemas.BestellpositionResponse])
+def get_positions_for_order(bestellungid: int, db: Session = Depends(get_db)):
+    return BestellpositionService(db).get_by_bestellung(bestellungid)
 
-    def create(self, position_data: dict) -> Bestellposition:
-        """
-        Erstellt eine Position.
-        Das dict 'position_data' muss 'aenderungswunsch' enthalten (falls vorhanden).
-        """
-        new_position = Bestellposition(**position_data)
-        self.db.add(new_position)
-        self.db.commit()
-        self.db.refresh(new_position)
-        return new_position
 
-    def get_by_bestellung(self, bestellungid: int) -> list[type[Bestellposition]]:
-        """
-        Gibt alle Positionen einer Bestellung zurück.
-        """
-        return self.db.query(Bestellposition) \
-            .filter(Bestellposition.bestellungid == bestellungid) \
-            .all()
-
-    def delete(self, bestellpositionid: int) -> bool:
-        """Löscht eine Position aus dem Warenkorb."""
-        pos = self.db.query(Bestellposition).filter(bestellpositionid == Bestellposition.bestellpositionid).first()
-        if not pos:
-            return False
-        self.db.delete(pos)
-        self.db.commit()
-        return True
+@router.delete("/{positionid}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_position(positionid: int, db: Session = Depends(get_db)):
+    success = BestellpositionService(db).delete(positionid)
+    if not success:
+        raise HTTPException(status_code=404, detail="Position nicht gefunden")
+    return None
