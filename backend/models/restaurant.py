@@ -1,24 +1,33 @@
-from sqlalchemy import Column, Integer, String, Float, Boolean, DateTime, ForeignKey
+# models/restaurant.py
+from sqlalchemy import Column, Integer, String, ForeignKey
 from sqlalchemy.orm import relationship
-from Code.GaumenGalopp.backend.database import Base
+from database import Base
+
 
 class Restaurant(Base):
     __tablename__ = 'restaurant'
-    restaurantid = Column(Integer, primary_key=True, autoincrement=True)
-    name = Column(String(100))
+    
+    restaurantID = Column(Integer, primary_key=True, autoincrement=True)
+    name = Column(String(255), nullable=False)
     klassifizierung = Column(String(100))
-    adressid = Column(Integer, ForeignKey('adresse.adresseid'))
-    telefon = Column(String(100))
-    kuechenchef = Column(String(100))
-
-    adresse = relationship("Adresse", back_populates="restaurant")
-
+    adresseID = Column(Integer, ForeignKey('adresse.adresseID'))
+    telefon = Column(String(20))
+    kuechenchef = Column(String(255))
+    
+    # Relationships
+    adresse = relationship("Adresse", back_populates="restaurants")
+    menue = relationship("Menue", back_populates="restaurant", uselist=False)
+    bestellungen = relationship("Bestellung", back_populates="restaurant")
+    kochstile = relationship("KochstilRestaurant", back_populates="restaurant")
+    oeffnungszeiten = relationship("RestaurantOeffnungszeit", back_populates="restaurant")
+    
     def to_dict(self):
+        """Convert to dictionary"""
         return {
-            "restaurantid": self.restaurantid,
+            "restaurantID": self.restaurantID,
             "name": self.name,
             "klassifizierung": self.klassifizierung,
+            "adresseID": self.adresseID,
             "telefon": self.telefon,
-            "kuechenchef": self.kuechenchef,
-            "adresse": self.adresse.to_dict() if self.adresse else None
+            "kuechenchef": self.kuechenchef
         }
