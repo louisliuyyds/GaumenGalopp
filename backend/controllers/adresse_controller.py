@@ -37,7 +37,7 @@ def create_adresse(
         db: Session = Depends(get_db)
 ):
     service = AdresseService(db)
-    new_adresse = service.create(adresse.dict())
+    new_adresse = service.create(adresse.model_dump())
     return new_adresse
 
 @router.put("/{adresse_id}", response_model=AdresseResponse)
@@ -49,7 +49,7 @@ def update_adresse(
     service = AdresseService(db)
     updated_adresse = service.update(
         adresse_id,
-        adresse_update.dict(exclude_unset=True)
+        adresse_update.model_dump(exclude_unset=True)
     )
 
     if not updated_adresse:

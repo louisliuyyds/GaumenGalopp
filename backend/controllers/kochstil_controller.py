@@ -37,7 +37,7 @@ def create_kochstil(
         db: Session = Depends(get_db)
 ):
     service = KochstilService(db)
-    new_kochstil = service.create(kochstil.dict())
+    new_kochstil = service.create(kochstil.model_dump())
     return new_kochstil
 
 @router.put("/{stil_id}", response_model=KochstilResponse)
@@ -49,7 +49,7 @@ def update_kochstil(
     service = KochstilService(db)
     updated_kochstil = service.update(
         stil_id,
-        kochstil_update.dict(exclude_unset=True)
+        kochstil_update.model_dump(exclude_unset=True)
     )
 
     if not updated_kochstil:

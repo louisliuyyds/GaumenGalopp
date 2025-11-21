@@ -36,7 +36,7 @@ def create_kunde(
         db: Session = Depends(get_db)
 ):
     service = KundeService(db)
-    new_kunde = service.create(kunde.dict())
+    new_kunde = service.create(kunde.model_dump())
     return new_kunde
 
 @router.put("/{kunden_id}", response_model=KundeResponse)
@@ -48,7 +48,7 @@ def update_kunde(
     service = KundeService(db)
     updated_kunde = service.update(
         kunden_id,
-        kunde_update.dict(exclude_unset=True)
+        kunde_update.model_dump(exclude_unset=True)
     )
 
     if not updated_kunde:
