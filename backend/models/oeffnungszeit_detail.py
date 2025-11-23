@@ -1,6 +1,6 @@
 from sqlalchemy import Column, Integer, Time, Boolean, ForeignKey
 from sqlalchemy.orm import relationship
-from ..database import Base
+from backend.database import Base
 
 
 class OeffnungszeitDetail(Base):

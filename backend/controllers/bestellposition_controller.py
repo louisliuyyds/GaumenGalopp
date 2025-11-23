@@ -1,9 +1,9 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from typing import List
-from ..database import get_db
-from ..schemas import bestellposition_schemas as schemas
-from ..services.bestellposition_services import BestellpositionService
+from backend.database import get_db
+from backend.schemas import bestellposition_schemas as schemas
+from backend.services.bestellposition_services import BestellpositionService
 
 router = APIRouter(prefix="/bestellpositionen", tags=["Bestellpositionen"])
 

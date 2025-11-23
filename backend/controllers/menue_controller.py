@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 
-from ..services.menue_service import MenueService
-from ..schemas import menue_schema as schemas
-from ..database import get_db
+from backend.services.menue_service import MenueService
+from backend.schemas import menue_schema as schemas
+from backend.database import get_db
 from sqlalchemy.orm import Session
 from typing import List
 

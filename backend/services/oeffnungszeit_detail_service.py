@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from ..models.oeffnungszeit_detail import OeffnungszeitDetail
+from backend.models.oeffnungszeit_detail import OeffnungszeitDetail
 from typing import List, Optional
 
 class OeffnungszeitDetailService:

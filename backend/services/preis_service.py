@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from ..models.preis import Preis
+from backend.models.preis import Preis
 from typing import List, Optional
 
 class PreisService:

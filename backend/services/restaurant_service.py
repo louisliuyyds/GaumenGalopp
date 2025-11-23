@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from ..models.restaurant import Restaurant
+from backend.models.restaurant import Restaurant
 from typing import List, Optional
 
 class RestaurantService:

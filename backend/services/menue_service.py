@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from ..models.menue import Menue
+from backend.models.menue import Menue
 from typing import Optional
 
 class MenueService:

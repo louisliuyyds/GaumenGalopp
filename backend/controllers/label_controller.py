@@ -1,9 +1,9 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 
-from ..services.label_service import LabelService
-from ..services.labelGericht_service import LabelGerichtService
-from ..schemas import label_schema as schemas
-from ..database import get_db
+from backend.services.label_service import LabelService
+from backend.services.labelGericht_service import LabelGerichtService
+from backend.schemas import label_schema as schemas
+from backend.database import get_db
 from sqlalchemy.orm import Session
 from typing import List
 

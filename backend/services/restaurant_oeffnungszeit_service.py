@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from ..models.restaurant_oeffnungszeit import RestaurantOeffnungszeit
+from backend.models.restaurant_oeffnungszeit import RestaurantOeffnungszeit
 from typing import List, Optional
 from datetime import date
 

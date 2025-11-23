@@ -1,10 +1,9 @@
-# controllers/oeffnungszeit_vorlage_controller.py
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from typing import List
-from ..database import get_db
-from ..services.oeffnungszeit_vorlage_service import OeffnungszeitVorlageService
-from ..schemas.oeffnungszeit_vorlage_schema import OeffnungszeitVorlageCreate, OeffnungszeitVorlageUpdate, OeffnungszeitVorlageResponse
+from backend.database import get_db
+from backend.services.oeffnungszeit_vorlage_service import OeffnungszeitVorlageService
+from backend.schemas.oeffnungszeit_vorlage_schema import OeffnungszeitVorlageCreate, OeffnungszeitVorlageUpdate, OeffnungszeitVorlageResponse
 
 router = APIRouter(
     prefix="/api/oeffnungszeit-vorlagen",

@@ -1,3 +1,3 @@
-from .restaurant_controller import router as restaurant_router
-from .menue_controller import router as menue_router
-from .adresse_controller import router as adresse_router
+from restaurant_controller import router as restaurant_router
+from menue_controller import router as menue_router
+from adresse_controller import router as adresse_router

@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from ..models.label import Label
+from backend.models.label import Label
 from typing import List, Optional
 
 class LabelService:

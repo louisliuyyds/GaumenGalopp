@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from ..models.gericht import Gericht
+from backend.models.gericht import Gericht
 from typing import Optional
 
 class GerichtService:

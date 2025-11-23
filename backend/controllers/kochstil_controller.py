@@ -1,11 +1,10 @@
-# controllers/kochstil_controller.py
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from typing import List
 
-from ..database import get_db
-from ..services.kochstil_service import KochstilService
-from ..schemas.kochstil_schema import KochstilCreate, KochstilUpdate, KochstilResponse
+from backend.database import get_db
+from backend.services.kochstil_service import KochstilService
+from backend.schemas.kochstil_schema import KochstilCreate, KochstilUpdate, KochstilResponse
 
 router = APIRouter(
     prefix="/api/kochstile",

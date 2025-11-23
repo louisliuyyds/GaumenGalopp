@@ -1,9 +1,9 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from typing import List
-from ..database import get_db
-from ..schemas import bestellung_schemas as schemas
-from ..services.bestellung_services import BestellungService
+from backend.database import get_db
+from backend.schemas import bestellung_schemas as schemas
+from backend.services.bestellung_services import BestellungService
 
 router = APIRouter(prefix="/bestellungen", tags=["Bestellungen"])
 

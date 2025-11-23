@@ -1,9 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from .controllers import menue_controller, restaurant_controller
-
-# Import controllers
-# e.g. from controllers import restaurant_controller
+from controllers import menue_controller, restaurant_controller
+# from controllers import restaurant_router, menue_router
 
 # Create FastAPI app
 app = FastAPI(
@@ -23,9 +21,9 @@ app.add_middleware(
 
 app.include_router(menue_controller.router)
 app.include_router(restaurant_controller.router)
+# app.include_router(menue_router)
+# app.include_router(restaurant_router)
 
-# Register routers
-# e.g. app.include_router(restaurant_controller.router)
 
 # Root endpoint
 @app.get("/")

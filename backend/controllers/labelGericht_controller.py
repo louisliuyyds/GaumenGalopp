@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends,status
-from ..services.labelGericht_service import LabelGerichtService
-from ..schemas import labelGericht_schema as schemas
-from ..database import get_db
+from backend.services.labelGericht_service import LabelGerichtService
+from backend.schemas import labelGericht_schema as schemas
+from backend.database import get_db
 from sqlalchemy.orm import Session
 
 router = APIRouter(prefix="labelGericht", tags=["labelGericht"])
