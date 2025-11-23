@@ -2,9 +2,9 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from typing import List
-from database import get_db
-from services.oeffnungszeit_detail_service import OeffnungszeitDetailService
-from schemas.oeffnungszeit_detail_schema import OeffnungszeitDetailCreate, OeffnungszeitDetailUpdate, OeffnungszeitDetailResponse
+from ..database import get_db
+from ..services.oeffnungszeit_detail_service import OeffnungszeitDetailService
+from ..schemas.oeffnungszeit_detail_schema import OeffnungszeitDetailCreate, OeffnungszeitDetailUpdate, OeffnungszeitDetailResponse
 
 router = APIRouter(
     prefix="/api/oeffnungszeit-details",

@@ -1,7 +1,6 @@
 from sqlalchemy.orm import Session
-
 from ..models.menue import Menue
-from typing import List, Optional
+from typing import Optional
 
 class MenueService:
     def __init__(self, db: Session):
@@ -29,6 +28,15 @@ class MenueService:
             if value is not None:
                 setattr(menue, key, value)
 
+        self.db.commit()
+        self.db.refresh(menue)
+        return menue
+
+    def delete(self, menueid: int) -> Optional[Menue]:
+        menue = self.get_by_id(menueid)
+        if not menue:
+            return None
+        self.db.delete(menue)
         self.db.commit()
         self.db.refresh(menue)
         return menue

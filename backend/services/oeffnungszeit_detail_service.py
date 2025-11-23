@@ -1,8 +1,6 @@
-# services/oeffnungszeit_detail_service.py
 from sqlalchemy.orm import Session
-from models.oeffnungszeit_detail import OeffnungszeitDetail
+from ..models.oeffnungszeit_detail import OeffnungszeitDetail
 from typing import List, Optional
-
 
 class OeffnungszeitDetailService:
     def __init__(self, db: Session):

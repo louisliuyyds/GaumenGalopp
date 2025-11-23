@@ -1,7 +1,6 @@
-# models/oeffnungszeit_vorlage.py
 from sqlalchemy import Column, Integer, String
 from sqlalchemy.orm import relationship
-from ...backend.database import Base
+from ..database import Base
 
 class OeffnungszeitVorlage(Base):
     __tablename__ = 'oeffnungszeit_vorlage'

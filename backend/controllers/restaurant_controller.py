@@ -2,9 +2,9 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from typing import List
-from database import get_db
-from services.restaurant_service import RestaurantService
-from schemas.restaurant_schema import RestaurantCreate, RestaurantUpdate, RestaurantResponse
+from ..database import get_db
+from ..services.restaurant_service import RestaurantService
+from ..schemas.restaurant_schema import RestaurantCreate, RestaurantUpdate, RestaurantResponse
 
 router = APIRouter(
     prefix="/api/restaurants",

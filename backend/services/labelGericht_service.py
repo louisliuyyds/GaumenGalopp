@@ -1,9 +1,8 @@
 from sqlalchemy.orm import Session
-
 from ..models.labelGericht import LabelGericht
 from typing import List, Optional
 
-class LabelService:
+class LabelGerichtService:
     def __init__(self, db: Session):
         self.db = db
 
@@ -23,7 +22,7 @@ class LabelService:
         self.db.refresh(new_label)
         return new_label
 
-    def delete(self, label_data: dict) -> Optional[type[LabelGericht]]:
-        label = self.db.query(LabelGericht).filter(LabelGericht.labelid == label_data['labelid'] & LabelGericht.gerichtid == label_data['gerichtid']).first()
+    def delete(self, gerichtid: int, labelid: int) -> Optional[type[LabelGericht]]:
+        label = self.db.query(LabelGericht).filter(LabelGericht.labelid == labelid & LabelGericht.gerichtid == gerichtid).first()
         self.db.delete(label)
         self.db.commit()

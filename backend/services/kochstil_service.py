@@ -1,8 +1,6 @@
-# services/kochstil_service.py
 from sqlalchemy.orm import Session
 from typing import List, Optional
-
-from Code.backend.models.kochstil import Kochstil
+from ..models.kochstil import Kochstil
 
 #Kochstil = Cuisine = Italienisch, Asiatisch etc.
 class KochstilService:

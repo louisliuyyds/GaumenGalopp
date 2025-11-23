@@ -1,10 +1,6 @@
-# services/kochstil_restaurant_service.py
 from sqlalchemy.orm import Session
-
 from typing import List, Optional
-
-from Code.backend.models.kochstilrestaurant import KochstilRestaurant
-
+from ..models.kochstilrestaurant import KochstilRestaurant
 
 class KochstilRestaurantService:
     """Service für Many-to-Many Beziehung zwischen Kochstil und Restaurant"""

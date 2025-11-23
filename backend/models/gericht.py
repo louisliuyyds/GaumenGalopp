@@ -1,6 +1,6 @@
 from sqlalchemy import Column, Integer, String, ForeignKey
 from sqlalchemy.orm import relationship
-from ...backend.database import Base
+from ..database import Base
 
 class Gericht(Base):
     __tablename__ = 'gericht'
@@ -12,6 +12,9 @@ class Gericht(Base):
 
     menue = relationship("Menue", back_populates="gericht")
     labelGericht = relationship("LabelGericht", back_populates="gericht")
+    bewertung = relationship("Bestellung", back_populates="gericht")
+    preis = relationship("Preis", back_populates="gericht")
+    bestellposition = relationship("Bestellposition", back_populates="gericht")
 
     def to_dict(self):
         return {

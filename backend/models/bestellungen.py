@@ -1,25 +1,27 @@
 from sqlalchemy import Column, Integer, String, ForeignKey, DateTime
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
-from ...backend.database import Base
+from ..database import Base
 
 class Bestellungen(Base):
     __Tablename__= 'bestellungen'
     bestellungid = Column(Integer, primary_key=True, index=True)
 
     kundenid = Column(Integer, ForeignKey('kunde.kundenid'), nullable=False)
-    kunden = relationship("Kunden", back_populates="bestellungen")
+    kunde = relationship("Kunden", back_populates="bestellungen")
 
     restaurantid = Column(Integer, ForeignKey('restaurant.restaurantid'), nullable=False)
-    restaurant = relationship("Restaurant", back_populates="bestellung")
+    restaurant = relationship("Restaurant", back_populates="bestellungen")
 
     lieferantid = Column(Integer, ForeignKey('lieferant.lieferantid'), nullable= False)
-    lieferant = relationship("Lieferant", back_populates="bestellung")
+    lieferant = relationship("Lieferant", back_populates="bestellungen")
 
     adressid = Column(Integer, ForeignKey('adresse.adressid'), nullable=False)
     adresse = relationship("Adresse", back_populates="bestellungen")
 
     bestellzeit = Column(DateTime(timezone=True), server_default=func.now())
+
+    bestellposition = relationship("Bestellposition", back_populates="bestellungen")
 
 
     status= Column(String(50), nullable=False)

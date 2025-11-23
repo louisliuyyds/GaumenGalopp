@@ -1,4 +1,4 @@
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, text
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from dotenv import load_dotenv
@@ -16,7 +16,7 @@ engine = create_engine(DATABASE_URL)
 # Create session factory
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
-# Base class for models (uncomment when first mapping and controllers are implemented)
+# Base class for models
 Base = declarative_base()
 
 # Dependency for getting database session
@@ -28,9 +28,6 @@ def get_db():
         db.close()
 
 # try:
-#     # Create engine
-#     engine = create_engine(DATABASE_URL)
-#
 #     # Test connection
 #     with engine.connect() as connection:
 #         result = connection.execute(text("SELECT 1"))
@@ -44,3 +41,5 @@ def get_db():
 # except Exception as e:
 #     print(f"❌ Database connection failed!")
 #     print(f"Error: {e}")
+
+

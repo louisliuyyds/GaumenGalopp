@@ -1,9 +1,6 @@
-# services/Adresse_service.py
 from sqlalchemy.orm import Session
-
 from typing import List, Optional
-
-from Code.backend.models.adresse import Adresse
+from ..models.adresse import Adresse
 
 
 class AdresseService:

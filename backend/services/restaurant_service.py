@@ -1,8 +1,6 @@
-# services/restaurant_service.py
 from sqlalchemy.orm import Session
-from models.restaurant import Restaurant
+from ..models.restaurant import Restaurant
 from typing import List, Optional
-
 
 class RestaurantService:
     def __init__(self, db: Session):

@@ -1,6 +1,5 @@
-# services/restaurant_oeffnungszeit_service.py
 from sqlalchemy.orm import Session
-from models.restaurant_oeffnungszeit import RestaurantOeffnungszeit
+from ..models.restaurant_oeffnungszeit import RestaurantOeffnungszeit
 from typing import List, Optional
 from datetime import date
 
@@ -8,10 +7,10 @@ from datetime import date
 class RestaurantOeffnungszeitService:
     def __init__(self, db: Session):
         self.db = db
-    
+
     def get_all(self) -> List[RestaurantOeffnungszeit]:
         return self.db.query(RestaurantOeffnungszeit).all()
-    
+
     def get_by_ids(self, restaurant_id: int, oeffnungszeit_id: int, gueltig_von: date) -> Optional[RestaurantOeffnungszeit]:
         return self.db.query(RestaurantOeffnungszeit).filter(
             RestaurantOeffnungszeit.restaurantID == restaurant_id,

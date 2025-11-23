@@ -1,7 +1,5 @@
-# schemas/restaurant_schema.py
 from pydantic import BaseModel
 from typing import Optional
-
 
 # What data comes IN when creating a restaurant
 class RestaurantCreate(BaseModel):

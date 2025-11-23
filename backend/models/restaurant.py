@@ -1,7 +1,6 @@
-# models/restaurant.py
 from sqlalchemy import Column, Integer, String, ForeignKey
 from sqlalchemy.orm import relationship
-from ...backend.database import Base
+from ..database import Base
 
 class Restaurant(Base):
     __tablename__ = 'restaurant'
@@ -14,10 +13,10 @@ class Restaurant(Base):
     kuechenchef = Column(String(255))
     
     # Relationships
-    adresse = relationship("Adresse", back_populates="restaurants")
+    adresse = relationship("Adresse", back_populates="restaurant")
     menue = relationship("Menue", back_populates="restaurant", uselist=False)
     bestellungen = relationship("Bestellung", back_populates="restaurant")
-    kochstile = relationship("KochstilRestaurant", back_populates="restaurant")
+    kochstil = relationship("KochstilRestaurant", back_populates="restaurant")
     oeffnungszeiten = relationship("RestaurantOeffnungszeit", back_populates="restaurant")
     
     def to_dict(self):

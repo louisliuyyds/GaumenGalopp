@@ -1,0 +1,22 @@
+from sqlalchemy.orm import relationship
+from ..database import Base
+from sqlalchemy import Column, Integer, String, ForeignKey
+
+class Kritiker(Base):
+    __tablename__ = "kritiker"
+
+    kritikerid = Column("kritikerid", Integer, primary_key=True, index=True)
+    kundenid = Column("kundenid", Integer, ForeignKey("KUNDE.kundenID"))
+    kunde = relationship("Kunde", back_populates="kritiker") 
+    beschreibung = Column("beschreibung", String(100))
+    kritikername = Column("kritikername", String(50))
+
+    bewertungkritiker = relationship("Bewertungkritiker", back_populates="kritiker")
+
+    def to_dict(self):
+        return {
+            "kritikerid": self.kritikerid,
+            "kundenid": self.kundenid,
+            "beschreibung": self.beschreibung,
+            "kritikername": self.kritikername,            
+        }

@@ -1,6 +1,6 @@
-from sqlalchemy import Column, Integer, String, ForeignKey
+from sqlalchemy import Column, Integer, String
 from sqlalchemy.orm import relationship
-from ...backend.database import Base
+from ..database import Base
 
 class Lieferant(Base):
     __tablename__='lieferant'
@@ -12,6 +12,8 @@ class Lieferant(Base):
     nachname= Column(String(100), nullable=True)
 
     telephone= Column(String(100), nullable=True)
+
+    bestellung = relationship("Bestellung", back_populates="lieferant")
 
     def to_dict(self):
         """Wandelt das Objekt in ein Dictionary um."""
