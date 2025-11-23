@@ -1,9 +1,6 @@
 from sqlalchemy.orm import Session
-
-from Code.backend.models.bestellungen import Bestellungen
 from ..models.bestellungen import Bestellungen
 from ..models.bestellposition import Bestellposition
-
 from ..models.preis import Preis
 from typing import List, Optional
 

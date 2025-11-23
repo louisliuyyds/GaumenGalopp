@@ -1,6 +1,6 @@
 from sqlalchemy import Column, Integer, String, ForeignKey
 from sqlalchemy.orm import relationship
-from ...backend.database import Base
+from ..database import Base
 
 class Bestellposition(Base):
 
@@ -16,15 +16,15 @@ class Bestellposition(Base):
 
 
     bestellungid = Column(Integer, ForeignKey('bestellungen.bestellungid'), nullable=False)
-    bestellung = relationship("Bestellung", back_populates="positionen")
+    bestellungen = relationship("Bestellung", back_populates="bestellposition")
 
 
     gerichtid: int = Column(Integer, ForeignKey('menue.menueid'), nullable=False)
-    gericht = relationship("Menue", back_populates="positionen")
+    gericht = relationship("Menue", back_populates="bestellposition")
 
 
     preisid = Column(Integer, ForeignKey('preise.preiseid'), nullable=False)
-    preis = relationship("Preis", back_populates="positionen")
+    preis = relationship("Preis", back_populates="bestellposition")
 
     def to_dict(self):
         """Wandelt das Objekt in ein Dictionary um."""

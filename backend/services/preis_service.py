@@ -1,5 +1,4 @@
 from sqlalchemy.orm import Session
-
 from ..models.preis import Preis
 from typing import List, Optional
 
@@ -32,3 +31,12 @@ class PreisService:
         self.db.commit()
         self.db.refresh(menue)
         return menue
+
+    def delete(self, preisid: int) -> Optional[Preis]:
+        preis = self.get_by_id(preisid)
+        if not preis:
+            return None
+        self.db.delete(preis)
+        self.db.commit()
+        self.db.refresh(preis)
+        return preis

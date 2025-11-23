@@ -1,8 +1,5 @@
-# schemas/Kritiker_schema.py
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel
 from typing import Optional
-
-from GaumenGalopp.backend.models import kritiker
 
 # What data comes IN when creating a Kritiker
 class KritikerCreate(BaseModel):

@@ -1,8 +1,6 @@
-# schemas/oeffnungszeit_detail_schema.py
 from pydantic import BaseModel
 from typing import Optional
 from datetime import time
-
 
 # What data comes IN when creating an oeffnungszeit_detail
 class OeffnungszeitDetailCreate(BaseModel):

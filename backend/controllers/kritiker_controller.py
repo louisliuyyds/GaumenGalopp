@@ -3,9 +3,9 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from typing import List
 
-from database import get_db
-from services.kritiker_service import KritikerService
-from schemas.kritiker_schema import KritikerCreate, KritikerUpdate, KritikerResponse
+from ..database import get_db
+from ..services.kritiker_service import KritikerService
+from ..schemas.kritiker_schema import KritikerCreate, KritikerUpdate, KritikerResponse
 
 router = APIRouter(
     prefix="/api/kritikers",

@@ -16,7 +16,7 @@ engine = create_engine(DATABASE_URL)
 # Create session factory
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
-# Base class for models (uncomment when first mapping and controllers are implemented)
+# Base class for models
 Base = declarative_base()
 
 # Dependency for getting database session
@@ -27,19 +27,19 @@ def get_db():
     finally:
         db.close()
 
-try:
-    # Test connection
-    with engine.connect() as connection:
-        result = connection.execute(text("SELECT 1"))
-        print("✅ Database connection successful!")
-        print(f"Test query result: {result.fetchone()}")
-
-        # Get database version
-        version = connection.execute(text("SELECT version()"))
-        print(f"Database version: {version.fetchone()[0]}")
-
-except Exception as e:
-    print(f"❌ Database connection failed!")
-    print(f"Error: {e}")
+# try:
+#     # Test connection
+#     with engine.connect() as connection:
+#         result = connection.execute(text("SELECT 1"))
+#         print("✅ Database connection successful!")
+#         print(f"Test query result: {result.fetchone()}")
+#
+#         # Get database version
+#         version = connection.execute(text("SELECT version()"))
+#         print(f"Database version: {version.fetchone()[0]}")
+#
+# except Exception as e:
+#     print(f"❌ Database connection failed!")
+#     print(f"Error: {e}")
 
 

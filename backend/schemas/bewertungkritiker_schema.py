@@ -1,8 +1,5 @@
-# schemas/bewertungkritiker_schema.py
 from pydantic import BaseModel, EmailStr
 from typing import Optional
-
-from GaumenGalopp.backend.models import bewertung
 
 # What data comes IN when creating a bewertungkritiker
 class BewertungkritikerCreate(BaseModel):

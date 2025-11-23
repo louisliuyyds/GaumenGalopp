@@ -1,6 +1,5 @@
-# services/kritiker_service.py
 from sqlalchemy.orm import Session
-from models.kritiker import Kritiker
+from ..models.kritiker import Kritiker
 from typing import List, Optional
 
 class KritikerService:

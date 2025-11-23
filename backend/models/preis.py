@@ -1,6 +1,6 @@
 from sqlalchemy import Column, Integer, String, Boolean, DateTime, ForeignKey, Numeric
 from sqlalchemy.orm import relationship
-from ...backend.database import Base
+from ..database import Base
 
 class Preis(Base):
     __tablename__ = 'preis'
@@ -13,6 +13,7 @@ class Preis(Base):
     istaktiv = Column(Boolean)
 
     gericht = relationship("Gericht", back_populates="preis")
+    bestellposition = relationship("Bestellposition", back_populates="preis")
 
     def to_dict(self):
         return {

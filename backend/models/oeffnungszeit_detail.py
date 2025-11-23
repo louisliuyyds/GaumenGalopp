@@ -1,7 +1,6 @@
-# models/oeffnungszeit_detail.py
 from sqlalchemy import Column, Integer, Time, Boolean, ForeignKey
 from sqlalchemy.orm import relationship
-from ...backend.database import Base
+from ..database import Base
 
 
 class OeffnungszeitDetail(Base):

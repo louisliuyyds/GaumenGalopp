@@ -1,10 +1,6 @@
-# models/restaurant.py
-from sqlalchemy import Column, Integer, String, Float, Boolean, DateTime, ForeignKey, Date
+from sqlalchemy import Column, Integer, String, ForeignKey, Date
 from sqlalchemy.orm import relationship
-from database import Base
-from datetime import datetime
-
-
+from ..database import Base
 
 class Kunde(Base):
     __tablename__ = 'kunde'
@@ -18,7 +14,8 @@ class Kunde(Base):
     email = Column(String(255))
     namenskuerzel = Column(String(100))
 
-    adresse = relationship("adresse", back_populates="kunden")
+    adresse = relationship("Adresse", back_populates="kunde")
+    kritiker = relationship("Kritiker", back_populates="kunde")
 
 
     def to_dict(self):

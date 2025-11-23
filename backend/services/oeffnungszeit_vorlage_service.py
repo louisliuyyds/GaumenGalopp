@@ -1,6 +1,5 @@
-# services/oeffnungszeit_vorlage_service.py
 from sqlalchemy.orm import Session
-from models.oeffnungszeit_vorlage import OeffnungszeitVorlage
+from ..models.oeffnungszeit_vorlage import OeffnungszeitVorlage
 from typing import List, Optional
 
 

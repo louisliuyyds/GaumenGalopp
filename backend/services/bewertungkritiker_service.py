@@ -1,6 +1,5 @@
-# services/bewertungkritiker_service.py
 from sqlalchemy.orm import Session
-from models.bewertungkritiker import Bewertungkritiker
+from ..models.bewertungkritiker import Bewertungkritiker
 from typing import List, Optional
 
 class BewertungkritikerService:

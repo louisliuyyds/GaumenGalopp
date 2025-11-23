@@ -1,8 +1,6 @@
-# services/kunde_service.py
 from sqlalchemy.orm import Session, joinedload
 from typing import List, Optional
-
-from Code.backend.models.kunde import Kunde
+from ..models.kunde import Kunde
 
 
 class KundeService:

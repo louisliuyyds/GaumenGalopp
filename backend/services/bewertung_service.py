@@ -1,6 +1,5 @@
-# services/Bewertung_service.py
 from sqlalchemy.orm import Session
-from models.bewertung import Bewertung
+from ..models.bewertung import Bewertung
 from typing import List, Optional
 
 class BewertungService:

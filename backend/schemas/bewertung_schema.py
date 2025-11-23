@@ -1,9 +1,6 @@
-# schemas/bewertung_schema.py
 from psycopg2 import Date
 from pydantic import BaseModel, EmailStr
 from typing import Optional
-
-from GaumenGalopp.backend.models import kunde
 
 # What data comes IN when creating a bewertung
 class BewertungCreate(BaseModel):

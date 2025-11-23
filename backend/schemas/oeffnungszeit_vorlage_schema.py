@@ -1,7 +1,5 @@
-# schemas/oeffnungszeit_vorlage_schema.py
 from pydantic import BaseModel
 from typing import Optional
-
 
 # What data comes IN when creating an oeffnungszeit_vorlage
 class OeffnungszeitVorlageCreate(BaseModel):

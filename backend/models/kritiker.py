@@ -1,17 +1,17 @@
-# Importieren Sie 'Base' aus Ihrer database.py
-# (Sie müssen 'Base = declarative_base()' in database.py aktivieren)
-from sqlalchemy.orm._orm_constructors import relationship
-from GaumenGalopp.backend.database import Base 
-from sqlalchemy import Column, Integer, String, Date, ForeignKey
+from sqlalchemy.orm import relationship
+from ..database import Base
+from sqlalchemy import Column, Integer, String, ForeignKey
 
 class Kritiker(Base):
-    __tablename__ = "KRITIKER"
+    __tablename__ = "kritiker"
 
     kritikerid = Column("kritikerid", Integer, primary_key=True, index=True)
     kundenid = Column("kundenid", Integer, ForeignKey("KUNDE.kundenID"))
     kunde = relationship("Kunde", back_populates="kritiker") 
     beschreibung = Column("beschreibung", String(100))
     kritikername = Column("kritikername", String(50))
+
+    bewertungkritiker = relationship("Bewertungkritiker", back_populates="kritiker")
 
     def to_dict(self):
         return {

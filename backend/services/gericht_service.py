@@ -1,5 +1,4 @@
 from sqlalchemy.orm import Session
-
 from ..models.gericht import Gericht
 from typing import Optional
 
@@ -12,6 +11,9 @@ class GerichtService:
 
     def get_by_id(self, gerichtid: int) -> Optional[Gericht]:
         return self.db.query(Gericht).filter(Gericht.gerichtid == gerichtid).first()
+
+    def get_by_id_list(self, id_list: list[type[int]]) -> list[type[Gericht]]:
+        return self.db.query(Gericht).filter(Gericht.gerichtid.in_(id_list)).all()
 
     def create(self, gericht_data: dict) -> Gericht:
         new_gericht = Gericht(**gericht_data)
@@ -29,6 +31,15 @@ class GerichtService:
             if value is not None:
                 setattr(gericht, key, value)
 
+        self.db.commit()
+        self.db.refresh(gericht)
+        return gericht
+
+    def delete(self, gerichtid: int) -> Optional[Gericht]:
+        gericht = self.get_by_id(gerichtid)
+        if not gericht:
+            return None
+        self.db.delete(gericht)
         self.db.commit()
         self.db.refresh(gericht)
         return gericht
