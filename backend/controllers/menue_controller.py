@@ -1,12 +1,12 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 
-from backend.services.menue_service import MenueService
-from backend.schemas import menue_schema as schemas
-from backend.database import get_db
+from services.menue_service import MenueService
+from schemas import menue_schema as schemas
+from database import get_db
 from sqlalchemy.orm import Session
 from typing import List
 
-router = APIRouter(prefix="/menue", tags=["menue"])
+router = APIRouter(prefix="/api/menue", tags=["menue"])
 
 @router.get("/", response_model=List[schemas.MenueResponse])
 def get_all_menues(db: Session = Depends(get_db)):

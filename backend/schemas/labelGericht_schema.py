@@ -1,7 +1,7 @@
 from pydantic import BaseModel
 from typing import Optional
-from gericht_schema import GerichtResponse
-from label_schema import LabelResponse
+from schemas.gericht_schema import GerichtResponse
+from schemas.label_schema import LabelResponse
 
 class LabelGerichtCreate(BaseModel):
     labelid: int

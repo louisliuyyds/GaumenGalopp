@@ -2,9 +2,9 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from typing import List
 
-from backend.database import get_db
-from backend.services.adresse_service import AdresseService
-from backend.schemas.adresse_schema import AdresseCreate, AdresseUpdate, AdresseResponse
+from database import get_db
+from services.adresse_service import AdresseService
+from schemas.adresse_schema import AdresseCreate, AdresseUpdate, AdresseResponse
 
 router = APIRouter(
     prefix="/api/adresse",

@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from backend.models.lieferant import Lieferant
+from models.lieferant import Lieferant
 from typing import List, Optional
 
 class LieferantService:

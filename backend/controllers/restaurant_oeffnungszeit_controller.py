@@ -3,9 +3,9 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from typing import List
 from datetime import date
-from backend.database import get_db
-from backend.services.restaurant_oeffnungszeit_service import RestaurantOeffnungszeitService
-from backend.schemas.restaurant_oeffnungszeit_schema import (
+from database import get_db
+from services.restaurant_oeffnungszeit_service import RestaurantOeffnungszeitService
+from schemas.restaurant_oeffnungszeit_schema import (
     RestaurantOeffnungszeitCreate, 
     RestaurantOeffnungszeitUpdate, 
     RestaurantOeffnungszeitResponse

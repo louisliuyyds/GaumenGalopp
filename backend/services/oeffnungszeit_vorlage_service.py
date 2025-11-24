@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from backend.models.oeffnungszeit_vorlage import OeffnungszeitVorlage
+from models.oeffnungszeit_vorlage import OeffnungszeitVorlage
 from typing import List, Optional
 
 

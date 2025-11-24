@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from backend.models.bestellposition import Bestellposition
+from models.bestellposition import Bestellposition
 from typing import List
 
 class BestellpositionService:

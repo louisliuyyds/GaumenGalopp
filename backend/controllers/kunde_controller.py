@@ -2,9 +2,9 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from typing import List
 
-from backend.database import get_db
-from backend.services.kunde_service import KundeService
-from backend.schemas.kunde_schema import KundeCreate, KundeUpdate, KundeResponse
+from database import get_db
+from services.kunde_service import KundeService
+from schemas.kunde_schema import KundeCreate, KundeUpdate, KundeResponse
 
 router = APIRouter(
     prefix="/api/kunden",

@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from backend.models.kritiker import Kritiker
+from models.kritiker import Kritiker
 from typing import List, Optional
 
 class KritikerService:

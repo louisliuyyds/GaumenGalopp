@@ -1,12 +1,12 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 
-from backend.services.preis_service import PreisService
-from backend.schemas import preis_schema as schemas
-from backend.database import get_db
+from services.preis_service import PreisService
+from schemas import preis_schema as schemas
+from database import get_db
 from sqlalchemy.orm import Session
 from typing import List
 
-router = APIRouter(prefix="/preis", tags=["preis"])
+router = APIRouter(prefix="/api/preis", tags=["preis"])
 
 @router.get("/", response_model=List[schemas.PreisResponse])
 def get_all_preis(db: Session = Depends(get_db)):

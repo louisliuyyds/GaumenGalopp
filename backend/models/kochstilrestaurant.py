@@ -1,6 +1,6 @@
 from sqlalchemy import Integer, Column, ForeignKey
 from sqlalchemy.orm import relationship
-from backend.database import Base
+from database import Base
 
 class KochstilRestaurant(Base):
     __tablename__ = 'kochstilrestaurant'

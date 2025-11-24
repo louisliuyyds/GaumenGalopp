@@ -1,13 +1,13 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 
-from backend.services.gericht_service import GerichtService
-from backend.services.labelGericht_service import LabelGerichtService
-from backend.schemas import gericht_schema as schemas
-from backend.database import get_db
+from services.gericht_service import GerichtService
+from services.labelGericht_service import LabelGerichtService
+from schemas import gericht_schema as schemas
+from database import get_db
 from sqlalchemy.orm import Session
 from typing import List
 
-router = APIRouter(prefix="/gericht", tags=["gericht"])
+router = APIRouter(prefix="/api/gericht", tags=["gericht"])
 
 @router.get("/", response_model=List[schemas.GerichtResponse])
 def get_all_gericht(db: Session = Depends(get_db)):

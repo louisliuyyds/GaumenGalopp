@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 from typing import List, Optional
-from backend.models.adresse import Adresse
+from models.adresse import Adresse
 
 
 class AdresseService:

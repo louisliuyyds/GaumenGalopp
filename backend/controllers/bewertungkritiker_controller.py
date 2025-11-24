@@ -2,9 +2,9 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from typing import List
 
-from backend.database import get_db
-from backend.services.bewertungkritiker_service import BewertungkritikerService
-from backend.schemas.bewertungkritiker_schema import BewertungkritikerCreate, BewertungkritikerUpdate, BewertungkritikerResponse
+from database import get_db
+from services.bewertungkritiker_service import BewertungkritikerService
+from schemas.bewertungkritiker_schema import BewertungkritikerCreate, BewertungkritikerUpdate, BewertungkritikerResponse
 
 router = APIRouter(
     prefix="/api/bewertungkritikers",

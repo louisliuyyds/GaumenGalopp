@@ -1,6 +1,6 @@
 from sqlalchemy import Column, Integer, Date, Boolean, ForeignKey
 from sqlalchemy.orm import relationship
-from backend.database import Base
+from database import Base
 
 class RestaurantOeffnungszeit(Base):
     __tablename__ = 'restaurant_oeffnungszeit'

@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from backend.models.restaurant import Restaurant
+from models.restaurant import Restaurant
 from typing import List, Optional
 
 class RestaurantService:
@@ -10,7 +10,7 @@ class RestaurantService:
         return self.db.query(Restaurant).all()
     
     def get_by_id(self, restaurant_id: int) -> Optional[Restaurant]:
-        return self.db.query(Restaurant).filter(Restaurant.restaurantID == restaurant_id).first()
+        return self.db.query(Restaurant).filter(Restaurant.restaurantid == restaurant_id).first()
     
     def get_by_name(self, name: str) -> List[Restaurant]:
         return self.db.query(Restaurant).filter(Restaurant.name.ilike(f"%{name}%")).all()
@@ -48,4 +48,4 @@ class RestaurantService:
     
     def get_with_menue(self, restaurant_id: int) -> Optional[Restaurant]:
         """Get restaurant with its menu"""
-        return self.db.query(Restaurant).filter(Restaurant.restaurantID == restaurant_id).first()
+        return self.db.query(Restaurant).filter(Restaurant.restaurantid == restaurant_id).first()

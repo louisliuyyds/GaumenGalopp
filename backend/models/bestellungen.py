@@ -1,10 +1,10 @@
 from sqlalchemy import Column, Integer, String, ForeignKey, DateTime
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
-from backend.database import Base
+from database import Base
 
 class Bestellungen(Base):
-    __Tablename__= 'bestellungen'
+    __tablename__= 'bestellungen'
     bestellungid = Column(Integer, primary_key=True, index=True)
 
     kundenid = Column(Integer, ForeignKey('kunde.kundenid'), nullable=False)

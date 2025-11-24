@@ -1,11 +1,11 @@
 from sqlalchemy import Column, Integer, String, ForeignKey
 from sqlalchemy.orm import relationship
-from backend.database import Base
+from database import Base
 
 class Restaurant(Base):
     __tablename__ = 'restaurant'
     
-    restaurantID = Column(Integer, primary_key=True, autoincrement=True)
+    restaurantid = Column(Integer, primary_key=True, autoincrement=True)
     name = Column(String(255), nullable=False)
     klassifizierung = Column(String(100))
     adresseID = Column(Integer, ForeignKey('adresse.adresseID'))
@@ -22,7 +22,7 @@ class Restaurant(Base):
     def to_dict(self):
         """Convert to dictionary"""
         return {
-            "restaurantID": self.restaurantID,
+            "restaurantID": self.restaurantid,
             "name": self.name,
             "klassifizierung": self.klassifizierung,
             "adresseID": self.adresseID,
