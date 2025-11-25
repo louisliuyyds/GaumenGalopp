@@ -14,7 +14,7 @@ class Kunde(Base):
     email = Column(String(255))
     namenskuerzel = Column(String(100))
 
-    adresse = relationship("Adresse", back_populates="kunde")
+    adresse = relationship("Adresse", back_populates="kunden")
     kritiker = relationship("Kritiker", back_populates="kunde")
 
 

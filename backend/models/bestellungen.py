@@ -16,7 +16,7 @@ class Bestellungen(Base):
     lieferantid = Column(Integer, ForeignKey('lieferant.lieferantid'), nullable= False)
     lieferant = relationship("Lieferant", back_populates="bestellungen")
 
-    adressid = Column(Integer, ForeignKey('adresse.adressid'), nullable=False)
+    adresseid = Column(Integer, ForeignKey('adresse.adresseid'), nullable=False)
     adresse = relationship("Adresse", back_populates="bestellungen")
 
     bestellzeit = Column(DateTime(timezone=True), server_default=func.now())
