@@ -5,7 +5,7 @@ from database import get_db
 from schemas import bestellposition_schemas as schemas
 from services.bestellposition_services import BestellpositionService
 
-router = APIRouter(prefix="/bestellpositionen", tags=["Bestellpositionen"])
+router = APIRouter(prefix="/api/bestellpositionen", tags=["Bestellpositionen"])
 
 @router.post("/", response_model=schemas.BestellpositionResponse, status_code=status.HTTP_201_CREATED)
 def add_position(data: schemas.BestellpositionCreate, db: Session = Depends(get_db)):
