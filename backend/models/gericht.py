@@ -12,7 +12,7 @@ class Gericht(Base):
 
     menue = relationship("Menue", back_populates="gericht")
     labelGericht = relationship("LabelGericht", back_populates="gericht")
-    bewertung = relationship("Bestellung", back_populates="gericht")
+    bewertung = relationship("Bewertung", back_populates="gericht")
     preis = relationship("Preis", back_populates="gericht")
     bestellposition = relationship("Bestellposition", back_populates="gericht")
 

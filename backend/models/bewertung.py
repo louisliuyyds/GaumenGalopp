@@ -7,7 +7,7 @@ class Bewertung(Base):
 
     bewertungid = Column("bewertungid", Integer, primary_key=True, index=True)
     kundenid = Column("kundenid", Integer, ForeignKey("KUNDE.kundenID"))
-    gerichtid = Column("gerichtid", Integer, ForeignKey("GERICHT.gerichtID"))
+    gerichtid = Column(Integer, ForeignKey('gericht.gerichtid'), nullable=False)
     rating = Column("rating", Integer)
     kommentar = Column("kommentar", String(500))
     erstelltam = Column("erstelltam", Date)

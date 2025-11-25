@@ -16,6 +16,8 @@ class Kunde(Base):
 
     adresse = relationship("Adresse", back_populates="kunden")
     kritiker = relationship("Kritiker", back_populates="kunde")
+    bestellungen = relationship("Bestellungen", back_populates="kunde")
+    bewertungen = relationship("Bewertung", back_populates="kunde")
 
 
     def to_dict(self):

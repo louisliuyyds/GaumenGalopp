@@ -8,7 +8,7 @@ class Bestellungen(Base):
     bestellungid = Column(Integer, primary_key=True, index=True)
 
     kundenid = Column(Integer, ForeignKey('kunde.kundenid'), nullable=False)
-    kunde = relationship("Kunden", back_populates="bestellungen")
+    kunde = relationship("Kunde", back_populates="bewertungen")
 
     restaurantid = Column(Integer, ForeignKey('restaurant.restaurantid'), nullable=False)
     restaurant = relationship("Restaurant", back_populates="bestellungen")
@@ -16,7 +16,7 @@ class Bestellungen(Base):
     lieferantid = Column(Integer, ForeignKey('lieferant.lieferantid'), nullable= False)
     lieferant = relationship("Lieferant", back_populates="bestellungen")
 
-    adresseid = Column(Integer, ForeignKey('adresse.adresseid'), nullable=False)
+    adressid = Column(Integer, ForeignKey('adresse.adresseid'), nullable=False)
     adresse = relationship("Adresse", back_populates="bestellungen")
 
     bestellzeit = Column(DateTime(timezone=True), server_default=func.now())

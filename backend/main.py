@@ -1,5 +1,28 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+
+#Alle Modules importe
+from models import Restaurant
+from models import Adresse
+from models import Bestellposition
+from models import bestellungen
+from models import bewertungkritiker
+from models import bewertung
+from models import gericht
+from models import kochstil
+from models import kochstilrestaurant
+from models import kritiker
+from models import kunde
+from models import label
+from models import labelGericht
+from models import lieferant
+from models import menue
+from models import oeffnungszeit_detail
+from models import oeffnungszeit_vorlage
+from models import preis
+from models import restaurant
+from models import restaurant_oeffnungszeit
+
 from controllers import restaurant_controller, menue_controller, bestellposition_controller
 from controllers import adresse_controller, oeffnungszeit_detail_controller, bestellung_controller
 from controllers import restaurant_oeffnungszeit_controller

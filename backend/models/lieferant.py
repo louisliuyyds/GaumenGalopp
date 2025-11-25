@@ -13,7 +13,8 @@ class Lieferant(Base):
 
     telephone= Column(String(100), nullable=True)
 
-    bestellung = relationship("Bestellung", back_populates="lieferant")
+
+    bestellungen = relationship("Bestellungen", back_populates="lieferant")
 
     def to_dict(self):
         """Wandelt das Objekt in ein Dictionary um."""
