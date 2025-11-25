@@ -1,4 +1,6 @@
 from sqlalchemy.orm import Session
+
+from models import Kritiker
 from models.kritiker import Kritiker
 from typing import List, Optional
 
@@ -6,11 +8,11 @@ class KritikerService:
     def __init__(self, db: Session):
         self.db = db
     
-    def get_all(self) -> List[Kritiker]:
-        return self.db.query(Kritiker).filter(Kritiker.is_active == True).all()
+    def get_all(self) -> list[type[Kritiker]]:
+        return self.db.query(Kritiker).all()
     
     def get_by_id(self, kritiker_id: int) -> Optional[Kritiker]:
-        return self.db.query(Kritiker).filter(Kritiker.id == kritiker_id).first()
+        return self.db.query(Kritiker).filter(Kritiker.kritikerid == kritiker_id).first()
     
     def create(self, kritiker_data: dict) -> Kritiker:
         kritiker = Kritiker(**kritiker_data)
@@ -36,6 +38,7 @@ class KritikerService:
         kritiker = self.get_by_id(kritiker_id)
         if not kritiker:
             return False
-        kritiker.is_active = False
+        self.db.delete(kritiker)
         self.db.commit()
+        self.db.refresh(kritiker)
         return True
