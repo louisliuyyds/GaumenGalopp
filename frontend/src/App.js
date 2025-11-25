@@ -8,6 +8,8 @@ import NeuesRestaurant from "./pages/NeuesRestaurant";
 import RestaurantDetail from "./pages/RestaurantDetail";
 import GerichtDetail from "./pages/GerichtDetail";
 import EditRestaurantInfos from "./pages/EditRestaurantInfos";
+import KundeProfil from './pages/KundeProfil';
+import KundeBestellungen from './pages/KundeBestellungen';
 import colors from './theme/colors';
 import Restaurants from "./pages/Restaurant";
 
@@ -36,9 +38,14 @@ function App() {
                         <Route path="/beispiel" element={<Beispiel />} />
                         <Route path="/neuesRestaurant" element={<NeuesRestaurant />} />
                         <Route path="/restaurants" element={<Restaurants />} />
+                        <Route path="/kunde/restaurants" element={<Restaurants />} />
                         <Route path="/restaurants/:restaurantId/gericht/:gerichtId" element={<GerichtDetail />} />
+                        <Route path="/kunde/restaurants/:restaurantId/gericht/:gerichtId" element={<GerichtDetail />} />
                         <Route path="/restaurants/:id/edit" element={<EditRestaurantInfos />} />
                         <Route path="/restaurants/:id" element={<RestaurantDetail />} />
+                        <Route path="/kunde/restaurants/:id" element={<RestaurantDetail />} />
+                        <Route path="/kunde/profil" element={<KundeProfil />} />
+                        <Route path="/kunde/bestellungen" element={<KundeBestellungen />} />
                     </Routes>
                 </ContentArea>
             </AppContainer>

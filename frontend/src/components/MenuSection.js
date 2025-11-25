@@ -1,6 +1,6 @@
 import styled from "styled-components";
 import colors from "../theme/colors";
-import {useNavigate, useParams} from "react-router-dom";
+import {useNavigate, useParams, useLocation} from "react-router-dom";
 import {useState} from "react";
 
 const MenuSectionWrapper = styled.div`
@@ -147,10 +147,16 @@ const DeleteButton = styled.button`
 const MenuSection = ({ restaurant }) => {
     const { id } = useParams();
     const navigate = useNavigate();
+    const location = useLocation();
+    const isCustomerView = location.pathname.startsWith('/kunde');
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(null);
 
     const handleGerichtClick = (gerichtId) => {
-        navigate(`/restaurants/${id}/gericht/${gerichtId}`);
+        if (isCustomerView) {
+            navigate(`/kunde/restaurants/${id}/gericht/${gerichtId}`);
+        } else {
+            navigate(`/restaurants/${id}/gericht/${gerichtId}`);
+        }
     };
 
     const handleDeleteGericht = (e, gerichtId) => {
@@ -173,9 +179,11 @@ const MenuSection = ({ restaurant }) => {
         <MenuSectionWrapper>
             <MenuHeader>
                 <CardTitle>🍴 Menü ({restaurant?.gerichte?.length || 0} Gerichte)</CardTitle>
-                <AddGerichtButton onClick={() => console.log('Neues Gericht hinzufügen')}>
-                    + Neues Gericht
-                </AddGerichtButton>
+                {!isCustomerView && (
+                    <AddGerichtButton onClick={() => console.log('Neues Gericht hinzufügen')}>
+                        + Neues Gericht
+                    </AddGerichtButton>
+                )}
             </MenuHeader>
 
             {restaurant?.gerichte && restaurant.gerichte.length > 0 ? (
@@ -191,14 +199,16 @@ const MenuSection = ({ restaurant }) => {
                             <GerichtFooter>
                                 <GerichtPrice>{gericht.price.toFixed(2)} €</GerichtPrice>
                             </GerichtFooter>
-                            <ActionButtons>
-                                <EditButton onClick={(e) => handleEditGericht(e, gericht.id)}>
-                                    ✏️ Bearbeiten
-                                </EditButton>
-                                <DeleteButton onClick={(e) => handleDeleteGericht(e, gericht.id)}>
-                                    {showDeleteConfirm === gericht.id ? '❗ Bestätigen?' : '🗑️ Löschen'}
-                                </DeleteButton>
-                            </ActionButtons>
+                            {!isCustomerView && (
+                                <ActionButtons>
+                                    <EditButton onClick={(e) => handleEditGericht(e, gericht.id)}>
+                                        ✏️ Bearbeiten
+                                    </EditButton>
+                                    <DeleteButton onClick={(e) => handleDeleteGericht(e, gericht.id)}>
+                                        {showDeleteConfirm === gericht.id ? '❗ Bestätigen?' : '🗑️ Löschen'}
+                                    </DeleteButton>
+                                </ActionButtons>
+                            )}
                         </GerichtCard>
                     ))}
                 </GerichteGrid>

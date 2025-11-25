@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import colors from '../theme/colors';
 import MenuSection from "../components/MenuSection";
 
@@ -242,13 +242,15 @@ const mockRestaurants = [
 function RestaurantDetail() {
     const { id } = useParams();
     const navigate = useNavigate();
+    const location = useLocation();
+    const isCustomerView = location.pathname.startsWith('/kunde');
 
     const restaurant = mockRestaurants.find(r => r.id === parseInt(id));
 
     if (!restaurant) {
         return (
             <Container>
-                <BackButton onClick={() => navigate('/restaurants')}>
+                <BackButton onClick={() => navigate(isCustomerView ? '/kunde/restaurants' : '/restaurants')}>
                     ← Zurück zur Übersicht
                 </BackButton>
                 <InfoCard>
@@ -264,14 +266,16 @@ function RestaurantDetail() {
 
     return (
         <Container>
-            <BackButton onClick={() => navigate('/restaurants')}>
+            <BackButton onClick={() => navigate(isCustomerView ? '/kunde/restaurants' : '/restaurants')}>
                 ← Zurück zur Übersicht
             </BackButton>
 
             <HeaderSection>
-                <EditRestaurantButton onClick={handleEditRestaurant}>
-                    Restaurant bearbeiten
-                </EditRestaurantButton>
+                {!isCustomerView && (
+                    <EditRestaurantButton onClick={handleEditRestaurant}>
+                        Restaurant bearbeiten
+                    </EditRestaurantButton>
+                )}
 
                 <RestaurantName>{restaurant.name}</RestaurantName>
                 <TagsContainer>

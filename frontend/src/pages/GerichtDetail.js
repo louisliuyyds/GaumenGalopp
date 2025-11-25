@@ -1,6 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import colors from "../theme/colors";
 
 const Container = styled.div`
@@ -50,10 +50,12 @@ const ComingSoon = styled.div`
 function GerichtDetail() {
     const { restaurantId, gerichtId } = useParams();
     const navigate = useNavigate();
+    const location = useLocation();
+    const isCustomerView = location.pathname.startsWith('/kunde');
 
     return (
         <Container>
-            <BackButton onClick={() => navigate(`/restaurants/${restaurantId}`)}>
+            <BackButton onClick={() => navigate(isCustomerView ? `/kunde/restaurants/${restaurantId}` : `/restaurants/${restaurantId}`)}>
                 ← Zurück zum Restaurant
             </BackButton>
 

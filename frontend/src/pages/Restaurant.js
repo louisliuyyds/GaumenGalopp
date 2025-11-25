@@ -1,6 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import colors from '../theme/colors';
 
 const Container = styled.div`
@@ -125,14 +125,22 @@ const mockRestaurants = [
 
 function Restaurants() {
     const navigate = useNavigate();
+    const location = useLocation();
+    const isCustomerView = location.pathname.startsWith('/kunde');
 
     const handleRestaurantClick = (id) => {
-        navigate(`/restaurants/${id}`);
+        // If user is in customer view (path includes /kunde), navigate to the customer detail route
+        if (location.pathname.startsWith('/kunde')) {
+            navigate(`/kunde/restaurants/${id}`);
+        } else {
+            navigate(`/restaurants/${id}`);
+        }
     };
 
     return (
         <Container>
             <Header>Unsere Ultra High Quality Arschgeilen Restaurants</Header>
+            {isCustomerView && <div style={{ color: colors.text.secondary, marginTop: 6, marginBottom: 12, fontWeight: 600 }}>Kundensicht</div>}
             <RestaurantGrid>
                 {mockRestaurants.map((restaurant) => (
                     <RestaurantCard
