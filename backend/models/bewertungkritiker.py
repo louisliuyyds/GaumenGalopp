@@ -1,14 +1,14 @@
 from database import Base
-from sqlalchemy import Column, Integer, SmallInteger, String, Date, ForeignKey
+from sqlalchemy import Column, Integer, SmallInteger, ForeignKey
 from sqlalchemy.orm import relationship
 
 class Bewertungkritiker(Base):
     __tablename__ = "bewertungkritiker"
 
-    bewertungkritikerid = Column("bewertungkritikerid", Integer, primary_key=True, index=True)
-    kritikerid = Column("kritikerid", Integer, ForeignKey("KRITIKER.kritikerid"))
-    gerichtid = Column("gerichtid", Integer, ForeignKey("GERICHT.gerichtID"))
-    rating = Column("rating", SmallInteger)
+    bewertungkritikerid = Column(Integer, primary_key=True, index=True)
+    kritikerid = Column(Integer, ForeignKey("kritiker.kritikerid"))
+    gerichtid = Column(Integer, ForeignKey("gericht.gerichtid"))
+    rating = Column(SmallInteger)
 
     gericht = relationship("Gericht", back_populates="bewertungkritiker")
     kritiker = relationship("Kritiker", back_populates="bewertungkritiker")

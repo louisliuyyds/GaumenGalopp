@@ -5,11 +5,10 @@ from sqlalchemy import Column, Integer, String, ForeignKey
 class Kritiker(Base):
     __tablename__ = "kritiker"
 
-    kritikerid = Column("kritikerid", Integer, primary_key=True, index=True)
+    kritikerid = Column(Integer, primary_key=True, index=True)
     kundenid = Column(Integer, ForeignKey('kunde.kundenid'), nullable=False)
-    kunde = relationship("Kunde", back_populates="kritiker") 
-    beschreibung = Column("beschreibung", String(100))
-    kritikername = Column("kritikername", String(50))
+    beschreibung = Column(String(100))
+    kritikername = Column(String(50))
 
     bewertungkritiker = relationship("Bewertungkritiker", back_populates="kritiker")
     kunde = relationship("Kunde", back_populates="kritiker")

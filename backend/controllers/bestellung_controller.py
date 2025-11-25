@@ -5,7 +5,7 @@ from database import get_db
 from schemas import bestellung_schemas as schemas
 from services.bestellung_services import BestellungService
 
-router = APIRouter(prefix="/api/bestellungen", tags=["Bestellungen"])
+router = APIRouter(prefix="/api/bestellungen", tags=["bestellungen"])
 
 @router.get("/", response_model=List[schemas.BestellungResponse])
 def get_all_bestellungen(db: Session = Depends(get_db)):

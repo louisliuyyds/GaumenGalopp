@@ -19,15 +19,15 @@ def get_all_bewertungen(db: Session = Depends(get_db)):
     return bewertungen
 
 # GET /api/bewertungen/{id} - Get specific bewertung
-@router.get("/{bewertung_id}", response_model=BewertungResponse)
-def get_bewertung(bewertung_id: int, db: Session = Depends(get_db)):
+@router.get("/{bewertungid}", response_model=BewertungResponse)
+def get_bewertung(bewertungid: int, db: Session = Depends(get_db)):
     service = BewertungService(db)
-    bewertung = service.get_by_id(bewertung_id)
+    bewertung = service.get_by_id(bewertungid)
     
     if not bewertung:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Bewertung with id {bewertung_id} not found"
+            detail=f"Bewertung with id {bewertungid} not found"
         )
     
     return bewertung
@@ -43,36 +43,36 @@ def create_bewertung(
     return new_bewertung
 
 # PUT /api/bewertungs/{id} - Update bewertung
-@router.put("/{bewertung_id}", response_model=BewertungResponse)
+@router.put("/{bewertungid}", response_model=BewertungResponse)
 def update_bewertung(
-    bewertung_id: int,
+    bewertungid: int,
     bewertung_update: BewertungUpdate,
     db: Session = Depends(get_db)
 ):
     service = BewertungService(db)
     updated_bewertung = service.update(
-        bewertung_id,
+        bewertungid,
         bewertung_update.model_dump(exclude_unset=True)
     )
     
     if not updated_bewertung:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Bewertung with id {bewertung_id} not found"
+            detail=f"Bewertung with id {bewertungid} not found"
         )
     
     return updated_bewertung
 
 # DELETE /api/bewertungs/{id} - Delete bewertung
-@router.delete("/{bewertung_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_bewertung(bewertung_id: int, db: Session = Depends(get_db)):
+@router.delete("/{bewertungid}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_bewertung(bewertungid: int, db: Session = Depends(get_db)):
     service = BewertungService(db)
-    success = service.delete(bewertung_id)
+    success = service.delete(bewertungid)
     
     if not success:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Bewertung with id {bewertung_id} not found"
+            detail=f"Bewertung with id {bewertungid} not found"
         )
     
     return None

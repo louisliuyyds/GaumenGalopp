@@ -8,7 +8,7 @@ class LabelGericht(Base):
     gerichtid = Column(Integer, ForeignKey('gericht.gerichtid'), primary_key=True)
 
     label = relationship("Label", back_populates="labelgericht")
-    gericht = relationship("Gericht", back_populates="labelgericht")
+    gericht = relationship("Gericht", back_populates="labelGericht")
 
     def to_dict(self):
         return {

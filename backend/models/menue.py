@@ -4,7 +4,7 @@ from database import Base
 
 class Menue(Base):
     __tablename__ = 'menue'
-    menueid = Column(Integer, primary_key=True, autoincrement=True)
+    menuid = Column(Integer, primary_key=True, autoincrement=True)
     name = Column(String(100))
     restaurantid = Column(Integer, ForeignKey('restaurant.restaurantid'))
 
@@ -13,7 +13,7 @@ class Menue(Base):
 
     def to_dict(self):
         return {
-            "restaurantid": self.restaurantid,
+            "menuid": self.menuid,
             "name": self.name,
             "restaurant": self.restaurant.to_dict() if self.restaurant else None
         }

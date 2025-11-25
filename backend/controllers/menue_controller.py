@@ -12,26 +12,26 @@ router = APIRouter(prefix="/api/menue", tags=["menue"])
 def get_all_menues(db: Session = Depends(get_db)):
     return MenueService(db).get_all()
 
-@router.get("/{menueid}", response_model=schemas.MenueResponse)
-def get_by_id(menueid: int, db: Session = Depends(get_db)):
-    return MenueService(db).get_by_id(menueid)
+@router.get("/{menuid}", response_model=schemas.MenueResponse)
+def get_by_id(menuid: int, db: Session = Depends(get_db)):
+    return MenueService(db).get_by_id(menuid)
 
 @router.post("/", response_model=schemas.MenueResponse, status_code=status.HTTP_201_CREATED)
 def create_menue(data: schemas.MenueCreate, db: Session = Depends(get_db)):
     return MenueService(db).create(data.model_dump())
 
-@router.put("/{menueid}", response_model=schemas.MenueResponse)
-def update_menue(menueid: int, data: schemas.MenueUpdate, db: Session = Depends(get_db)):
+@router.put("/{menuid}", response_model=schemas.MenueResponse)
+def update_menue(menuid: int, data: schemas.MenueUpdate, db: Session = Depends(get_db)):
     update_data = data.model_dump(exclude_unset=True)
 
-    menue = MenueService(db).update(menueid, update_data)
+    menue = MenueService(db).update(menuid, update_data)
     if not menue:
         raise HTTPException(status_code=404, detail="Menue nicht gefunden")
     return menue
 
-@router.delete("/{menueid}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_menue(menueid: int, db: Session = Depends(get_db)):
-    success = MenueService(db).delete(menueid)
+@router.delete("/{menuid}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_menue(menuid: int, db: Session = Depends(get_db)):
+    success = MenueService(db).delete(menuid)
     if not success:
         raise HTTPException(status_code=404, detail="Menue nicht gefunden")
     return None

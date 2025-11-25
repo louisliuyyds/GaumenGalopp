@@ -9,7 +9,7 @@ class MenueUpdate(BaseModel):
     name: Optional[str] = None
 
 class MenueResponse(BaseModel):
-    menueid: int
+    menuid: int
     restaurantid: int
     name: str
 

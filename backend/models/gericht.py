@@ -5,7 +5,7 @@ from database import Base
 class Gericht(Base):
     __tablename__ = 'gericht'
     gerichtid = Column(Integer, primary_key=True, autoincrement=True)
-    menueid = Column(Integer, ForeignKey('menue.menueid'))
+    menueid = Column(Integer, ForeignKey('menue.menuid'))
     name = Column(String(255))
     beschreibung = Column(String)
     kategorie = Column(String(50))
@@ -15,6 +15,7 @@ class Gericht(Base):
     bewertung = relationship("Bewertung", back_populates="gericht")
     preis = relationship("Preis", back_populates="gericht")
     bestellposition = relationship("Bestellposition", back_populates="gericht")
+    bewertungkritiker = relationship("Bewertungkritiker", back_populates="gericht")
 
     def to_dict(self):
         return {
