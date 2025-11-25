@@ -16,20 +16,18 @@ class Bestellposition(Base):
 
 
     bestellungid = Column(Integer, ForeignKey('bestellungen.bestellungid'), nullable=False)
-    bestellungen = relationship("Bestellung", back_populates="bestellposition")
+    bestellungen = relationship("Bestellungen", back_populates="bestellposition")
 
 
-    gerichtid: int = Column(Integer, ForeignKey('menue.menueid'), nullable=False)
-    gericht = relationship("Menue", back_populates="bestellposition")
+    gerichtid = Column(Integer, ForeignKey('gericht.gerichtid'), nullable=False)
+    gericht = relationship("Gericht", back_populates="bestellposition")
 
-
-    preisid = Column(Integer, ForeignKey('preise.preiseid'), nullable=False)
+    preisid = Column(Integer, ForeignKey('preis.preisid'), nullable=False)
     preis = relationship("Preis", back_populates="bestellposition")
-
     def to_dict(self):
         """Wandelt das Objekt in ein Dictionary um."""
         return {
-            "id": self.id,
+            "id": self.positionid,
             "menge": self.menge,
             "aenderungswunsch": self.aenderungswunsch,
             "bestellung_id": self.bestellungid,

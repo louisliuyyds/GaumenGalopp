@@ -4,9 +4,9 @@ from database import Base
 
 class RestaurantOeffnungszeit(Base):
     __tablename__ = 'restaurant_oeffnungszeit'
-    
-    restaurantID = Column(Integer, ForeignKey('restaurant.restaurantID'), primary_key=True)
-    oeffnungszeitID = Column(Integer, ForeignKey('oeffnungszeit_vorlage.oeffnungszeitID'), primary_key=True)
+
+    restaurantID = Column(Integer, ForeignKey('restaurant.restaurantid'), primary_key=True)
+    oeffnungszeitID = Column(Integer, ForeignKey('oeffnungszeit_vorlage.oeffnungszeitid'), primary_key=True)
     gueltig_von = Column(Date, primary_key=True)
     gueltig_bis = Column(Date)
     ist_aktiv = Column(Boolean, default=True)

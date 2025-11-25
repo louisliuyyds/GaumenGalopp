@@ -14,7 +14,7 @@ class Adresse(Base):
 
     kunden = relationship("Kunde", back_populates="adresse")
     restaurant = relationship("Restaurant", back_populates="adresse")
-    bestellungen = relationship("Bestellung", back_populates="adresse")
+    bestellungen = relationship("Bestellungen", back_populates="adresse")
 
     def to_dict(self):
         return {
