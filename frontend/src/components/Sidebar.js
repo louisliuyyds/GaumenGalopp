@@ -156,7 +156,7 @@ function Sidebar() {
             </ToggleContainer>
 
             <ViewLabel>
-                {isAdminView ? '🔧 Verwaltungsansicht' : '👥 Kundenansicht'}
+                {isAdminView ? ' Verwaltungsansicht' : ' Kundenansicht'}
             </ViewLabel>
 
             <NavList>

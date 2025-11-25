@@ -8,8 +8,8 @@ import NeuesRestaurant from "./pages/NeuesRestaurant";
 import RestaurantDetail from "./pages/RestaurantDetail";
 import GerichtDetail from "./pages/GerichtDetail";
 import EditRestaurantInfos from "./pages/EditRestaurantInfos";
-import colors from './theme/colors';
 import Restaurants from "./pages/Restaurant";
+import colors from './theme/colors';
 
 const AppContainer = styled.div`
     display: flex;
@@ -32,13 +32,21 @@ function App() {
                 <Sidebar />
                 <ContentArea>
                     <Routes>
-                        <Route path="/" element={<Restaurants />} />
+                        {/* Verwaltungsansicht Routen */}
+                        <Route path="/" element={<Home />} />
                         <Route path="/beispiel" element={<Beispiel />} />
                         <Route path="/neuesRestaurant" element={<NeuesRestaurant />} />
                         <Route path="/restaurants" element={<Restaurants />} />
-                        <Route path="/restaurants/:restaurantId/gericht/:gerichtId" element={<GerichtDetail />} />
-                        <Route path="/restaurants/:id/edit" element={<EditRestaurantInfos />} />
                         <Route path="/restaurants/:id" element={<RestaurantDetail />} />
+                        <Route path="/restaurants/:id/edit" element={<EditRestaurantInfos />} />
+                        <Route path="/restaurants/:restaurantId/gericht/:gerichtId" element={<GerichtDetail />} />
+                        
+                        {/* Kundenansicht Routen (Platzhalter für zukünftige Entwicklung) */}
+                        <Route path="/kunde" element={<Home />} />
+                        <Route path="/kunde/restaurants" element={<Restaurants />} />
+                        <Route path="/kunde/bestellungen" element={<Home />} />
+                        <Route path="/kunde/favoriten" element={<Home />} />
+                        <Route path="/kunde/profil" element={<Home />} />
                     </Routes>
                 </ContentArea>
             </AppContainer>
