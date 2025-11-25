@@ -24,21 +24,21 @@ def get_all_restaurant_oeffnungszeit(db: Session = Depends(get_db)):
     return items
 
 # GET /api/restaurant-oeffnungszeit/restaurant/{restaurant_id} - Get all for restaurant
-@router.get("/restaurant/{restaurant_id}", response_model=List[RestaurantOeffnungszeitResponse])
+@router.get("/restaurant/{restaurantid}", response_model=List[RestaurantOeffnungszeitResponse])
 def get_for_restaurant(restaurant_id: int, db: Session = Depends(get_db)):
     service = RestaurantOeffnungszeitService(db)
     items = service.get_by_restaurant_id(restaurant_id)
     return items
 
 # GET /api/restaurant-oeffnungszeit/restaurant/{restaurant_id}/active - Get active for restaurant
-@router.get("/restaurant/{restaurant_id}/active", response_model=List[RestaurantOeffnungszeitResponse])
+@router.get("/restaurant/{restaurantid}/active", response_model=List[RestaurantOeffnungszeitResponse])
 def get_active_for_restaurant(restaurant_id: int, db: Session = Depends(get_db)):
     service = RestaurantOeffnungszeitService(db)
     items = service.get_active_by_restaurant_id(restaurant_id)
     return items
 
 # GET /api/restaurant-oeffnungszeit/restaurant/{restaurant_id}/current - Get current for restaurant
-@router.get("/restaurant/{restaurant_id}/current", response_model=RestaurantOeffnungszeitResponse)
+@router.get("/restaurant/{restaurantid}/current", response_model=RestaurantOeffnungszeitResponse)
 def get_current_for_restaurant(restaurant_id: int, db: Session = Depends(get_db)):
     service = RestaurantOeffnungszeitService(db)
     item = service.get_current_for_restaurant(restaurant_id)
@@ -62,7 +62,7 @@ def create_restaurant_oeffnungszeit(
     return new_item
 
 # PUT /api/restaurant-oeffnungszeit/{restaurant_id}/{oeffnungszeit_id}/{gueltig_von} - Update
-@router.put("/{restaurant_id}/{oeffnungszeit_id}/{gueltig_von}", response_model=RestaurantOeffnungszeitResponse)
+@router.put("/{restaurantid}/{oeffnungszeitid}/{gueltig_von}", response_model=RestaurantOeffnungszeitResponse)
 def update_restaurant_oeffnungszeit(
     restaurant_id: int,
     oeffnungszeit_id: int,
@@ -87,7 +87,7 @@ def update_restaurant_oeffnungszeit(
     return updated_item
 
 # DELETE /api/restaurant-oeffnungszeit/{restaurant_id}/{oeffnungszeit_id}/{gueltig_von} - Delete
-@router.delete("/{restaurant_id}/{oeffnungszeit_id}/{gueltig_von}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/{restaurantid}/{oeffnungszeitid}/{gueltig_von}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_restaurant_oeffnungszeit(
     restaurant_id: int, 
     oeffnungszeit_id: int, 

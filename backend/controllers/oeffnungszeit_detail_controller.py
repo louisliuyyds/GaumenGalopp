@@ -19,15 +19,15 @@ def get_all_oeffnungszeit_details(db: Session = Depends(get_db)):
     return details
 
 # GET /api/oeffnungszeit-details/{id} - Get specific oeffnungszeit_detail
-@router.get("/{detail_id}", response_model=OeffnungszeitDetailResponse)
-def get_oeffnungszeit_detail(detail_id: int, db: Session = Depends(get_db)):
+@router.get("/{detailid}", response_model=OeffnungszeitDetailResponse)
+def get_oeffnungszeit_detail(detailid: int, db: Session = Depends(get_db)):
     service = OeffnungszeitDetailService(db)
-    detail = service.get_by_id(detail_id)
+    detail = service.get_by_id(detailid)
     
     if not detail:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"OeffnungszeitDetail with id {detail_id} not found"
+            detail=f"OeffnungszeitDetail with id {detailid} not found"
         )
     
     return detail
@@ -43,36 +43,36 @@ def create_oeffnungszeit_detail(
     return new_detail
 
 # PUT /api/oeffnungszeit-details/{id} - Update oeffnungszeit_detail
-@router.put("/{detail_id}", response_model=OeffnungszeitDetailResponse)
+@router.put("/{detailid}", response_model=OeffnungszeitDetailResponse)
 def update_oeffnungszeit_detail(
-    detail_id: int,
-    detail_update: OeffnungszeitDetailUpdate,
+    detailid: int,
+    detailupdate: OeffnungszeitDetailUpdate,
     db: Session = Depends(get_db)
 ):
     service = OeffnungszeitDetailService(db)
     updated_detail = service.update(
-        detail_id,
-        detail_update.model_dump(exclude_unset=True)
+        detailid,
+        detailupdate.model_dump(exclude_unset=True)
     )
     
     if not updated_detail:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"OeffnungszeitDetail with id {detail_id} not found"
+            detail=f"OeffnungszeitDetail with id {detailid} not found"
         )
     
     return updated_detail
 
 # DELETE /api/oeffnungszeit-details/{id} - Delete oeffnungszeit_detail
-@router.delete("/{detail_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_oeffnungszeit_detail(detail_id: int, db: Session = Depends(get_db)):
+@router.delete("/{detailid}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_oeffnungszeit_detail(detailid: int, db: Session = Depends(get_db)):
     service = OeffnungszeitDetailService(db)
-    success = service.delete(detail_id)
+    success = service.delete(detailid)
     
     if not success:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"OeffnungszeitDetail with id {detail_id} not found"
+            detail=f"OeffnungszeitDetail with id {detailid} not found"
         )
     
     return None

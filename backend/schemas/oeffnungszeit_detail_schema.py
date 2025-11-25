@@ -4,7 +4,7 @@ from datetime import time
 
 # What data comes IN when creating an oeffnungszeit_detail
 class OeffnungszeitDetailCreate(BaseModel):
-    oeffnungszeitID: int
+    oeffnungszeitid: int
     wochentag: int
     oeffnungszeit: Optional[time] = None
     schliessungszeit: Optional[time] = None
@@ -13,7 +13,7 @@ class OeffnungszeitDetailCreate(BaseModel):
 
 # What data comes IN when updating
 class OeffnungszeitDetailUpdate(BaseModel):
-    oeffnungszeitID: Optional[int] = None
+    oeffnungszeitid: Optional[int] = None
     wochentag: Optional[int] = None
     oeffnungszeit: Optional[time] = None
     schliessungszeit: Optional[time] = None
@@ -22,8 +22,8 @@ class OeffnungszeitDetailUpdate(BaseModel):
 
 # What data goes OUT to the frontend
 class OeffnungszeitDetailResponse(BaseModel):
-    detailID: int
-    oeffnungszeitID: int
+    detailid: int
+    oeffnungszeitid: int
     wochentag: int
     oeffnungszeit: Optional[time]
     schliessungszeit: Optional[time]

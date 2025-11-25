@@ -1,18 +1,20 @@
 from sqlalchemy.orm import Session
+
+from models import OeffnungszeitVorlage
 from models.oeffnungszeit_vorlage import OeffnungszeitVorlage
-from typing import List, Optional
+from typing import List, Optional, Any
 
 
 class OeffnungszeitVorlageService:
     def __init__(self, db: Session):
         self.db = db
     
-    def get_all(self) -> List[OeffnungszeitVorlage]:
+    def get_all(self) -> list[type[OeffnungszeitVorlage]]:
         return self.db.query(OeffnungszeitVorlage).all()
     
     def get_by_id(self, oeffnungszeit_id: int) -> Optional[OeffnungszeitVorlage]:
         return self.db.query(OeffnungszeitVorlage).filter(
-            OeffnungszeitVorlage.oeffnungszeitID == oeffnungszeit_id
+            OeffnungszeitVorlage.oeffnungszeitid == oeffnungszeit_id
         ).first()
     
     def get_by_bezeichnung(self, bezeichnung: str) -> Optional[OeffnungszeitVorlage]:
@@ -20,7 +22,7 @@ class OeffnungszeitVorlageService:
             OeffnungszeitVorlage.bezeichnung == bezeichnung
         ).first()
     
-    def search_by_bezeichnung(self, bezeichnung: str) -> List[OeffnungszeitVorlage]:
+    def search_by_bezeichnung(self, bezeichnung: str) -> list[type[OeffnungszeitVorlage]]:
         return self.db.query(OeffnungszeitVorlage).filter(
             OeffnungszeitVorlage.bezeichnung.ilike(f"%{bezeichnung}%")
         ).all()
@@ -56,5 +58,5 @@ class OeffnungszeitVorlageService:
     def get_with_details(self, oeffnungszeit_id: int) -> Optional[OeffnungszeitVorlage]:
         """Get opening hours template with all details"""
         return self.db.query(OeffnungszeitVorlage).filter(
-            OeffnungszeitVorlage.oeffnungszeitID == oeffnungszeit_id
+            OeffnungszeitVorlage.oeffnungszeitid == oeffnungszeit_id
         ).first()

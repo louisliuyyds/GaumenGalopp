@@ -5,7 +5,7 @@ from typing import Optional
 class RestaurantCreate(BaseModel):
     name: str
     klassifizierung: Optional[str] = None
-    adresseID: int
+    adresseid: int
     telefon: Optional[str] = None
     kuechenchef: Optional[str] = None
 
@@ -14,17 +14,17 @@ class RestaurantCreate(BaseModel):
 class RestaurantUpdate(BaseModel):
     name: Optional[str] = None
     klassifizierung: Optional[str] = None
-    adresseID: Optional[int] = None
+    adresseid: Optional[int] = None
     telefon: Optional[str] = None
     kuechenchef: Optional[str] = None
 
 
 # What data goes OUT to the frontend
 class RestaurantResponse(BaseModel):
-    restaurantID: int
+    restaurantid: int
     name: str
     klassifizierung: Optional[str]
-    adresseID: int
+    adresseid: int
     telefon: Optional[str]
     kuechenchef: Optional[str]
     

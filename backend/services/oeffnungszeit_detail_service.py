@@ -1,6 +1,7 @@
 from sqlalchemy.orm import Session
 from models.oeffnungszeit_detail import OeffnungszeitDetail
-from typing import List, Optional
+from typing import List, Optional, Any
+
 
 class OeffnungszeitDetailService:
     def __init__(self, db: Session):
@@ -11,26 +12,26 @@ class OeffnungszeitDetailService:
     
     def get_by_id(self, detail_id: int) -> Optional[OeffnungszeitDetail]:
         return self.db.query(OeffnungszeitDetail).filter(
-            OeffnungszeitDetail.detailID == detail_id
+            OeffnungszeitDetail.detailid == detail_id
         ).first()
     
-    def get_by_vorlage_id(self, oeffnungszeit_id: int) -> List[OeffnungszeitDetail]:
+    def get_by_vorlage_id(self, oeffnungszeit_id: int) -> list[type[OeffnungszeitDetail]]:
         """Get all details for an opening hours template"""
         return self.db.query(OeffnungszeitDetail).filter(
-            OeffnungszeitDetail.oeffnungszeitID == oeffnungszeit_id
+            OeffnungszeitDetail.oeffnungszeitid == oeffnungszeit_id
         ).all()
     
     def get_by_wochentag(self, oeffnungszeit_id: int, wochentag: int) -> Optional[OeffnungszeitDetail]:
         """Get detail for a specific day of week"""
         return self.db.query(OeffnungszeitDetail).filter(
-            OeffnungszeitDetail.oeffnungszeitID == oeffnungszeit_id,
+            OeffnungszeitDetail.oeffnungszeitid == oeffnungszeit_id,
             OeffnungszeitDetail.wochentag == wochentag
         ).first()
     
-    def get_open_days(self, oeffnungszeit_id: int) -> List[OeffnungszeitDetail]:
+    def get_open_days(self, oeffnungszeit_id: int) -> list[type[OeffnungszeitDetail]]:
         """Get all days that are open"""
         return self.db.query(OeffnungszeitDetail).filter(
-            OeffnungszeitDetail.oeffnungszeitID == oeffnungszeit_id,
+            OeffnungszeitDetail.oeffnungszeitid == oeffnungszeit_id,
             OeffnungszeitDetail.ist_geschlossen == False
         ).all()
     
