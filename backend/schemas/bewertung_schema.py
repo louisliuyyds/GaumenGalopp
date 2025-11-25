@@ -17,8 +17,8 @@ class BewertungUpdate(BaseModel):
 
 # What data goes OUT to the frontend
 class BewertungResponse(BaseModel):
-    id: int
-    kundeid: int
+    bewertungid: int
+    kundenid: int
     gerichtid: int
     rating: int
     kommentar: str

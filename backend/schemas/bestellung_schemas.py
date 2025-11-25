@@ -4,11 +4,13 @@ from datetime import datetime
 
 #(POST)
 class BestellungCreate(BaseModel):
+    bestellungid: int
     kundenid: int
     restaurantid: int
     adressid: int
     lieferantid: Optional[int] = None
     status: Optional[str] = "Eingegangen"
+    bestellzeit: datetime
 
 #(PUT/PATCH)
 
@@ -18,7 +20,7 @@ class BestellungUpdate(BaseModel):
 
 #(GET)
 class BestellungResponse(BaseModel):
-    id: int
+    bestellungid: int
     kundenid: int
     restaurantid: int
     adressid: int

@@ -8,7 +8,7 @@ from services.bestellung_services import BestellungService
 router = APIRouter(prefix="/api/bestellungen", tags=["bestellungen"])
 
 @router.get("/", response_model=List[schemas.BestellungResponse])
-def get_all_bestellungen(db: Session = Depends(get_db)):
+def get_all_bestellung(db: Session = Depends(get_db)):
     return BestellungService(db).get_all()
 
 

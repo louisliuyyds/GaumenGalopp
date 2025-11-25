@@ -5,7 +5,7 @@ from database import Base
 class Gericht(Base):
     __tablename__ = 'gericht'
     gerichtid = Column(Integer, primary_key=True, autoincrement=True)
-    menueid = Column(Integer, ForeignKey('menue.menuid'))
+    menuid = Column(Integer, ForeignKey('menue.menuid'))
     name = Column(String(255))
     beschreibung = Column(String)
     kategorie = Column(String(50))

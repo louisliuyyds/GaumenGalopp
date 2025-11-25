@@ -51,3 +51,8 @@ def get_restaurants_by_kochstil(stil_id: int, db: Session = Depends(get_db)):
     service = KochstilRestaurantService(db)
     restaurants = service.get_restaurants_by_kochstil(stil_id)
     return restaurants
+
+@router.get("/", response_model=List[KochstilRestaurantResponse])
+def get_all_links(db: Session = Depends(get_db)):
+    service = KochstilRestaurantService(db)
+    return service.get_all()

@@ -2,7 +2,7 @@ from pydantic import BaseModel
 from typing import Optional
 
 class GerichtCreate(BaseModel):
-    menueid: int
+    menuid: int
     name: str
     beschreibung: str
     kategorie: str
@@ -14,7 +14,7 @@ class GerichtUpdate(BaseModel):
 
 class GerichtResponse(BaseModel):
     gerichtid: int
-    menueid: int
+    menuid: int
     name: str
     beschreibung: str
     kategorie: str

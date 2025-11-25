@@ -53,3 +53,6 @@ class KochstilRestaurantService:
         return self.db.query(KochstilRestaurant) \
             .filter(KochstilRestaurant.stilid == stil_id) \
             .all()
+    def get_all(self) -> List[KochstilRestaurant]:
+        """Hole alle Verknüpfungen (für die Übersicht)"""
+        return self.db.query(KochstilRestaurant).all()

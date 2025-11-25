@@ -8,7 +8,7 @@ class Bewertungkritiker(Base):
     bewertungkritikerid = Column(Integer, primary_key=True, index=True)
     kritikerid = Column(Integer, ForeignKey("kritiker.kritikerid"))
     gerichtid = Column(Integer, ForeignKey("gericht.gerichtid"))
-    rating = Column(SmallInteger)
+    rating = Column("raiting", Integer)
 
     gericht = relationship("Gericht", back_populates="bewertungkritiker")
     kritiker = relationship("Kritiker", back_populates="bewertungkritiker")

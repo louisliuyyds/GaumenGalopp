@@ -9,9 +9,14 @@ class BewertungkritikerCreate(BaseModel):
 class BewertungkritikerUpdate(BaseModel):
     rating: Optional[int] = None
 
-# What data goes OUT to the frontend
 class BewertungkritikerResponse(BaseModel):
+    # --- NEU HINZUGEFÜGT ---
+    bewertungkritikerid: int
+    kritikerid: int
+    gerichtid: int
+
+
     rating: int
-    
+
     class Config:
         from_attributes = True  # Allows conversion from ORM model
