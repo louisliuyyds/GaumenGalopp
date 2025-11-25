@@ -4,50 +4,50 @@ import apiClient from '../api/apiClient';
 const labelService = {
   /**
    * Alle Labels abrufen
-   * GET /label
+   * GET /api/label
    */
   getAll: async () => {
-    return await apiClient.get('/label');
+    return await apiClient.get('/api/label');
   },
 
   /**
    * Ein Label nach ID abrufen
-   * GET /label/{id}
+   * GET /api/label/{id}
    */
   getById: async (labelId) => {
-    return await apiClient.get(`/label/${labelId}`);
+    return await apiClient.get(`/api/label/${labelId}`);
   },
 
   /**
    * Labels nach Gericht-ID abrufen
-   * GET /label/byGerichtId/{gerichtid}
+   * GET /api/label/byGerichtId/{gerichtid}
    */
   getByGerichtId: async (gerichtId) => {
-    return await apiClient.get(`/label/byGerichtId/${gerichtId}`);
+    return await apiClient.get(`/api/label/byGerichtId/${gerichtId}`);
   },
 
   /**
    * Neues Label erstellen
-   * POST /label
+   * POST /api/label
    */
   create: async (labelData) => {
-    return await apiClient.post('/label', labelData);
+    return await apiClient.post('/api/label', labelData);
   },
 
   /**
    * Label aktualisieren
-   * PUT /label/{id}
+   * PUT /api/label/{id}
    */
   update: async (labelId, labelData) => {
-    return await apiClient.put(`/label/${labelId}`, labelData);
+    return await apiClient.put(`/api/label/${labelId}`, labelData);
   },
 
   /**
    * Label löschen
-   * DELETE /label/{id}
+   * DELETE /api/label/{id}
    */
   delete: async (labelId) => {
-    return await apiClient.delete(`/label/${labelId}`);
+    return await apiClient.delete(`/api/label/${labelId}`);
   },
 };
 

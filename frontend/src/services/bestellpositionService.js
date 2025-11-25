@@ -4,26 +4,26 @@ import apiClient from '../api/apiClient';
 const bestellpositionService = {
   /**
    * Neue Bestellposition hinzufügen
-   * POST /bestellpositionen
+   * POST /api/bestellpositionen
    */
   create: async (positionData) => {
-    return await apiClient.post('/bestellpositionen', positionData);
+    return await apiClient.post('/api/bestellpositionen', positionData);
   },
 
   /**
    * Alle Positionen einer Bestellung abrufen
-   * GET /bestellpositionen/bestellung/{bestellungid}
+   * GET /api/bestellpositionen/bestellung/{bestellungid}
    */
   getByBestellung: async (bestellungId) => {
-    return await apiClient.get(`/bestellpositionen/bestellung/${bestellungId}`);
+    return await apiClient.get(`/api/bestellpositionen/bestellung/${bestellungId}`);
   },
 
   /**
    * Bestellposition löschen
-   * DELETE /bestellpositionen/{id}
+   * DELETE /api/bestellpositionen/{id}
    */
   delete: async (positionId) => {
-    return await apiClient.delete(`/bestellpositionen/${positionId}`);
+    return await apiClient.delete(`/api/bestellpositionen/${positionId}`);
   },
 };
 

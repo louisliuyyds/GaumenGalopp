@@ -7,7 +7,7 @@ const labelGerichtService = {
    * GET /labelGericht/byLabelId/{labelid}
    */
   getByLabelId: async (labelId) => {
-    return await apiClient.get(`/labelGericht/byLabelId/${labelId}`);
+    return await apiClient.get(`/api/labelGericht/byLabelId/${labelId}`);
   },
 
   /**
@@ -15,7 +15,7 @@ const labelGerichtService = {
    * GET /labelGericht/byGerichtId/{gerichtid}
    */
   getByGerichtId: async (gerichtId) => {
-    return await apiClient.get(`/labelGericht/byGerichtId/${gerichtId}`);
+    return await apiClient.get(`/api/labelGericht/byGerichtId/${gerichtId}`);
   },
 
   /**
@@ -23,7 +23,7 @@ const labelGerichtService = {
    * POST /labelGericht
    */
   create: async (labelGerichtData) => {
-    return await apiClient.post('/labelGericht', labelGerichtData);
+    return await apiClient.post('/api/labelGericht', labelGerichtData);
   },
 
   /**
@@ -31,7 +31,7 @@ const labelGerichtService = {
    * DELETE /labelGericht/{gerichtid}/{labelid}
    */
   delete: async (gerichtId, labelId) => {
-    return await apiClient.delete(`/labelGericht/${gerichtId}/${labelId}`);
+    return await apiClient.delete(`/api/labelGericht/${gerichtId}/${labelId}`);
   },
 };
 

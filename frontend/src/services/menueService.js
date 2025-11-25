@@ -4,42 +4,42 @@ import apiClient from '../api/apiClient';
 const menueService = {
   /**
    * Alle Menüs abrufen
-   * GET /menue
+   * GET /api/menue
    */
   getAll: async () => {
-    return await apiClient.get('/menue');
+    return await apiClient.get('/api/menue');
   },
 
   /**
    * Ein Menü nach ID abrufen
-   * GET /menue/{id}
+   * GET /api/menue/{id}
    */
   getById: async (menueId) => {
-    return await apiClient.get(`/menue/${menueId}`);
+    return await apiClient.get(`/api/menue/${menueId}`);
   },
 
   /**
    * Neues Menü erstellen
-   * POST /menue
+   * POST /api/menue
    */
   create: async (menueData) => {
-    return await apiClient.post('/menue', menueData);
+    return await apiClient.post('/api/menue', menueData);
   },
 
   /**
    * Menü aktualisieren
-   * PUT /menue/{id}
+   * PUT /api/menue/{id}
    */
   update: async (menueId, menueData) => {
-    return await apiClient.put(`/menue/${menueId}`, menueData);
+    return await apiClient.put(`/api/menue/${menueId}`, menueData);
   },
 
   /**
    * Menü löschen
-   * DELETE /menue/{id}
+   * DELETE /api/menue/{id}
    */
   delete: async (menueId) => {
-    return await apiClient.delete(`/menue/${menueId}`);
+    return await apiClient.delete(`/api/menue/${menueId}`);
   },
 };
 

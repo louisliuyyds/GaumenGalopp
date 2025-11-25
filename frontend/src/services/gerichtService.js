@@ -7,7 +7,7 @@ const gerichtService = {
    * GET /gericht
    */
   getAll: async () => {
-    return await apiClient.get('/gericht');
+    return await apiClient.get('/api/gericht');
   },
 
   /**
@@ -15,7 +15,7 @@ const gerichtService = {
    * GET /gericht/{id}
    */
   getById: async (gerichtId) => {
-    return await apiClient.get(`/gericht/${gerichtId}`);
+    return await apiClient.get(`/api/gericht/${gerichtId}`);
   },
 
   /**
@@ -23,7 +23,7 @@ const gerichtService = {
    * GET /gericht/byLabelId/{labelid}
    */
   getByLabelId: async (labelId) => {
-    return await apiClient.get(`/gericht/byLabelId/${labelId}`);
+    return await apiClient.get(`/api/gericht/byLabelId/${labelId}`);
   },
 
   /**
@@ -31,7 +31,7 @@ const gerichtService = {
    * POST /gericht
    */
   create: async (gerichtData) => {
-    return await apiClient.post('/gericht', gerichtData);
+    return await apiClient.post('/api/gericht', gerichtData);
   },
 
   /**
@@ -39,7 +39,7 @@ const gerichtService = {
    * PUT /gericht/{id}
    */
   update: async (gerichtId, gerichtData) => {
-    return await apiClient.put(`/gericht/${gerichtId}`, gerichtData);
+    return await apiClient.put(`/api/gericht/${gerichtId}`, gerichtData);
   },
 
   /**
@@ -47,8 +47,9 @@ const gerichtService = {
    * DELETE /gericht/{id}
    */
   delete: async (gerichtId) => {
-    return await apiClient.delete(`/gericht/${gerichtId}`);
+    return await apiClient.delete(`/api/gericht/${gerichtId}`);
   },
 };
 
 export default gerichtService;
+

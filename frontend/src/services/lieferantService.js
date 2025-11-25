@@ -4,34 +4,34 @@ import apiClient from '../api/apiClient';
 const lieferantService = {
   /**
    * Alle Lieferanten abrufen
-   * GET /lieferanten
+   * GET /api/lieferanten
    */
   getAll: async () => {
-    return await apiClient.get('/lieferanten');
+    return await apiClient.get('/api/lieferanten');
   },
 
   /**
    * Neuen Lieferanten erstellen
-   * POST /lieferanten
+   * POST /api/lieferanten
    */
   create: async (lieferantData) => {
-    return await apiClient.post('/lieferanten', lieferantData);
+    return await apiClient.post('/api/lieferanten', lieferantData);
   },
 
   /**
    * Lieferant aktualisieren
-   * PUT /lieferanten/{id}
+   * PUT /api/lieferanten/{id}
    */
   update: async (lieferantId, lieferantData) => {
-    return await apiClient.put(`/lieferanten/${lieferantId}`, lieferantData);
+    return await apiClient.put(`/api/lieferanten/${lieferantId}`, lieferantData);
   },
 
   /**
    * Lieferant löschen
-   * DELETE /lieferanten/{id}
+   * DELETE /api/lieferanten/{id}
    */
   delete: async (lieferantId) => {
-    return await apiClient.delete(`/lieferanten/${lieferantId}`);
+    return await apiClient.delete(`/api/lieferanten/${lieferantId}`);
   },
 };
 

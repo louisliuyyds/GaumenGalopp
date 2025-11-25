@@ -4,42 +4,42 @@ import apiClient from '../api/apiClient';
 const bestellungService = {
   /**
    * Alle Bestellungen abrufen
-   * GET /bestellungen
+   * GET /api/bestellungen
    */
   getAll: async () => {
-    return await apiClient.get('/bestellungen');
+    return await apiClient.get('/api/bestellungen');
   },
 
   /**
    * Eine Bestellung nach ID abrufen
-   * GET /bestellungen/{id}
+   * GET /api/bestellungen/{id}
    */
   getById: async (bestellungId) => {
-    return await apiClient.get(`/bestellungen/${bestellungId}`);
+    return await apiClient.get(`/api/bestellungen/${bestellungId}`);
   },
 
   /**
    * Gesamtpreis einer Bestellung abrufen
-   * GET /bestellungen/{id}/total
+   * GET /api/bestellungen/{id}/total
    */
   getTotal: async (bestellungId) => {
-    return await apiClient.get(`/bestellungen/${bestellungId}/total`);
+    return await apiClient.get(`/api/bestellungen/${bestellungId}/total`);
   },
 
   /**
    * Neue Bestellung erstellen
-   * POST /bestellungen
+   * POST /api/bestellungen
    */
   create: async (bestellungData) => {
-    return await apiClient.post('/bestellungen', bestellungData);
+    return await apiClient.post('/api/bestellungen', bestellungData);
   },
 
   /**
    * Bestellung aktualisieren
-   * PUT /bestellungen/{id}
+   * PUT /api/bestellungen/{id}
    */
   update: async (bestellungId, bestellungData) => {
-    return await apiClient.put(`/bestellungen/${bestellungId}`, bestellungData);
+    return await apiClient.put(`/api/bestellungen/${bestellungId}`, bestellungData);
   },
 };
 

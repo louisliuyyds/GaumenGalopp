@@ -4,42 +4,42 @@ import apiClient from '../api/apiClient';
 const preisService = {
   /**
    * Alle Preise abrufen
-   * GET /preis
+   * GET /api/preis
    */
   getAll: async () => {
-    return await apiClient.get('/preis');
+    return await apiClient.get('/api/preis');
   },
 
   /**
    * Einen Preis nach ID abrufen
-   * GET /preis/{id}
+   * GET /api/preis/{id}
    */
   getById: async (preisId) => {
-    return await apiClient.get(`/preis/${preisId}`);
+    return await apiClient.get(`/api/preis/${preisId}`);
   },
 
   /**
    * Neuen Preis erstellen
-   * POST /preis
+   * POST /api/preis
    */
   create: async (preisData) => {
-    return await apiClient.post('/preis', preisData);
+    return await apiClient.post('/api/preis', preisData);
   },
 
   /**
    * Preis aktualisieren
-   * PUT /preis/{id}
+   * PUT /api/preis/{id}
    */
   update: async (preisId, preisData) => {
-    return await apiClient.put(`/preis/${preisId}`, preisData);
+    return await apiClient.put(`/api/preis/${preisId}`, preisData);
   },
 
   /**
    * Preis löschen
-   * DELETE /preis/{id}
+   * DELETE /api/preis/{id}
    */
   delete: async (preisId) => {
-    return await apiClient.delete(`/preis/${preisId}`);
+    return await apiClient.delete(`/api/preis/${preisId}`);
   },
 };
 
