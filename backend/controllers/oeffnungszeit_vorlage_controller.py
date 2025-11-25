@@ -18,7 +18,7 @@ def get_all_oeffnungszeit_vorlagen(db: Session = Depends(get_db)):
     return vorlagen
 
 # GET /api/oeffnungszeit-vorlagen/{id} - Get specific oeffnungszeit_vorlage
-@router.get("/{oeffnungszeit_id}", response_model=OeffnungszeitVorlageResponse)
+@router.get("/{oeffnungszeitid}", response_model=OeffnungszeitVorlageResponse)
 def get_oeffnungszeit_vorlage(oeffnungszeit_id: int, db: Session = Depends(get_db)):
     service = OeffnungszeitVorlageService(db)
     vorlage = service.get_by_id(oeffnungszeit_id)
@@ -42,7 +42,7 @@ def create_oeffnungszeit_vorlage(
     return new_vorlage
 
 # PUT /api/oeffnungszeit-vorlagen/{id} - Update oeffnungszeit_vorlage
-@router.put("/{oeffnungszeit_id}", response_model=OeffnungszeitVorlageResponse)
+@router.put("/{oeffnungszeitid}", response_model=OeffnungszeitVorlageResponse)
 def update_oeffnungszeit_vorlage(
     oeffnungszeit_id: int,
     vorlage_update: OeffnungszeitVorlageUpdate,
@@ -63,7 +63,7 @@ def update_oeffnungszeit_vorlage(
     return updated_vorlage
 
 # DELETE /api/oeffnungszeit-vorlagen/{id} - Delete oeffnungszeit_vorlage
-@router.delete("/{oeffnungszeit_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/{oeffnungszeitid}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_oeffnungszeit_vorlage(oeffnungszeit_id: int, db: Session = Depends(get_db)):
     service = OeffnungszeitVorlageService(db)
     success = service.delete(oeffnungszeit_id)

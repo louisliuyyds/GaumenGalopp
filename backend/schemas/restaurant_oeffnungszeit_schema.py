@@ -4,8 +4,8 @@ from datetime import date
 
 # What data comes IN when creating a restaurant_oeffnungszeit
 class RestaurantOeffnungszeitCreate(BaseModel):
-    restaurantID: int
-    oeffnungszeitID: int
+    restaurantid: int
+    oeffnungszeitid: int
     gueltig_von: date
     gueltig_bis: Optional[date] = None
     ist_aktiv: Optional[bool] = True
@@ -19,8 +19,8 @@ class RestaurantOeffnungszeitUpdate(BaseModel):
 
 # What data goes OUT to the frontend
 class RestaurantOeffnungszeitResponse(BaseModel):
-    restaurantID: int
-    oeffnungszeitID: int
+    restaurantid: int
+    oeffnungszeitid: int
     gueltig_von: date
     gueltig_bis: Optional[date]
     ist_aktiv: bool

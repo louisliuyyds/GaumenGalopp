@@ -15,7 +15,7 @@ class OeffnungszeitVorlageUpdate(BaseModel):
 
 # What data goes OUT to the frontend
 class OeffnungszeitVorlageResponse(BaseModel):
-    oeffnungszeitID: int
+    oeffnungszeitid: int
     bezeichnung: str
     beschreibung: Optional[str]
     

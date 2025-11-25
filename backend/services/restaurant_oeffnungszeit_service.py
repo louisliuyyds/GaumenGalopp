@@ -1,6 +1,8 @@
 from sqlalchemy.orm import Session
+
+from models import RestaurantOeffnungszeit
 from models.restaurant_oeffnungszeit import RestaurantOeffnungszeit
-from typing import List, Optional
+from typing import List, Optional, Any
 from datetime import date
 
 
@@ -8,26 +10,26 @@ class RestaurantOeffnungszeitService:
     def __init__(self, db: Session):
         self.db = db
 
-    def get_all(self) -> List[RestaurantOeffnungszeit]:
+    def get_all(self) -> list[type[RestaurantOeffnungszeit]]:
         return self.db.query(RestaurantOeffnungszeit).all()
 
     def get_by_ids(self, restaurant_id: int, oeffnungszeit_id: int, gueltig_von: date) -> Optional[RestaurantOeffnungszeit]:
         return self.db.query(RestaurantOeffnungszeit).filter(
-            RestaurantOeffnungszeit.restaurantID == restaurant_id,
-            RestaurantOeffnungszeit.oeffnungszeitID == oeffnungszeit_id,
+            RestaurantOeffnungszeit.restaurantid == restaurant_id,
+            RestaurantOeffnungszeit.oeffnungszeitid == oeffnungszeit_id,
             RestaurantOeffnungszeit.gueltig_von == gueltig_von
         ).first()
     
-    def get_by_restaurant_id(self, restaurant_id: int) -> List[RestaurantOeffnungszeit]:
+    def get_by_restaurant_id(self, restaurant_id: int) -> list[type[RestaurantOeffnungszeit]]:
         """Get all opening hours assignments for a restaurant"""
         return self.db.query(RestaurantOeffnungszeit).filter(
-            RestaurantOeffnungszeit.restaurantID == restaurant_id
+            RestaurantOeffnungszeit.restaurantid == restaurant_id
         ).all()
     
-    def get_active_by_restaurant_id(self, restaurant_id: int) -> List[RestaurantOeffnungszeit]:
+    def get_active_by_restaurant_id(self, restaurant_id: int) -> list[type[RestaurantOeffnungszeit]]:
         """Get active opening hours for a restaurant"""
         return self.db.query(RestaurantOeffnungszeit).filter(
-            RestaurantOeffnungszeit.restaurantID == restaurant_id,
+            RestaurantOeffnungszeit.restaurantid == restaurant_id,
             RestaurantOeffnungszeit.ist_aktiv == True
         ).all()
     
@@ -37,7 +39,7 @@ class RestaurantOeffnungszeitService:
             current_date = date.today()
         
         return self.db.query(RestaurantOeffnungszeit).filter(
-            RestaurantOeffnungszeit.restaurantID == restaurant_id,
+            RestaurantOeffnungszeit.restaurantid == restaurant_id,
             RestaurantOeffnungszeit.ist_aktiv == True,
             RestaurantOeffnungszeit.gueltig_von <= current_date,
             (RestaurantOeffnungszeit.gueltig_bis >= current_date) | 

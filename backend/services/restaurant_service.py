@@ -1,21 +1,24 @@
 from sqlalchemy.orm import Session
+
+from models import Restaurant
 from models.restaurant import Restaurant
-from typing import List, Optional
+from typing import List, Optional, Any
+
 
 class RestaurantService:
     def __init__(self, db: Session):
         self.db = db
     
-    def get_all(self) -> List[Restaurant]:
+    def get_all(self) -> list[type[Restaurant]]:
         return self.db.query(Restaurant).all()
     
     def get_by_id(self, restaurant_id: int) -> Optional[Restaurant]:
         return self.db.query(Restaurant).filter(Restaurant.restaurantid == restaurant_id).first()
     
-    def get_by_name(self, name: str) -> List[Restaurant]:
+    def get_by_name(self, name: str) -> list[type[Restaurant]]:
         return self.db.query(Restaurant).filter(Restaurant.name.ilike(f"%{name}%")).all()
     
-    def get_by_klassifizierung(self, klassifizierung: str) -> List[Restaurant]:
+    def get_by_klassifizierung(self, klassifizierung: str) -> list[type[Restaurant]]:
         return self.db.query(Restaurant).filter(Restaurant.klassifizierung == klassifizierung).all()
     
     def create(self, restaurant_data: dict) -> Restaurant:

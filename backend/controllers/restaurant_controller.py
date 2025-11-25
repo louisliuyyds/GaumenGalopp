@@ -19,7 +19,7 @@ def get_all_restaurants(db: Session = Depends(get_db)):
     return restaurants
 
 # GET /api/restaurants/{id} - Get specific restaurant
-@router.get("/{restaurant_id}", response_model=RestaurantResponse)
+@router.get("/{restaurantid}", response_model=RestaurantResponse)
 def get_restaurant(restaurant_id: int, db: Session = Depends(get_db)):
     service = RestaurantService(db)
     restaurant = service.get_by_id(restaurant_id)
@@ -43,7 +43,7 @@ def create_restaurant(
     return new_restaurant
 
 # PUT /api/restaurants/{id} - Update restaurant
-@router.put("/{restaurant_id}", response_model=RestaurantResponse)
+@router.put("/{restaurantid}", response_model=RestaurantResponse)
 def update_restaurant(
     restaurant_id: int,
     restaurant_update: RestaurantUpdate,
@@ -64,7 +64,7 @@ def update_restaurant(
     return updated_restaurant
 
 # DELETE /api/restaurants/{id} - Delete restaurant
-@router.delete("/{restaurant_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/{restaurantid}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_restaurant(restaurant_id: int, db: Session = Depends(get_db)):
     service = RestaurantService(db)
     success = service.delete(restaurant_id)
