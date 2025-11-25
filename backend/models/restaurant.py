@@ -8,7 +8,7 @@ class Restaurant(Base):
     restaurantid = Column(Integer, primary_key=True, autoincrement=True)
     name = Column(String(255), nullable=False)
     klassifizierung = Column(String(100))
-    adresseID = Column(Integer, ForeignKey('adresse.adresseid'))
+    adresseid = Column(Integer, ForeignKey('adresse.adresseid'))
     telefon = Column(String(20))
     kuechenchef = Column(String(255))
     
@@ -22,10 +22,10 @@ class Restaurant(Base):
     def to_dict(self):
         """Convert to dictionary"""
         return {
-            "restaurantID": self.restaurantid,
+            "restaurantid": self.restaurantid,
             "name": self.name,
             "klassifizierung": self.klassifizierung,
-            "adresseID": self.adresseID,
+            "adresseid": self.adresseid,
             "telefon": self.telefon,
             "kuechenchef": self.kuechenchef
         }

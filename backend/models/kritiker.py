@@ -12,8 +12,9 @@ class Kritiker(Base):
     kritikername = Column("kritikername", String(50))
 
     bewertungkritiker = relationship("Bewertungkritiker", back_populates="kritiker")
+    kunde = relationship("Kunde", back_populates="kritiker")
 
-    def to_dict(self):
+def to_dict(self):
         return {
             "kritikerid": self.kritikerid,
             "kundenid": self.kundenid,

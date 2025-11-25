@@ -5,7 +5,7 @@ from database import get_db
 from schemas import lieferant_schemas as schemas
 from services.lieferant_services import LieferantService
 
-router = APIRouter(prefix="/lieferanten", tags=["Lieferanten"])
+router = APIRouter(prefix="/api/lieferanten", tags=["Lieferanten"])
 
 @router.get("/", response_model=List[schemas.LieferantResponse])
 def get_all_lieferanten(db: Session = Depends(get_db)):
