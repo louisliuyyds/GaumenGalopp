@@ -18,11 +18,16 @@ const Description = styled.p`
     line-height: 1.6;
 `;
 
+const Subtitle = styled.h2`
+    color: antiquewhite;
+`
+
 
 const Home = () => {
     return (
         <PageContainer>
             <Title>Hier kommt der HomeScreen rein</Title>
+            <Subtitle>Das ist jetzt mein Untertitle</Subtitle>
             <Description>
                 Auf der Seite landet man zuerst, wenn wir die Website starten lul
             </Description>
