@@ -2,7 +2,8 @@ import React from 'react';
 import styled from 'styled-components';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Sidebar from './components/Sidebar';
-import Home from './pages/Home';
+import Home from './pages/Dashboard';
+import Dashboard from './pages/Dashboard';
 import Beispiel from "./pages/Beispiel";
 import NeuesRestaurant from "./pages/NeuesRestaurant";
 import RestaurantDetail from "./pages/RestaurantDetail";
@@ -32,7 +33,7 @@ function App() {
                 <Sidebar />
                 <ContentArea>
                     <Routes>
-                        <Route path="/" element={<Restaurants />} />
+                        <Route path="/" element={<Dashboard />} />
                         <Route path="/beispiel" element={<Beispiel />} />
                         <Route path="/neuesRestaurant" element={<NeuesRestaurant />} />
                         <Route path="/restaurants" element={<Restaurants />} />
