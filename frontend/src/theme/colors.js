@@ -1,79 +1,73 @@
 // Zentrale Farbdefinitionen für das gesamte Projekt
-// Farbschema: Midnight Blue & Neon Cyan
-
+// Farbschema: Luxuriös mit Gold & Beige
 const colors = {
     // Haupt-Farbschema
     primary: {
-        dark: '#0d1b2a',      // Midnight Blue (fast schwarz)
-        medium: '#1b263b',    // Dunkles Navy
-        light: '#e0f4ff',     // Eisblaues Hell
+        dark: '#1a1410',      // Tiefes Schokoladenbraun
+        medium: '#2d2419',    // Warmes dunkles Braun
+        light: '#f5f0e8',     // Cremiges Beige
     },
-
     // Akzent-Farben
     accent: {
-        orange: '#00d9ff',    // Neon Cyan
-        lightOrange: '#5ce1e6', // Helles Cyan
-        gold: '#ffbe0b',      // Leuchtendes Gelb für Ratings
+        orange: '#d4af37',    // Klassisches Gold
+        lightOrange: '#e8c568', // Helles Gold
+        gold: '#f4d03f',      // Leuchtendes Gold für Highlights
     },
-
     // Basis-Farben
     background: {
-        main: '#f0f4f8',      // Sehr heller Blaugrau
+        main: '#faf8f3',      // Warmes Off-White
         card: '#ffffff',      // Card-Hintergrund
-        light: '#e8f0f7',     // Heller Eisblau-Hintergrund
-        gradient: 'linear-gradient(135deg, #f0f4f8 0%, #ffffff 100%)',
+        light: '#f5efe6',     // Sanftes Beige
+        gradient: 'linear-gradient(135deg, #faf8f3 0%, #f5efe6 100%)',
     },
-
     // Text-Farben
     text: {
-        primary: '#0d1b2a',   // Haupt-Text (midnight)
-        secondary: '#1b263b', // Sekundär-Text (navy)
-        light: '#415a77',     // Heller Text
-        lighter: '#778da9',   // Noch heller
+        primary: '#331603ff',   // Haupt-Text (dunkelbraun)
+        secondary: '#3d3328', // Sekundär-Text (mittelbraun)
+        light: '#6b5d4f',     // Heller Text
+        lighter: '#8f7f6f',   // Noch heller
         white: '#ffffff',     // Weiß
-        muted: '#a8b8cc',     // Gedämpft
+        muted: '#b3a593',     // Gedämpft
     },
-
     // Status-Farben
     status: {
-        success: '#06ffa5',   // Neon Grün
-        successHover: '#05e696',
-        error: '#ff006e',     // Neon Pink/Rot
-        errorHover: '#e6006a',
-        warning: '#fb5607',   // Leuchtorange
-        info: '#3a86ff',      // Elektrisch Blau
+        success: '#7a9d54',   // Gedämpftes Olivgrün
+        successHover: '#6b8a48',
+        error: '#a04747',     // Warmes Rot
+        errorHover: '#8f3d3d',
+        warning: '#d4863c',   // Warmes Orange
+        info: '#6b7fa3',      // Gedämpftes Blau
     },
-
     // Border & Shadow
     border: {
-        light: '#d8e2ef',
-        medium: '#b1c5d9',
-        dark: '#8fa8c4',
+        light: '#e8dfd0',
+        medium: '#d4c4ad',
+        dark: '#b8a68d',
     },
-
     // Gradients
     gradients: {
-        primary: 'linear-gradient(135deg, #0d1b2a 0%, #1b263b 100%)',
-        accent: 'linear-gradient(135deg, #00d9ff 0%, #5ce1e6 100%)',
-        card: 'linear-gradient(135deg, #f0f4f8 0%, #ffffff 100%)',
+        primary: 'linear-gradient(135deg, #dbc681ff 0%, #866948ff 100%)',
+        accent: 'linear-gradient(135deg, #f4e1a2ff 0%, #f4d03f 100%)',
+        card: 'linear-gradient(135deg, #ffffff 0%, #faf8f3 100%)',
+        luxury: 'linear-gradient(135deg, #f5efe6 0%, #e8dfd0 50%, #d4af37 100%)',
     },
-
     // Transparente Overlays
     overlay: {
-        light: 'rgba(255, 255, 255, 0.12)',
-        medium: 'rgba(255, 255, 255, 0.2)',
-        dark: 'rgba(13, 27, 42, 0.1)',
+        light: 'rgba(255, 255, 255, 0.15)',
+        medium: 'rgba(255, 255, 255, 0.25)',
+        dark: 'rgba(26, 20, 16, 0.1)',
+        gold: 'rgba(212, 175, 55, 0.1)',
     },
-
     // Schatten
     shadows: {
-        small: '0 2px 8px rgba(13, 27, 42, 0.12)',
-        medium: '0 4px 15px rgba(13, 27, 42, 0.1)',
-        large: '0 8px 25px rgba(13, 27, 42, 0.18)',
-        accent: '0 4px 10px rgba(0, 217, 255, 0.3)',
-        accentHover: '0 6px 15px rgba(0, 217, 255, 0.4)',
-        primarySmall: '0 4px 10px rgba(13, 27, 42, 0.2)',
-        primaryMedium: '0 6px 15px rgba(13, 27, 42, 0.3)',
+        small: '0 2px 8px rgba(26, 20, 16, 0.12)',
+        medium: '0 4px 15px rgba(26, 20, 16, 0.1)',
+        large: '0 8px 25px rgba(26, 20, 16, 0.15)',
+        accent: '0 4px 12px rgba(212, 175, 55, 0.35)',
+        accentHover: '0 6px 18px rgba(212, 175, 55, 0.45)',
+        primarySmall: '0 4px 10px rgba(26, 20, 16, 0.2)',
+        primaryMedium: '0 6px 15px rgba(26, 20, 16, 0.25)',
+        gold: '0 4px 20px rgba(212, 175, 55, 0.3)',
     }
 };
 
