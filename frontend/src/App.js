@@ -42,6 +42,7 @@ function App() {
                         <Route path="/restaurants/:id" element={<RestaurantDetail />} />
                         <Route path="/restaurants/:id/edit" element={<EditRestaurantInfos />} />
                         <Route path="/kunde" element={<KundeHome />} />
+                        <Route path="/kunde/restaurants" element={<Restaurants />} />
                     </Routes>
                 </ContentArea>
             </AppContainer>
