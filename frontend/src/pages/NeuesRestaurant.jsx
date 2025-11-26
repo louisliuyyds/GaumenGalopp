@@ -9,7 +9,7 @@ const NeuesRestaurant= () => {
         klassifizierung: '',
         telefon: '',
         kuechenchef: '',
-        adresseID: '',
+        adresseid: '',
     });
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
@@ -35,10 +35,10 @@ const NeuesRestaurant= () => {
             setLoading(true);
             setError(null);
 
-            // AdresseID in Number umwandeln
+            // adresseid in Number umwandeln
             const dataToSubmit = {
                 ...formData,
-                adresseID: parseInt(formData.adresseID)
+                adresseid: parseInt(formData.adresseid)
             };
 
             const neuesRestaurant = await restaurantService.create(dataToSubmit);
@@ -62,7 +62,7 @@ const NeuesRestaurant= () => {
             klassifizierung: '',
             telefon: '',
             kuechenchef: '',
-            adresseID: '',
+            adresseid: '',
         });
         setError(null);
     };
@@ -172,8 +172,8 @@ const NeuesRestaurant= () => {
                     </label>
                     <input
                         type="number"
-                        name="adresseID"
-                        value={formData.adresseID}
+                        name="adresseid"
+                        value={formData.adresseid}
                         onChange={handleChange}
                         style={{
                             width: '100%',

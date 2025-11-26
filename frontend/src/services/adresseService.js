@@ -14,8 +14,8 @@ const adresseService = {
    * Eine Adresse nach ID abrufen
    * GET /api/adresse/{id}
    */
-  getById: async (adresseId) => {
-    return await apiClient.get(`/api/adresse/${adresseId}`);
+  getById: async (adresseid) => {
+    return await apiClient.get(`/api/adresse/${adresseid}`);
   },
 
   /**
@@ -30,16 +30,16 @@ const adresseService = {
    * Adresse aktualisieren
    * PUT /api/adresse/{id}
    */
-  update: async (adresseId, adresseData) => {
-    return await apiClient.put(`/api/adresse/${adresseId}`, adresseData);
+  update: async (adresseid, adresseData) => {
+    return await apiClient.put(`/api/adresse/${adresseid}`, adresseData);
   },
 
   /**
    * Adresse löschen
    * DELETE /api/adresse/{id}
    */
-  delete: async (adresseId) => {
-    return await apiClient.delete(`/api/adresse/${adresseId}`);
+  delete: async (adresseid) => {
+    return await apiClient.delete(`/api/adresse/${adresseid}`);
   },
 
   /**

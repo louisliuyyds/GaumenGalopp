@@ -1,7 +1,8 @@
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom';
 import colors from '../theme/colors';
+import {restaurantService} from "../services";
 
 const Container = styled.div`
     max-width: 1400px;
@@ -72,78 +73,87 @@ const Rating = styled.div`
     font-weight: 600;
 `;
 
-const mockRestaurants = [
-    {
-        id: 1,
-        name: "Bella Italia",
-        cuisine: "Italienisch",
-        address: "Hauptstraße 15, Berlin",
-        rating: 4.5,
-        priceRange: "€€",
-    },
-    {
-        id: 2,
-        name: "Sushi Heaven",
-        cuisine: "Japanisch",
-        address: "Friedrichstraße 42, Berlin",
-        rating: 4.8,
-        priceRange: "€€€",
-    },
-    {
-        id: 3,
-        name: "Burger Palace",
-        cuisine: "Amerikanisch",
-        address: "Alexanderplatz 8, Berlin",
-        rating: 4.2,
-        priceRange: "€",
-    },
-    {
-        id: 4,
-        name: "La Petite France",
-        cuisine: "Französisch",
-        address: "Unter den Linden 23, Berlin",
-        rating: 4.7,
-        priceRange: "€€€€",
-    },
-    {
-        id: 5,
-        name: "Taj Mahal",
-        cuisine: "Indisch",
-        address: "Kurfürstendamm 99, Berlin",
-        rating: 4.4,
-        priceRange: "€€",
-    },
-    {
-        id: 6,
-        name: "Dragon Wok",
-        cuisine: "Chinesisch",
-        address: "Potsdamer Platz 5, Berlin",
-        rating: 4.3,
-        priceRange: "€€",
-    },
-];
-
 function Restaurants() {
+    const [restaurants, setRestaurants] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+
     const navigate = useNavigate();
 
     const handleRestaurantClick = (id) => {
         navigate(`/restaurants/${id}`);
     };
 
+
+    //Al the functions that handle updating the Data
+    const fetchRestaurants = async () => {
+        try {
+            setLoading(true);
+            setError(null);
+            const data = await restaurantService.getAll();
+            setRestaurants(data);
+            console.log('Restaurants geladen:', data);
+        } catch (err) {
+            console.error('Fehler beim Laden:', err);
+            setError('Fehler beim Laden der Restaurants. Bitte versuchen Sie es später erneut.');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // Beim ersten Laden ausführen
+    useEffect(() => {
+        fetchRestaurants();
+    }, []);
+
+    // Restaurant löschen
+    const handleDelete = async (id, name) => {
+        if (window.confirm(`Möchten Sie das Restaurant "${name}" wirklich löschen?`)) {
+            try {
+                await restaurantService.delete(id);
+                console.log('Restaurant gelöscht:', id);
+                // Liste neu laden
+                await fetchRestaurants();
+            } catch (err) {
+                console.error('Fehler beim Löschen:', err);
+                alert('Fehler beim Löschen des Restaurants');
+            }
+        }
+    };
+
+    // Anzeige während des Ladens
+    if (loading) {
+        return (
+            <div>Lade Restaurants...</div>
+        );
+    }
+
+    // Fehleranzeige
+    if (error) {
+        return (
+            <div>
+                <div>{error}</div>
+                <button onClick={fetchRestaurants}>
+                    Erneut versuchen
+                </button>
+            </div>
+        );
+    }
+
     return (
         <Container>
             <Header>Unsere Ultra High Quality Arschgeilen Restaurants</Header>
             <RestaurantGrid>
-                {mockRestaurants.map((restaurant) => (
+                {restaurants.map((restaurant) => (
                     <RestaurantCard
                         key={restaurant.id}
                         onClick={() => handleRestaurantClick(restaurant.id)}
                     >
                         <RestaurantName>{restaurant.name}</RestaurantName>
-                        <RestaurantType>{restaurant.cuisine}</RestaurantType>
-                        <RestaurantInfo>📍 {restaurant.address}</RestaurantInfo>
-                        <RestaurantInfo>💰 {restaurant.priceRange}</RestaurantInfo>
-                        <Rating>⭐ {restaurant.rating}</Rating>
+                        <RestaurantType>{restaurant.klassifizierung}</RestaurantType>
+                        <RestaurantInfo>📍 {restaurant.kuechenchef}</RestaurantInfo>
+                        <RestaurantInfo>💰 {restaurant.telefon}</RestaurantInfo>
+                        <Rating>⭐ {restaurant.adresseid}</Rating>
                     </RestaurantCard>
                 ))}
             </RestaurantGrid>
