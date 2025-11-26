@@ -40,6 +40,10 @@ function App() {
                         <Route path="/restaurants/:restaurantId/gericht/:gerichtId" element={<GerichtDetail />} />
                         <Route path="/restaurants/:id" element={<RestaurantDetail />} />
                         <Route path="/restaurants/:id/edit" element={<EditRestaurantInfos />} />
+
+                        /* Kundenansicht */
+                        <Route path="/kunde" element={<Restaurants />} />
+                        <Route path="/kunde/restaurants" element={<Restaurants />} />
                     </Routes>
                 </ContentArea>
             </AppContainer>
