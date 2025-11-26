@@ -1,235 +1,264 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { restaurantService } from '../services';
+import React, { useState, useEffect } from 'react';
+import styled from 'styled-components';
+import { useParams, useNavigate } from 'react-router-dom';
+import restaurantService from '../services/restaurantService';
 
-const NeuesRestaurant= () => {
+const Container = styled.div`
+    max-width: 1400px;
+    margin: 0 auto;
+`;
+
+const BackButton = styled.button`
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 8px;
+    cursor: pointer;
+    margin-bottom: 30px;
+    font-size: 1em;
+    font-weight: 600;
+    transition: all 0.3s ease;
+
+    &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    }
+`;
+
+const HeaderSection = styled.div`
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 16px;
+    padding: 40px;
+    margin-bottom: 30px;
+    color: white;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    position: relative;
+`;
+
+const EditRestaurantButton = styled.button`
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    border: 2px solid white;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.95em;
+    font-weight: 600;
+    transition: all 0.3s ease;
+
+    &:hover {
+        background: white;
+        color: #667eea;
+        transform: translateY(-2px);
+    }
+`;
+
+const RestaurantName = styled.h1`
+    font-size: 2.5em;
+    margin-bottom: 15px;
+    font-weight: 700;
+`;
+
+const TagsContainer = styled.div`
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+`;
+
+const CuisineTag = styled.span`
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    color: white;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 0.95em;
+    font-weight: 600;
+`;
+
+const ClassificationTag = styled.span`
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 0.95em;
+    font-weight: 600;
+`;
+
+const ContentGrid = styled.div`
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+    margin-bottom: 40px;
+
+    @media (max-width: 968px) {
+        grid-template-columns: 1fr;
+    }
+`;
+
+const InfoCard = styled.div`
+    background: white;
+    border-radius: 12px;
+    padding: 30px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+`;
+
+const CardTitle = styled.h2`
+    color: #2d3748;
+    font-size: 1.5em;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 3px solid #f5576c;
+    display: inline-block;
+`;
+
+const InfoRow = styled.div`
+    display: flex;
+    margin: 15px 0;
+    align-items: flex-start;
+`;
+
+const Label = styled.span`
+    font-weight: 600;
+    min-width: 140px;
+    color: #2d3748;
+    font-size: 1em;
+`;
+
+const Value = styled.span`
+    color: #4a5568;
+    flex: 1;
+`;
+
+const LoadingSpinner = styled.div`
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 400px;
+    font-size: 1.5em;
+    color: #4a5568;
+`;
+
+const ErrorMessage = styled.div`
+    background: #fee;
+    color: #c33;
+    padding: 20px;
+    border-radius: 8px;
+    margin: 20px 0;
+    border-left: 4px solid #c33;
+`;
+
+function RestaurantDetail() {
+    const { id } = useParams();
     const navigate = useNavigate();
-    const [formData, setFormData] = useState({
-        name: '',
-        klassifizierung: '',
-        telefon: '',
-        kuechenchef: '',
-        adresseid: '',
-    });
-    const [loading, setLoading] = useState(false);
+
+    const [restaurant, setRestaurant] = useState(null);
+    const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
-    const handleChange = (e) => {
-        const { name, value } = e.target;
-        setFormData(prev => ({
-            ...prev,
-            [name]: value
-        }));
-    };
+    useEffect(() => {
+        loadRestaurantData();
+    }, [id]);
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-
-        // Validierung
-        if (!formData.name || !formData.telefon) {
-            setError('Name und Telefon sind Pflichtfelder');
-            return;
-        }
-
+    const loadRestaurantData = async () => {
         try {
             setLoading(true);
             setError(null);
 
-            // adresseid in Number umwandeln
-            const dataToSubmit = {
-                ...formData,
-                adresseid: parseInt(formData.adresseid)
-            };
+            // Restaurant-Daten laden
+            const restaurantData = await restaurantService.getById(id);
+            setRestaurant(restaurantData);
 
-            const neuesRestaurant = await restaurantService.create(dataToSubmit);
-
-            console.log('Restaurant erstellt:', neuesRestaurant);
-            alert('Restaurant erfolgreich erstellt!');
-
-            // Zur Restaurant-Liste navigieren
-            navigate('/restaurants');
         } catch (err) {
-            setError(err.message);
-            console.error('Fehler beim Erstellen:', err);
+            setError(err.message || 'Fehler beim Laden der Restaurant-Daten');
         } finally {
             setLoading(false);
         }
     };
 
-    const handleReset = () => {
-        setFormData({
-            name: '',
-            klassifizierung: '',
-            telefon: '',
-            kuechenchef: '',
-            adresseid: '',
-        });
-        setError(null);
+    const handleEditRestaurant = () => {
+        navigate(`/restaurants/${id}/edit`);
     };
 
+    if (loading) {
+        return (
+            <Container>
+                <BackButton onClick={() => navigate('/restaurants')}>
+                    ← Zurück zur Übersicht
+                </BackButton>
+                <LoadingSpinner>Lädt Restaurant-Daten...</LoadingSpinner>
+            </Container>
+        );
+    }
+
+    if (error || !restaurant) {
+        return (
+            <Container>
+                <BackButton onClick={() => navigate('/restaurants')}>
+                    ← Zurück zur Übersicht
+                </BackButton>
+                <ErrorMessage>
+                    <h2>❌ Fehler</h2>
+                    <p>{error || 'Restaurant nicht gefunden'}</p>
+                </ErrorMessage>
+            </Container>
+        );
+    }
+
     return (
-        <div style={{ maxWidth: '600px', margin: '0 auto', padding: '20px' }}>
-            <h1>Neues Restaurant erstellen</h1>
+        <Container>
+            <BackButton onClick={() => navigate('/restaurants')}>
+                ← Zurück zur Übersicht
+            </BackButton>
 
-            {error && (
-                <div style={{
-                    backgroundColor: '#fee',
-                    color: '#c00',
-                    padding: '15px',
-                    borderRadius: '4px',
-                    marginBottom: '20px'
-                }}>
-                    {error}
-                </div>
-            )}
+            <HeaderSection>
+                <EditRestaurantButton onClick={handleEditRestaurant}>
+                    ✏️ Restaurant bearbeiten
+                </EditRestaurantButton>
 
-            <form onSubmit={handleSubmit}>
-                <div style={{ marginBottom: '15px' }}>
-                    <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>
-                        Name *
-                    </label>
-                    <input
-                        type="text"
-                        name="name"
-                        value={formData.name}
-                        onChange={handleChange}
-                        required
-                        style={{
-                            width: '100%',
-                            padding: '10px',
-                            border: '1px solid #ddd',
-                            borderRadius: '4px',
-                            fontSize: '16px'
-                        }}
-                        placeholder="Restaurant Name"
-                    />
-                </div>
+                <RestaurantName>{restaurant.name}</RestaurantName>
+                <TagsContainer>
+                    {restaurant.klassifizierung && (
+                        <ClassificationTag>{restaurant.klassifizierung}</ClassificationTag>
+                    )}
+                </TagsContainer>
+            </HeaderSection>
 
-                <div style={{ marginBottom: '15px' }}>
-                    <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>
-                        Klassifizierung
-                    </label>
-                    <input
-                        type="text"
-                        name="klassifizierung"
-                        value={formData.klassifizierung}
-                        onChange={handleChange}
-                        style={{
-                            width: '100%',
-                            padding: '10px',
-                            border: '1px solid #ddd',
-                            borderRadius: '4px',
-                            fontSize: '16px'
-                        }}
-                        placeholder="z.B. Italienisch, Sterne-Restaurant"
-                    />
-                </div>
+            <ContentGrid>
+                <InfoCard>
+                    <CardTitle>📞 Kontakt & Standort</CardTitle>
+                    <InfoRow>
+                        <Label>📞 Telefon:</Label>
+                        <Value>{restaurant.telefon || 'Nicht angegeben'}</Value>
+                    </InfoRow>
+                    <InfoRow>
+                        <Label>👨‍🍳 Küchenchef:</Label>
+                        <Value>{restaurant.kuechenchef || 'Nicht angegeben'}</Value>
+                    </InfoRow>
+                    <InfoRow>
+                        <Label>📍 Adresse-ID:</Label>
+                        <Value>{restaurant.adresseid || 'Nicht angegeben'}</Value>
+                    </InfoRow>
+                </InfoCard>
 
-                <div style={{ marginBottom: '15px' }}>
-                    <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>
-                        Telefon *
-                    </label>
-                    <input
-                        type="tel"
-                        name="telefon"
-                        value={formData.telefon}
-                        onChange={handleChange}
-                        required
-                        style={{
-                            width: '100%',
-                            padding: '10px',
-                            border: '1px solid #ddd',
-                            borderRadius: '4px',
-                            fontSize: '16px'
-                        }}
-                        placeholder="+49 123 456789"
-                    />
-                </div>
-
-                <div style={{ marginBottom: '15px' }}>
-                    <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>
-                        Küchenchef
-                    </label>
-                    <input
-                        type="text"
-                        name="kuechenchef"
-                        value={formData.kuechenchef}
-                        onChange={handleChange}
-                        style={{
-                            width: '100%',
-                            padding: '10px',
-                            border: '1px solid #ddd',
-                            borderRadius: '4px',
-                            fontSize: '16px'
-                        }}
-                        placeholder="Name des Küchenchefs"
-                    />
-                </div>
-
-                <div style={{ marginBottom: '20px' }}>
-                    <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>
-                        Adresse ID
-                    </label>
-                    <input
-                        type="number"
-                        name="adresseid"
-                        value={formData.adresseid}
-                        onChange={handleChange}
-                        style={{
-                            width: '100%',
-                            padding: '10px',
-                            border: '1px solid #ddd',
-                            borderRadius: '4px',
-                            fontSize: '16px'
-                        }}
-                        placeholder="ID der Adresse"
-                    />
-                </div>
-
-                <div style={{ display: 'flex', gap: '10px' }}>
-                    <button
-                        type="submit"
-                        disabled={loading}
-                        style={{
-                            flex: 1,
-                            backgroundColor: loading ? '#95a5a6' : '#27ae60',
-                            color: 'white',
-                            border: 'none',
-                            padding: '12px 24px',
-                            borderRadius: '4px',
-                            fontSize: '16px',
-                            cursor: loading ? 'not-allowed' : 'pointer',
-                            fontWeight: 'bold'
-                        }}
-                    >
-                        {loading ? 'Wird erstellt...' : 'Restaurant erstellen'}
-                    </button>
-
-                    <button
-                        type="button"
-                        onClick={handleReset}
-                        disabled={loading}
-                        style={{
-                            flex: 1,
-                            backgroundColor: '#95a5a6',
-                            color: 'white',
-                            border: 'none',
-                            padding: '12px 24px',
-                            borderRadius: '4px',
-                            fontSize: '16px',
-                            cursor: loading ? 'not-allowed' : 'pointer'
-                        }}
-                    >
-                        Zurücksetzen
-                    </button>
-                </div>
-            </form>
-
-            <p style={{ marginTop: '20px', fontSize: '14px', color: '#666' }}>
-                * Pflichtfelder
-            </p>
-        </div>
+                <InfoCard>
+                    <CardTitle>ℹ️ Restaurant-Info</CardTitle>
+                    <InfoRow>
+                        <Label>🆔 Restaurant-ID:</Label>
+                        <Value>{restaurant.restaurantid}</Value>
+                    </InfoRow>
+                    <InfoRow>
+                        <Label>🏷️ Klassifizierung:</Label>
+                        <Value>{restaurant.klassifizierung || 'Nicht angegeben'}</Value>
+                    </InfoRow>
+                </InfoCard>
+            </ContentGrid>
+        </Container>
     );
 }
 
-export default NeuesRestaurant;
+export default RestaurantDetail;

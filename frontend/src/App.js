@@ -37,8 +37,8 @@ function App() {
                         <Route path="/neuesRestaurant" element={<NeuesRestaurant />} />
                         <Route path="/restaurants" element={<Restaurants />} />
                         <Route path="/restaurants/:restaurantId/gericht/:gerichtId" element={<GerichtDetail />} />
-                        <Route path="/restaurants/:id/edit" element={<EditRestaurantInfos />} />
                         <Route path="/restaurants/:id" element={<RestaurantDetail />} />
+                        <Route path="/restaurants/:id/edit" element={<EditRestaurantInfos />} />
                     </Routes>
                 </ContentArea>
             </AppContainer>

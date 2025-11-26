@@ -1,8 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { useParams, useNavigate } from 'react-router-dom';
-import colors from '../theme/colors';
-import MenuSection from "../components/MenuSection";
+import restaurantService from '../services/restaurantService';
 
 const Container = styled.div`
     max-width: 1400px;
@@ -10,8 +9,8 @@ const Container = styled.div`
 `;
 
 const BackButton = styled.button`
-    background: ${colors.gradients.primary};
-    color: ${colors.text.white};
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
     border: none;
     padding: 12px 24px;
     border-radius: 8px;
@@ -20,21 +19,20 @@ const BackButton = styled.button`
     font-size: 1em;
     font-weight: 600;
     transition: all 0.3s ease;
-    box-shadow: ${colors.shadows.primarySmall};
 
     &:hover {
         transform: translateY(-2px);
-        box-shadow: ${colors.shadows.primaryMedium};
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
     }
 `;
 
 const HeaderSection = styled.div`
-    background: ${colors.gradients.primary};
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     border-radius: 16px;
     padding: 40px;
     margin-bottom: 30px;
-    color: ${colors.text.white};
-    box-shadow: ${colors.shadows.medium};
+    color: white;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     position: relative;
 `;
 
@@ -42,24 +40,20 @@ const EditRestaurantButton = styled.button`
     position: absolute;
     top: 20px;
     right: 20px;
-    background: ${colors.overlay.medium};
-    color: ${colors.text.white};
-    border: 2px solid ${colors.text.white};
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    border: 2px solid white;
     padding: 10px 20px;
     border-radius: 8px;
     cursor: pointer;
     font-size: 0.95em;
     font-weight: 600;
     transition: all 0.3s ease;
-    display: flex;
-    align-items: center;
-    gap: 8px;
 
     &:hover {
-        background: ${colors.text.white};
-        color: ${colors.primary.dark};
+        background: white;
+        color: #667eea;
         transform: translateY(-2px);
-        box-shadow: ${colors.shadows.medium};
     }
 `;
 
@@ -78,32 +72,21 @@ const TagsContainer = styled.div`
 `;
 
 const CuisineTag = styled.span`
-    background: ${colors.gradients.accent};
-    color: ${colors.text.white};
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    color: white;
     padding: 8px 16px;
     border-radius: 20px;
     font-size: 0.95em;
     font-weight: 600;
 `;
 
-const Rating = styled.div`
-    font-size: 1.3em;
-    color: ${colors.accent.gold};
-`;
-
-const PriceTag = styled.span`
-    background: ${colors.overlay.medium};
-    color: ${colors.text.white};
+const ClassificationTag = styled.span`
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
     padding: 8px 16px;
     border-radius: 20px;
     font-size: 0.95em;
     font-weight: 600;
-`;
-
-const Description = styled.p`
-    font-size: 1.1em;
-    line-height: 1.6;
-    color: ${colors.primary.light};
 `;
 
 const ContentGrid = styled.div`
@@ -118,18 +101,18 @@ const ContentGrid = styled.div`
 `;
 
 const InfoCard = styled.div`
-    background: ${colors.background.card};
+    background: white;
     border-radius: 12px;
     padding: 30px;
-    box-shadow: ${colors.shadows.medium};
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 `;
 
 const CardTitle = styled.h2`
-    color: ${colors.text.primary};
+    color: #2d3748;
     font-size: 1.5em;
     margin-bottom: 20px;
     padding-bottom: 10px;
-    border-bottom: 3px solid ${colors.accent.orange};
+    border-bottom: 3px solid #f5576c;
     display: inline-block;
 `;
 
@@ -142,125 +125,89 @@ const InfoRow = styled.div`
 const Label = styled.span`
     font-weight: 600;
     min-width: 140px;
-    color: ${colors.text.primary};
+    color: #2d3748;
     font-size: 1em;
 `;
 
 const Value = styled.span`
-    color: ${colors.text.secondary};
+    color: #4a5568;
     flex: 1;
 `;
 
+const LoadingSpinner = styled.div`
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 400px;
+    font-size: 1.5em;
+    color: #4a5568;
+`;
 
-// Mock-Daten bleiben gleich...
-const mockRestaurants = [
-    {
-        id: 1,
-        name: "Bella Italia",
-        cuisine: "Italienisch",
-        address: "Hauptstraße 15, 10115 Berlin",
-        phone: "+49 30 12345678",
-        email: "info@bella-italia.de",
-        rating: 4.5,
-        priceRange: "€€",
-        openingHours: "Mo-So: 11:00 - 23:00",
-        description: "Authentische italienische Küche im Herzen Berlins. Unsere Pizza wird im traditionellen Steinofen gebacken und unsere Pasta ist hausgemacht.",
-        specialties: "Pizza, Pasta, Antipasti",
-        capacity: 80,
-        chef: "Giovanni Rossi",
-        gerichte: [
-            {
-                id: 1,
-                name: "Pizza Margherita",
-                description: "Klassische Pizza mit Tomatensauce, Mozzarella und frischem Basilikum",
-                price: 9.50,
-                category: "Hauptgericht"
-            },
-            {
-                id: 2,
-                name: "Spaghetti Carbonara",
-                description: "Spaghetti mit Speck, Ei, Parmesan und schwarzem Pfeffer",
-                price: 12.90,
-                category: "Hauptgericht"
-            },
-            {
-                id: 3,
-                name: "Tiramisu",
-                description: "Italienisches Dessert mit Mascarpone, Löffelbiskuits und Espresso",
-                price: 6.50,
-                category: "Dessert"
-            },
-            {
-                id: 4,
-                name: "Bruschetta",
-                description: "Geröstetes Brot mit Tomaten, Knoblauch, Basilikum und Olivenöl",
-                price: 7.90,
-                category: "Vorspeise"
-            }
-        ]
-    },
-    {
-        id: 2,
-        name: "Sushi Heaven",
-        cuisine: "Japanisch",
-        address: "Friedrichstraße 42, 10117 Berlin",
-        phone: "+49 30 23456789",
-        email: "kontakt@sushi-heaven.de",
-        rating: 4.8,
-        priceRange: "€€€",
-        openingHours: "Di-So: 12:00 - 22:00",
-        description: "Frisches Sushi und authentische japanische Spezialitäten. Alle Zutaten werden täglich frisch geliefert.",
-        specialties: "Sushi, Sashimi, Ramen",
-        capacity: 50,
-        chef: "Takeshi Yamamoto",
-        gerichte: [
-            {
-                id: 5,
-                name: "California Roll",
-                description: "Inside-Out-Roll mit Surimi, Avocado und Gurke",
-                price: 8.90,
-                category: "Sushi"
-            },
-            {
-                id: 6,
-                name: "Lachs Sashimi",
-                description: "6 Stück frischer norwegischer Lachs",
-                price: 14.50,
-                category: "Sashimi"
-            },
-            {
-                id: 7,
-                name: "Miso Suppe",
-                description: "Traditionelle japanische Suppe mit Tofu und Algen",
-                price: 4.50,
-                category: "Vorspeise"
-            }
-        ]
-    },
-];
+const ErrorMessage = styled.div`
+    background: #fee;
+    color: #c33;
+    padding: 20px;
+    border-radius: 8px;
+    margin: 20px 0;
+    border-left: 4px solid #c33;
+`;
 
 function RestaurantDetail() {
     const { id } = useParams();
     const navigate = useNavigate();
 
-    const restaurant = mockRestaurants.find(r => r.id === parseInt(id));
+    const [restaurant, setRestaurant] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
 
-    if (!restaurant) {
+    useEffect(() => {
+        loadRestaurantData();
+    }, [id]);
+
+    const loadRestaurantData = async () => {
+        try {
+            setLoading(true);
+            setError(null);
+
+            // Restaurant-Daten laden
+            const restaurantData = await restaurantService.getById(id);
+            setRestaurant(restaurantData);
+
+        } catch (err) {
+            setError(err.message || 'Fehler beim Laden der Restaurant-Daten');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleEditRestaurant = () => {
+        navigate(`/restaurants/${id}/edit`);
+    };
+
+    if (loading) {
         return (
             <Container>
                 <BackButton onClick={() => navigate('/restaurants')}>
                     ← Zurück zur Übersicht
                 </BackButton>
-                <InfoCard>
-                    <h2>Restaurant nicht gefunden</h2>
-                </InfoCard>
+                <LoadingSpinner>Lädt Restaurant-Daten...</LoadingSpinner>
             </Container>
         );
     }
 
-    const handleEditRestaurant = () => {
-        navigate(`/restaurants/${id}/edit`);
-    };
+    if (error || !restaurant) {
+        return (
+            <Container>
+                <BackButton onClick={() => navigate('/restaurants')}>
+                    ← Zurück zur Übersicht
+                </BackButton>
+                <ErrorMessage>
+                    <h2>❌ Fehler</h2>
+                    <p>{error || 'Restaurant nicht gefunden'}</p>
+                </ErrorMessage>
+            </Container>
+        );
+    }
 
     return (
         <Container>
@@ -270,58 +217,46 @@ function RestaurantDetail() {
 
             <HeaderSection>
                 <EditRestaurantButton onClick={handleEditRestaurant}>
-                    Restaurant bearbeiten
+                    ✏️ Restaurant bearbeiten
                 </EditRestaurantButton>
 
                 <RestaurantName>{restaurant.name}</RestaurantName>
                 <TagsContainer>
-                    <CuisineTag>{restaurant.cuisine}</CuisineTag>
-                    <PriceTag>{restaurant.priceRange}</PriceTag>
-                    <Rating>⭐ {restaurant.rating} / 5.0</Rating>
+                    {restaurant.klassifizierung && (
+                        <ClassificationTag>{restaurant.klassifizierung}</ClassificationTag>
+                    )}
                 </TagsContainer>
-                <Description>{restaurant.description}</Description>
             </HeaderSection>
 
             <ContentGrid>
                 <InfoCard>
                     <CardTitle>📞 Kontakt & Standort</CardTitle>
                     <InfoRow>
-                        <Label>📍 Adresse:</Label>
-                        <Value>{restaurant.address}</Value>
-                    </InfoRow>
-                    <InfoRow>
                         <Label>📞 Telefon:</Label>
-                        <Value>{restaurant.phone}</Value>
-                    </InfoRow>
-                    <InfoRow>
-                        <Label>✉️ Email:</Label>
-                        <Value>{restaurant.email}</Value>
+                        <Value>{restaurant.telefon || 'Nicht angegeben'}</Value>
                     </InfoRow>
                     <InfoRow>
                         <Label>👨‍🍳 Küchenchef:</Label>
-                        <Value>{restaurant.chef}</Value>
+                        <Value>{restaurant.kuechenchef || 'Nicht angegeben'}</Value>
+                    </InfoRow>
+                    <InfoRow>
+                        <Label>📍 Adresse-ID:</Label>
+                        <Value>{restaurant.adresseid || 'Nicht angegeben'}</Value>
                     </InfoRow>
                 </InfoCard>
 
                 <InfoCard>
-                    <CardTitle>🕐 Öffnungszeiten & Details</CardTitle>
+                    <CardTitle>ℹ️ Restaurant-Info</CardTitle>
                     <InfoRow>
-                        <Label>🕐 Öffnungszeiten:</Label>
-                        <Value>{restaurant.openingHours}</Value>
+                        <Label>🆔 Restaurant-ID:</Label>
+                        <Value>{restaurant.restaurantid}</Value>
                     </InfoRow>
                     <InfoRow>
-                        <Label>👥 Kapazität:</Label>
-                        <Value>{restaurant.capacity} Personen</Value>
-                    </InfoRow>
-                    <InfoRow>
-                        <Label>🍽️ Spezialitäten:</Label>
-                        <Value>{restaurant.specialties}</Value>
+                        <Label>🏷️ Klassifizierung:</Label>
+                        <Value>{restaurant.klassifizierung || 'Nicht angegeben'}</Value>
                     </InfoRow>
                 </InfoCard>
-
             </ContentGrid>
-            <MenuSection restaurant={restaurant} />
-
         </Container>
     );
 }

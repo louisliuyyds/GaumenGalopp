@@ -80,10 +80,10 @@ function Restaurants() {
 
     const navigate = useNavigate();
 
-    const handleRestaurantClick = (id) => {
-        navigate(`/restaurants/${id}`);
+    // Navigation zur Edit-Seite mit der Restaurant-ID
+    const handleEditRestaurant = (restaurantid) => {
+        navigate(`/restaurants/${restaurantid}/edit`);
     };
-
 
     //Al the functions that handle updating the Data
     const fetchRestaurants = async () => {
@@ -124,19 +124,21 @@ function Restaurants() {
     // Anzeige während des Ladens
     if (loading) {
         return (
-            <div>Lade Restaurants...</div>
+            <Container>
+                <div>Lade Restaurants...</div>
+            </Container>
         );
     }
 
     // Fehleranzeige
     if (error) {
         return (
-            <div>
+            <Container>
                 <div>{error}</div>
                 <button onClick={fetchRestaurants}>
                     Erneut versuchen
                 </button>
-            </div>
+            </Container>
         );
     }
 
@@ -146,14 +148,14 @@ function Restaurants() {
             <RestaurantGrid>
                 {restaurants.map((restaurant) => (
                     <RestaurantCard
-                        key={restaurant.id}
-                        onClick={() => handleRestaurantClick(restaurant.id)}
+                        key={restaurant.restaurantid}
+                        onClick={() => handleEditRestaurant(restaurant.restaurantid)}
                     >
                         <RestaurantName>{restaurant.name}</RestaurantName>
                         <RestaurantType>{restaurant.klassifizierung}</RestaurantType>
-                        <RestaurantInfo>📍 {restaurant.kuechenchef}</RestaurantInfo>
-                        <RestaurantInfo>💰 {restaurant.telefon}</RestaurantInfo>
-                        <Rating>⭐ {restaurant.adresseid}</Rating>
+                        <RestaurantInfo>👨‍🍳 {restaurant.kuechenchef}</RestaurantInfo>
+                        <RestaurantInfo>📞 {restaurant.telefon}</RestaurantInfo>
+                        <RestaurantInfo>🏠 Adresse-ID: {restaurant.adresseid}</RestaurantInfo>
                     </RestaurantCard>
                 ))}
             </RestaurantGrid>

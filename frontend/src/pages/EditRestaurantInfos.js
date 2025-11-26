@@ -62,7 +62,7 @@ function EditRestaurantInfos() {
 
     return (
         <Container>
-            <BackButton onClick={() => navigate(`/restaurants/${id}`)}>
+            <BackButton onClick={() => navigate(`/restaurants`)}>
                 ← Zurück zum Restaurant
             </BackButton>
 
