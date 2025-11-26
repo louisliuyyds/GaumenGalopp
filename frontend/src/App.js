@@ -11,6 +11,7 @@ import GerichtDetail from "./pages/GerichtDetail";
 import EditRestaurantInfos from "./pages/EditRestaurantInfos";
 import colors from './theme/colors';
 import Restaurants from "./pages/Restaurant";
+import KundeHome from './pages/Kundehome';
 
 const AppContainer = styled.div`
     display: flex;
@@ -40,9 +41,7 @@ function App() {
                         <Route path="/restaurants/:restaurantId/gericht/:gerichtId" element={<GerichtDetail />} />
                         <Route path="/restaurants/:id" element={<RestaurantDetail />} />
                         <Route path="/restaurants/:id/edit" element={<EditRestaurantInfos />} />
-
-                        /* Kundenansicht */
-                        <Route path="/kunde" element={<Restaurants />} />
+                        <Route path="/kunde" element={<KundeHome />} />
                         <Route path="/kunde/restaurants" element={<Restaurants />} />
                     </Routes>
                 </ContentArea>
