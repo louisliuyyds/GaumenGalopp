@@ -6,7 +6,7 @@ class Kritiker(Base):
     __tablename__ = "kritiker"
 
     kritikerid = Column(Integer, primary_key=True, index=True)
-    kundenid = Column(Integer, ForeignKey('kunde.kundenid'), nullable=False)
+    kundenid = Column(Integer, ForeignKey('kunde.kundenid'), nullable=False, unique=True)
     beschreibung = Column(String(100))
     kritikername = Column(String(50))
 

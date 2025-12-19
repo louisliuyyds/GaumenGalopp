@@ -7,9 +7,9 @@ class KundeCreate(BaseModel):
     nachname: str
     adressid: int
     geburtsdatum: Optional[date] = None
-    telefonnummer: Optional[str] = None
-    email: Optional[EmailStr] = None
-    namenskuerzel: Optional[str] = None
+    telefonnummer: str
+    email: EmailStr
+    namenskuerzel: str
 
 class KundeUpdate(BaseModel):
     vorname: Optional[str] = None
@@ -26,9 +26,9 @@ class KundeResponse(BaseModel):
     nachname: str
     adressid: int
     geburtsdatum: Optional[date] = None
-    telefonnummer: Optional[str] = None
-    email: Optional[str] = None
-    namenskuerzel: Optional[str] = None
+    telefonnummer:str
+    email: str
+    namenskuerzel: str
 
     class Config:
         from_attributes = True

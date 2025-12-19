@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, ForeignKey
+from sqlalchemy import Column, Integer, String, ForeignKey, Text
 from sqlalchemy.orm import relationship
 from database import Base
 
@@ -11,6 +11,8 @@ class Restaurant(Base):
     adresseid = Column(Integer, ForeignKey('adresse.adresseid'))
     telefon = Column(String(20))
     kuechenchef = Column(String(255))
+    email = Column(String(255), nullable=False, unique=True)
+    passwordhash = Column(Text, nullable=False)
     
     # Relationships
     adresse = relationship("Adresse", back_populates="restaurant")
@@ -20,12 +22,12 @@ class Restaurant(Base):
     oeffnungszeiten = relationship("RestaurantOeffnungszeit", back_populates="restaurant")
     
     def to_dict(self):
-        """Convert to dictionary"""
         return {
             "restaurantid": self.restaurantid,
             "name": self.name,
             "klassifizierung": self.klassifizierung,
             "adresseid": self.adresseid,
             "telefon": self.telefon,
-            "kuechenchef": self.kuechenchef
+            "kuechenchef": self.kuechenchef,
+            "email": self.email
         }
