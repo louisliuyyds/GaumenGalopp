@@ -32,9 +32,16 @@ class KundeService:
         if not kunde:
             return None
 
+        adresse_data = update_data.pop("adresse", None)
+
         for key, value in update_data.items():
             if value is not None:
                 setattr(kunde, key, value)
+
+        if adresse_data and kunde.adresse:
+            for key, value in adresse_data.items():
+                if value is not None:
+                    setattr(kunde.adresse, key, value)
 
         self.db.commit()
         self.db.refresh(kunde)

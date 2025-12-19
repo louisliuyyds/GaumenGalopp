@@ -13,6 +13,7 @@ import colors from './theme/colors';
 import Restaurants from "./pages/Restaurant";
 import Bestellung from "./pages/Bestellung";
 import KundeHome from './pages/Kundehome';
+import KundeProfil from './pages/KundeProfil';
 
 const AppContainer = styled.div`
     display: flex;
@@ -45,6 +46,7 @@ function App() {
                         <Route path="/kunde" element={<KundeHome />} />
                         <Route path="/kunde/restaurants" element={<Restaurants />} />
                         <Route path="/kunde/bestellungen" element={<Bestellung />} />
+                        <Route path="/kunde/profil" element={<KundeProfil />} />
                     </Routes>
                 </ContentArea>
             </AppContainer>
