@@ -193,3 +193,37 @@ def logout():
         Success-Message
     """
     return {"message": "Erfolgreich abgemeldet"}
+
+# NEU:
+#
+# from fastapi import APIRouter, Depends
+# from sqlalchemy.orm import Session
+#
+# from db import get_db
+# from schemas.auth import LoginRequest, TokenResponse, MeResponse
+# from services.auth_service import AuthService
+# from core.security import get_current_claims
+#
+# router = APIRouter(prefix="/auth", tags=["auth"])
+#
+# @router.post("/login", response_model=TokenResponse)
+# def login(payload: LoginRequest, db: Session = Depends(get_db)):
+#     svc = AuthService(db)
+#     result = svc.login(payload.type, payload.email, payload.password)
+#     return {
+#         "access_token": result["access_token"],
+#         "role": result["role"],
+#         "user_id": result["user_id"],
+#         "user_type": result["user_type"],
+#         "token_type": "bearer",
+#     }
+#
+# @router.get("/me", response_model=MeResponse)
+# def me(claims = Depends(get_current_claims)):
+#     return {
+#         "user_id": int(claims["sub"]),
+#         "user_type": claims["type"],
+#         "role": claims["role"],
+#         "email": claims.get("email", "")
+#     }
+
