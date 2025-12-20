@@ -3,9 +3,8 @@ import styled from 'styled-components';
 import colors from '../theme/colors';
 import bestellungService from '../services/bestellungService';
 import restaurantService from '../services/restaurantService';
-import lieferantService from '../services/lieferantService';
-import adresseService from '../services/adresseService';
 
+// --- STYLED COMPONENTS ---
 const SearchBox = styled.div`
     background: ${colors.background.card};
     padding: 30px;
@@ -24,11 +23,7 @@ const Input = styled.input`
     font-size: 1rem;
     flex: 1;
     transition: border-color 0.2s;
-
-    &:focus {
-        outline: none;
-        border-color: ${colors.accent.orange};
-    }
+    &:focus { outline: none; border-color: ${colors.accent.orange}; }
 `;
 
 const Button = styled.button`
@@ -40,20 +35,21 @@ const Button = styled.button`
     cursor: pointer;
     font-weight: bold;
     transition: transform 0.2s, box-shadow 0.2s;
+    &:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3); }
+    &:disabled { opacity: 0.6; cursor: not-allowed; }
+`;
 
-    &:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);
-    }
-
-    &:active {
-        transform: translateY(0);
-    }
-
-    &:disabled {
-        opacity: 0.6;
-        cursor: not-allowed;
-    }
+const SortInfo = styled.div`
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-bottom: 15px;
+    font-size: 0.85rem;
+    color: ${colors.text.light};
+    font-weight: 500;
+    padding-right: 5px;
+    &:before { content: '🔃'; font-size: 1rem; }
 `;
 
 const OrderCard = styled.div`
@@ -65,11 +61,7 @@ const OrderCard = styled.div`
     box-shadow: ${colors.shadows.small};
     transition: all 0.2s;
     cursor: pointer;
-
-    &:hover {
-        transform: translateX(5px);
-        box-shadow: ${colors.shadows.large};
-    }
+    &:hover { transform: translateX(5px); box-shadow: ${colors.shadows.large}; }
 `;
 
 const OrderHeader = styled.div`
@@ -80,9 +72,9 @@ const OrderHeader = styled.div`
 
 const OrderTitle = styled.div`
     font-weight: 700;
-    font-size: 1.1rem;
+    font-size: 1.2rem;
     color: ${colors.text.primary};
-    margin-bottom: 8px;
+    margin-bottom: 4px;
 `;
 
 const OrderTime = styled.div`
@@ -91,10 +83,7 @@ const OrderTime = styled.div`
     display: flex;
     align-items: center;
     gap: 5px;
-
-    &:before {
-        content: '🕐';
-    }
+    &:before { content: '📅'; }
 `;
 
 const StatusBadge = styled.div`
@@ -106,141 +95,47 @@ const StatusBadge = styled.div`
     background: ${props => props.$bgColor || colors.accent.orange};
     color: white;
     text-transform: capitalize;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
 `;
 
-const CustomerInfo = styled.div`
-    font-size: 0.8rem;
-    color: ${colors.text.secondary};
-    margin-top: 6px;
-    display: flex;
-    align-items: center;
-    gap: 5px;
-
-    &:before {
-        content: '👤';
-    }
+const PriceTag = styled.div`
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: ${colors.text.primary};
+    margin-top: 8px;
 `;
 
-const EmptyState = styled.div`
-    text-align: center;
-    padding: 60px 20px;
-    color: ${colors.text.light};
-
-    &:before {
-        content: '📦';
-        display: block;
-        font-size: 4rem;
-        margin-bottom: 20px;
-    }
+const ItemsList = styled.div`
+    margin-top: 20px;
+    background: ${colors.background.hover};
+    border-radius: 12px;
+    padding: 15px;
 `;
 
-const ModalOverlay = styled.div`
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.5);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 1000;
-    animation: fadeIn 0.2s;
-
-    @keyframes fadeIn {
-        from { opacity: 0; }
-        to { opacity: 1; }
-    }
-`;
-
-const ModalContent = styled.div`
-    background: ${colors.background.card};
-    border-radius: 20px;
-    padding: 40px;
-    max-width: 700px;
-    width: 90%;
-    max-height: 85vh;
-    overflow-y: auto;
-    box-shadow: 0 10px 40px rgba(0,0,0,0.15);
-    animation: slideUp 0.3s;
-
-    @keyframes slideUp {
-        from {
-            transform: translateY(50px);
-            opacity: 0;
-        }
-        to {
-            transform: translateY(0);
-            opacity: 1;
-        }
-    }
-`;
-
-const ModalHeader = styled.div`
+const ItemRow = styled.div`
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 30px;
-    padding-bottom: 20px;
-    border-bottom: 2px solid ${colors.border.light};
+    padding: 10px 0;
+    border-bottom: 1px solid ${colors.border.light};
+    &:last-child { border-bottom: none; }
 `;
 
-const ModalTitle = styled.h2`
-    color: ${colors.text.primary};
-    margin: 0;
-    font-size: 1.8rem;
-`;
+const ItemInfo = styled.div` display: flex; gap: 15px; align-items: center; `;
+const QuantityBadge = styled.span` background: ${colors.accent.orange}; color: white; padding: 2px 8px; border-radius: 6px; font-weight: bold; font-size: 0.85rem; `;
+const ItemName = styled.span` font-weight: 500; color: ${colors.text.primary}; `;
 
-const CloseButton = styled.button`
-    background: ${colors.background.hover};
-    border: none;
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    cursor: pointer;
-    font-size: 1.5rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.2s;
+const ModalOverlay = styled.div` position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.5); display: flex; align-items: center; justify-content: center; z-index: 1000; `;
+const ModalContent = styled.div` background: ${colors.background.card}; border-radius: 20px; padding: 40px; max-width: 700px; width: 90%; max-height: 85vh; overflow-y: auto; box-shadow: 0 10px 30px rgba(0,0,0,0.2); `;
+const ModalHeader = styled.div` display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; border-bottom: 2px solid ${colors.border.light}; padding-bottom: 20px; `;
+const ModalTitle = styled.h2` margin: 0; color: ${colors.text.primary}; `;
+const CloseButton = styled.button` background: none; border: none; font-size: 2.5rem; cursor: pointer; color: ${colors.text.light}; line-height: 1; `;
+const InfoSection = styled.div` margin-bottom: 25px; `;
+const InfoLabel = styled.div` font-size: 0.8rem; color: ${colors.text.light}; text-transform: uppercase; margin-bottom: 5px; font-weight: 600; `;
+const InfoValue = styled.div` font-size: 1.1rem; font-weight: 500; color: ${colors.text.primary}; `;
+const TotalPrice = styled.div` background: ${colors.gradients.accent}; color: white; padding: 15px; border-radius: 10px; text-align: center; font-size: 1.4rem; font-weight: bold; margin-top: 20px; `;
+const EmptyState = styled.div` text-align: center; padding: 50px; color: ${colors.text.light}; `;
 
-    &:hover {
-        background: ${colors.border.medium};
-        transform: rotate(90deg);
-    }
-`;
-
-const InfoSection = styled.div`
-    margin-bottom: 25px;
-`;
-
-const InfoLabel = styled.div`
-    font-size: 0.85rem;
-    color: ${colors.text.light};
-    margin-bottom: 5px;
-    text-transform: uppercase;
-    font-weight: 600;
-    letter-spacing: 0.5px;
-`;
-
-const InfoValue = styled.div`
-    font-size: 1.1rem;
-    color: ${colors.text.primary};
-    font-weight: 500;
-`;
-
-const TotalPrice = styled.div`
-    background: ${colors.gradients.accent};
-    color: white;
-    padding: 20px;
-    border-radius: 12px;
-    text-align: center;
-    margin-top: 30px;
-    font-size: 1.5rem;
-    font-weight: 700;
-`;
-
+// --- HAUPTKOMPONENTE ---
 function Bestellhistorie() {
     const [kundenId, setKundenId] = useState('');
     const [bestellungen, setBestellungen] = useState([]);
@@ -250,24 +145,12 @@ function Bestellhistorie() {
     const [modalLoading, setModalLoading] = useState(false);
 
     const getStatusColor = (status) => {
-        const statusMap = {
-            'in_zubereitung': colors.accent.yellow,
-            'in_lieferung': colors.accent.blue,
-            'abgeschlossen': colors.accent.green,
-            'storniert': colors.accent.red,
-            'ausstehend': colors.text.secondary
-        };
-        return statusMap[status] || colors.accent.orange;
+        const statusMap = { 'abgeschlossen': colors.accent.green, 'storniert': colors.accent.red };
+        return statusMap[status] || colors.text.secondary;
     };
 
     const formatStatus = (status) => {
-        const statusMap = {
-            'in_zubereitung': 'In Zubereitung',
-            'in_lieferung': 'In Lieferung',
-            'abgeschlossen': 'Abgeschlossen',
-            'storniert': 'Storniert',
-            'ausstehend': 'Ausstehend'
-        };
+        const statusMap = { 'abgeschlossen': 'Erfolgreich', 'storniert': 'Storniert' };
         return statusMap[status] || status;
     };
 
@@ -278,224 +161,135 @@ function Bestellhistorie() {
         }
 
         setLoading(true);
-        setStatusMsg('Suche läuft...');
+        setStatusMsg('Lade Historie...');
 
         try {
             const data = await bestellungService.getByKunde(kundenId);
-            setBestellungen(data);
+            const relevante = data.filter(b => b.status === 'abgeschlossen' || b.status === 'storniert');
 
-            if (data.length === 0) {
-                setStatusMsg('Keine Bestellungen gefunden.');
+            if (relevante.length === 0) {
+                setStatusMsg('Keine abgeschlossenen Bestellungen gefunden.');
+                setBestellungen([]);
+                return;
             }
+
+            relevante.sort((a, b) => new Date(b.bestellzeit) - new Date(a.bestellzeit));
+
+            const restaurantIds = [...new Set(relevante.map(b => b.restaurantid))];
+            const nameMap = {};
+
+            await Promise.all(restaurantIds.map(async (id) => {
+                try {
+                    const res = await restaurantService.getById(id);
+                    nameMap[id] = res?.data?.name || res?.name || 'Restaurant';
+                } catch { nameMap[id] = 'Restaurant'; }
+            }));
+
+            setBestellungen(relevante.map(b => ({
+                ...b,
+                restaurantName: nameMap[b.restaurantid]
+            })));
         } catch (err) {
-            console.error("Fehler:", err);
-            setStatusMsg('Fehler beim Laden der Daten');
-            setBestellungen([]);
-        } finally {
-            setLoading(false);
-        }
+            console.error(err);
+            setStatusMsg('Fehler beim Abrufen der Daten.');
+        } finally { setLoading(false); }
     };
 
     const handleOrderClick = async (bestellung) => {
         setSelectedBestellung(bestellung);
         setModalLoading(true);
-
         try {
-            // Hole Bestelldetails und alle zugehörigen Namen parallel
-            const [details, restaurant, allLieferanten, adresse] = await Promise.all([
-                bestellungService.getDetails(bestellung.bestellungid),
-                restaurantService.getById(bestellung.restaurantid),
-                lieferantService.getAll(),
-                adresseService.getById(bestellung.adressid)
-            ]);
-
-            // Extrahiere Daten aus Response
-            const restaurantData = restaurant?.data || restaurant;
-            const lieferantenData = allLieferanten?.data || allLieferanten;
-            const adresseData = adresse?.data || adresse;
-
-            // Finde den richtigen Lieferanten
-            const lieferant = Array.isArray(lieferantenData)
-                ? lieferantenData.find(l => l.lieferantid === bestellung.lieferantid)
-                : null;
-
-            // Füge Namen zu den Details hinzu
+            const details = await bestellungService.getDetails(bestellung.bestellungid);
             setSelectedBestellung({
                 ...details,
-                restaurantName: restaurantData?.name || 'Unbekannt',
-                restaurantTelefon: restaurantData?.telefon,
-                lieferantName: lieferant
-                    ? `${lieferant.vorname || ''} ${lieferant.nachname || ''}`.trim()
-                    : 'Unbekannt',
-                lieferantTelefon: lieferant?.telephone,
-                adresseVoll: adresseData
-                    ? `${adresseData.straße} ${adresseData.hausnummer}, ${adresseData.postleitzahl} ${adresseData.ort}`
-                    : 'Unbekannt',
-                adresseData: adresseData
+                restaurantName: details.restaurant?.name,
+                adresseVoll: details.lieferadresse?.vollstaendige_adresse,
+                lieferantName: details.lieferant?.vollstaendiger_name,
+                positionen: details.positionen || []
             });
-        } catch (err) {
-            console.error("Fehler beim Laden der Details:", err);
-        } finally {
-            setModalLoading(false);
-        }
-    };
-
-    const closeModal = () => {
-        setSelectedBestellung(null);
-    };
-
-    const handleKeyPress = (e) => {
-        if (e.key === 'Enter') {
-            handleSearch();
-        }
+        } catch (err) { console.error("Fehler beim Laden:", err);
+        } finally { setModalLoading(false); }
     };
 
     return (
         <div>
-            <h1 style={{
-                color: colors.text.primary,
-                marginBottom: '20px',
-                fontSize: '2rem',
-                fontWeight: '700'
-            }}>
-                📋 Bestellhistorie
-            </h1>
+            <h1 style={{ color: colors.text.primary, fontWeight: '700' }}>📋 Meine Bestellungen</h1>
 
             <SearchBox>
                 <Input
                     type="number"
-                    placeholder="Kunden-ID eingeben..."
+                    placeholder="Deine Kunden-ID..."
                     value={kundenId}
                     onChange={(e) => setKundenId(e.target.value)}
-                    onKeyPress={handleKeyPress}
-                    disabled={loading}
+                    onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
                 />
                 <Button onClick={handleSearch} disabled={loading}>
-                    {loading ? '⏳ Laden...' : '🔍 Suchen'}
+                    {loading ? 'Lade...' : 'Historie anzeigen'}
                 </Button>
             </SearchBox>
 
-            <div>
-                {bestellungen.length > 0 ? (
-                    bestellungen.map((b) => (
-                        <OrderCard
-                            key={b.bestellungid}
-                            $statusColor={getStatusColor(b.status)}
-                            onClick={() => handleOrderClick(b)}
-                        >
+            {bestellungen.length > 0 ? (
+                <>
+                    <SortInfo>Sortierung: Neueste zuerst</SortInfo>
+                    {bestellungen.map((b) => (
+                        <OrderCard key={b.bestellungid} $statusColor={getStatusColor(b.status)} onClick={() => handleOrderClick(b)}>
                             <OrderHeader>
                                 <div>
-                                    <OrderTitle>
-                                        Bestellung #{b.bestellungid}
-                                    </OrderTitle>
+                                    <OrderTitle>{b.restaurantName}</OrderTitle>
                                     <OrderTime>
-                                        {new Date(b.bestellzeit).toLocaleString('de-DE', {
-                                            day: '2-digit',
-                                            month: '2-digit',
-                                            year: 'numeric',
-                                            hour: '2-digit',
-                                            minute: '2-digit'
-                                        })}
+                                        {new Date(b.bestellzeit).toLocaleDateString('de-DE', { day: '2-digit', month: 'short', year: 'numeric' })}
                                     </OrderTime>
-                                    <CustomerInfo>
-                                        Kunde: {b.kundenid}
-                                    </CustomerInfo>
+                                    <div style={{ fontSize: '0.7rem', color: colors.text.light, marginTop: '4px' }}>
+                                        Bestell-Nr: #{b.bestellungid}
+                                    </div>
                                 </div>
                                 <div style={{ textAlign: 'right' }}>
-                                    <StatusBadge $bgColor={getStatusColor(b.status)}>
-                                        {formatStatus(b.status)}
-                                    </StatusBadge>
+                                    <StatusBadge $bgColor={getStatusColor(b.status)}>{formatStatus(b.status)}</StatusBadge>
+                                    {b.gesamtpreis && <PriceTag>{Number(b.gesamtpreis).toFixed(2)} €</PriceTag>}
                                 </div>
                             </OrderHeader>
                         </OrderCard>
-                    ))
-                ) : (
-                    <EmptyState>
-                        <div style={{ fontSize: '1.2rem', fontWeight: '500' }}>
-                            {statusMsg}
-                        </div>
-                    </EmptyState>
-                )}
-            </div>
+                    ))}
+                </>
+            ) : (
+                <EmptyState>{statusMsg}</EmptyState>
+            )}
 
             {selectedBestellung && (
-                <ModalOverlay onClick={closeModal}>
-                    <ModalContent onClick={(e) => e.stopPropagation()}>
+                <ModalOverlay onClick={() => setSelectedBestellung(null)}>
+                    <ModalContent onClick={e => e.stopPropagation()}>
                         <ModalHeader>
-                            <ModalTitle>
-                                Bestellung #{selectedBestellung.bestellungid}
-                            </ModalTitle>
-                            <CloseButton onClick={closeModal}>
-                                ×
-                            </CloseButton>
+                            <ModalTitle>Details zur Bestellung</ModalTitle>
+                            <CloseButton onClick={() => setSelectedBestellung(null)}>&times;</CloseButton>
                         </ModalHeader>
-
-                        {modalLoading ? (
-                            <div style={{ textAlign: 'center', padding: '40px', color: colors.text.light }}>
-                                ⏳ Lade Details...
-                            </div>
-                        ) : (
+                        {modalLoading ? <p>Lade Details...</p> : (
                             <>
+                                <InfoSection><InfoLabel>Restaurant</InfoLabel><InfoValue>{selectedBestellung.restaurantName}</InfoValue></InfoSection>
+                                <InfoSection><InfoLabel>Lieferadresse</InfoLabel><InfoValue>{selectedBestellung.adresseVoll}</InfoValue></InfoSection>
                                 <InfoSection>
-                                    <InfoLabel>Status</InfoLabel>
-                                    <StatusBadge $bgColor={getStatusColor(selectedBestellung.status)}>
-                                        {formatStatus(selectedBestellung.status)}
-                                    </StatusBadge>
+                                    <InfoLabel>📦 Deine Bestellung</InfoLabel>
+                                    <ItemsList>
+                                        {selectedBestellung.positionen.map((item, index) => (
+                                            <ItemRow key={index}>
+                                                <ItemInfo>
+                                                    <QuantityBadge>{item.menge}x</QuantityBadge>
+                                                    <ItemName>
+                                                        {item.gericht?.name}
+                                                        {item.aenderungswunsch && (
+                                                            <div style={{ fontSize: '0.8rem', color: colors.accent.orange, fontStyle: 'italic' }}>
+                                                                Notiz: {item.aenderungswunsch}
+                                                            </div>
+                                                        )}
+                                                    </ItemName>
+                                                </ItemInfo>
+                                                <div style={{ fontWeight: '600' }}>{item.zwischensumme?.toFixed(2)} €</div>
+                                            </ItemRow>
+                                        ))}
+                                    </ItemsList>
                                 </InfoSection>
-
-                                <InfoSection>
-                                    <InfoLabel>Bestellzeit</InfoLabel>
-                                    <InfoValue>
-                                        {new Date(selectedBestellung.bestellzeit).toLocaleString('de-DE', {
-                                            weekday: 'long',
-                                            day: '2-digit',
-                                            month: 'long',
-                                            year: 'numeric',
-                                            hour: '2-digit',
-                                            minute: '2-digit'
-                                        })}
-                                    </InfoValue>
-                                </InfoSection>
-
-                                <InfoSection>
-                                    <InfoLabel>Kunden-ID</InfoLabel>
-                                    <InfoValue>#{selectedBestellung.kundenid}</InfoValue>
-                                </InfoSection>
-
-                                <InfoSection>
-                                    <InfoLabel>🏪 Restaurant</InfoLabel>
-                                    <InfoValue>{selectedBestellung.restaurantName}</InfoValue>
-                                    {selectedBestellung.restaurantTelefon && (
-                                        <div style={{ fontSize: '0.9rem', color: colors.text.light, marginTop: '4px' }}>
-                                            📞 {selectedBestellung.restaurantTelefon}
-                                        </div>
-                                    )}
-                                </InfoSection>
-
-                                <InfoSection>
-                                    <InfoLabel>🚚 Lieferant</InfoLabel>
-                                    <InfoValue>{selectedBestellung.lieferantName}</InfoValue>
-                                    {selectedBestellung.lieferantTelefon && (
-                                        <div style={{ fontSize: '0.9rem', color: colors.text.light, marginTop: '4px' }}>
-                                            📞 {selectedBestellung.lieferantTelefon}
-                                        </div>
-                                    )}
-                                </InfoSection>
-
-                                <InfoSection>
-                                    <InfoLabel>📍 Lieferadresse</InfoLabel>
-                                    <InfoValue>{selectedBestellung.adresseVoll}</InfoValue>
-                                    {selectedBestellung.adresseData?.land && (
-                                        <div style={{ fontSize: '0.9rem', color: colors.text.light, marginTop: '4px' }}>
-                                            🌍 {selectedBestellung.adresseData.land}
-                                        </div>
-                                    )}
-                                </InfoSection>
-
+                                <InfoSection><InfoLabel>Lieferant</InfoLabel><InfoValue>{selectedBestellung.lieferantName}</InfoValue></InfoSection>
                                 {selectedBestellung.gesamtpreis && (
-                                    <TotalPrice>
-                                        Gesamtpreis: {selectedBestellung.gesamtpreis.toFixed(2)} €
-                                    </TotalPrice>
+                                    <TotalPrice>Gesamtbetrag: {Number(selectedBestellung.gesamtpreis).toFixed(2)} €</TotalPrice>
                                 )}
                             </>
                         )}
