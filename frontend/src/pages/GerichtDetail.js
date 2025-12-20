@@ -214,6 +214,7 @@ function GerichtDetail() {
     const [loadingBewertungen, setLoadingBewertungen] = useState(true);
     const [error, setError] = useState(null);
     const [bewertungError, setBewertungError] = useState(null);
+    const [kunden, setKunden] = useState({})
     const navigate = useNavigate();
 
     // Gericht laden
@@ -239,33 +240,45 @@ function GerichtDetail() {
             setBewertungError(null);
             const response = await bewertungService.getByGericht(gerichtId);
             const data = response.data || response;
-            setBewertungen(Array.isArray(data) ? data : []);
+            const bewertungen = Array.isArray(data) ? data : [];
+            setBewertungen(bewertungen);
             console.log('Bewertungen geladen:', data);
+            
+            // Kundendaten für alle Bewertungen laden
+            if (bewertungen.length > 0) {
+                await fetchKundenFuerBewertungen(bewertungen);
+            }
         } catch (err) {
             console.error('Fehler beim Laden der Bewertungen:', err);
             setBewertungError('Fehler beim Laden der Bewertungen. Bitte versuchen Sie es später erneut.');
         } finally {
             setLoadingBewertungen(false);
         }
-    }
+    };
 
-    /*
-    const fetchKunde = async () => {
+    const fetchKundenFuerBewertungen = async (bewertungen) => {
         try {
-            setLoading(true);
-            setError(null);
-            const data = await kundeService.getById(kundenid);
-            setKunde(data);
-            console.log('Kunde geladen:', data);
+            const kundenMap = {};
+            const kundenIds = [...new Set(bewertungen.map(b => b.kundenid))];
+            await Promise.all(
+                kundenIds.map(async (kundenid) => {
+                    try {
+                        const kundeData = await kundeService.getById(kundenid);
+                        kundenMap[kundenid] = kundeData;
+                    } catch (err) {
+                        console.error(`Fehler beim Laden von Kunde ${kundenid}:`, err);
+                        kundenMap[kundenid] = { namenskuerzel: 'Unbekannt' };
+                    }
+                })
+            );
+            
+            setKunden(kundenMap);
+            console.log('Kunden geladen:', kundenMap);
         } catch (err) {
-            console.error('Fehler beim Laden:', err);
-            setError('Fehler beim Laden des Kunden. Bitte versuchen Sie es später erneut.');
-        } finally {
-            setLoading(false);
+            console.error('Fehler beim Laden der Kunden:', err);
         }
     };
-    */
-   
+
     const renderSterne = (anzahl) => {
         return '⭐'.repeat(anzahl) + '☆'.repeat(5 - anzahl);
     };
@@ -293,6 +306,7 @@ function GerichtDetail() {
     useEffect(() => {
         fetchGericht();
         fetchBewertung();
+        fetchKundenFuerBewertungen();
     }, [gerichtId]);
 
     // Gericht löschen
@@ -357,73 +371,66 @@ function GerichtDetail() {
 
     return (
         <Container>
-            <BackButton onClick={() => navigate(`/restaurants/${restaurantId}`)}>
-                ← Zurück zum Restaurant
-            </BackButton>
+        <BackButton onClick={() => navigate(`/restaurants/${restaurantId}`)}>
+            ← Zurück zum Restaurant
+        </BackButton>
+        
+        <DetailCard>
+            <GerichtName>{gericht.name}</GerichtName>
             
-            <DetailCard>
-                <GerichtName>{gericht.name}</GerichtName>
-                
-                <PreisTag>€ {gericht.preis?.toFixed(2)}</PreisTag>
+            <PreisTag>€ {gericht.preis?.toFixed(2)}</PreisTag>
 
-                {gericht.beschreibung && (
-                    <InfoSection>
-                        <InfoLabel>Beschreibung</InfoLabel>
-                        <Beschreibung>{gericht.beschreibung}</Beschreibung>
-                    </InfoSection>
-                )}
-
+            {gericht.beschreibung && (
                 <InfoSection>
-                    <InfoLabel>Kategorie</InfoLabel>
-                    <InfoValue>{gericht.kategorie || 'Nicht angegeben'}</InfoValue>
+                    <InfoLabel>Beschreibung</InfoLabel>
+                    <Beschreibung>{gericht.beschreibung}</Beschreibung>
                 </InfoSection>
+            )}
 
-                <InfoSection>
-                    <InfoLabel>Gericht-ID</InfoLabel>
-                    <InfoValue>{gericht.gerichtid}</InfoValue>
-                </InfoSection>
-            </DetailCard>
-            
-            <DetailCard>
-                <BewertungenSection>
-                    <SectionTitle>⭐ Bewertungen</SectionTitle>
+            <InfoSection>
+                <InfoLabel>Kategorie</InfoLabel>
+                <InfoValue>{gericht.kategorie || 'Nicht angegeben'}</InfoValue>
+            </InfoSection>
 
-                    {loadingBewertungen ? (
-                        <LoadingMessage>Bewertungen werden geladen...</LoadingMessage>
-                    ) : bewertungError ? (
-                        <ErrorMessage>{bewertungError}</ErrorMessage>
-                    ) : bewertung.length === 0 ? (
-                        <NoBewertungenMessage>
-                            Noch keine Bewertungen für dieses Gericht vorhanden.
-                        </NoBewertungenMessage>
-                    ) : (
-                        <>
-                            <BewertungStats>
-                                <StatItem>
-                                    <StatValue>{stats.durchschnitt}</StatValue>
-                                    <StatLabel>Durchschnitt</StatLabel>
-                                </StatItem>
-                                <StatItem>
-                                    <StatValue>{stats.anzahl}</StatValue>
-                                    <StatLabel>Bewertungen</StatLabel>
-                                </StatItem>
-                            </BewertungStats>
+            <InfoSection>
+                <InfoLabel>Gericht-ID</InfoLabel>
+                <InfoValue>{gericht.gerichtid}</InfoValue>
+            </InfoSection>
+        </DetailCard>
+        
+        {!loadingBewertungen && !bewertungError && bewertung.length > 0 && (
+                <DetailCard>
+                    <BewertungenSection>
+                        <SectionTitle>⭐ Bewertungen</SectionTitle>
 
-                            {bewertung.map((bewertung) => (
-                                <BewertungCard key={bewertung.bewertungid}>
-                                    <BewertungHeader>
-                                        <BenutzerName>{bewertung.kundenid}</BenutzerName>
-                                        <Sterne>{renderSterne(bewertung.rating)}</Sterne>
-                                    </BewertungHeader>
-                                    <Kommentar>{bewertung.kommentar}</Kommentar>
-                                    <Datum>{formatDatum(bewertung.erstelltam)}</Datum>
-                                </BewertungCard>
-                            ))}
-                        </>
-                    )}
-                </BewertungenSection>
-            </DetailCard>
-        </Container>
+                        <BewertungStats>
+                            <StatItem>
+                                <StatValue>{stats.durchschnitt}</StatValue>
+                                <StatLabel>Durchschnitt</StatLabel>
+                            </StatItem>
+                            <StatItem>
+                                <StatValue>{stats.anzahl}</StatValue>
+                                <StatLabel>Bewertungen</StatLabel>
+                            </StatItem>
+                        </BewertungStats>
+
+                        {bewertung.map((bewertung) => (
+                            <BewertungCard key={bewertung.bewertungid}>
+                                <BewertungHeader>
+                                    <BenutzerName>
+                                        {kunden[bewertung.kundenid]?.namenskuerzel || 'Lädt...'}
+                                    </BenutzerName>
+                                    <Sterne>{renderSterne(bewertung.rating)}</Sterne>
+                                </BewertungHeader>
+                                <Kommentar>{bewertung.kommentar}</Kommentar>
+                                <Kommentar>{bewertung.bewertungid}</Kommentar>
+                                <Datum>{formatDatum(bewertung.erstelltam)}</Datum>
+                            </BewertungCard>
+                        ))}
+                    </BewertungenSection>
+                </DetailCard>
+            )}
+    </Container>
     );
 }
 
