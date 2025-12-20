@@ -145,12 +145,12 @@ function Bestellhistorie() {
     const [modalLoading, setModalLoading] = useState(false);
 
     const getStatusColor = (status) => {
-        const statusMap = { 'abgeschlossen': colors.accent.green, 'storniert': colors.accent.red };
+        const statusMap = { 'zugestellt': colors.accent.green, 'storniert': colors.accent.red };
         return statusMap[status] || colors.text.secondary;
     };
 
     const formatStatus = (status) => {
-        const statusMap = { 'abgeschlossen': 'Erfolgreich', 'storniert': 'Storniert' };
+        const statusMap = { 'zugestellt': 'Erfolgreich', 'storniert': 'Storniert' };
         return statusMap[status] || status;
     };
 
@@ -165,7 +165,7 @@ function Bestellhistorie() {
 
         try {
             const data = await bestellungService.getByKunde(kundenId);
-            const relevante = data.filter(b => b.status === 'abgeschlossen' || b.status === 'storniert');
+            const relevante = data.filter(b => b.status === 'zugestellt' || b.status === 'storniert');
 
             if (relevante.length === 0) {
                 setStatusMsg('Keine abgeschlossenen Bestellungen gefunden.');
@@ -185,10 +185,34 @@ function Bestellhistorie() {
                 } catch { nameMap[id] = 'Restaurant'; }
             }));
 
-            setBestellungen(relevante.map(b => ({
-                ...b,
-                restaurantName: nameMap[b.restaurantid]
-            })));
+            // Hole auch die Details für jede Bestellung, um den Gesamtpreis zu bekommen
+            const bestellungenMitDetails = await Promise.all(relevante.map(async (b) => {
+                try {
+                    const details = await bestellungService.getDetails(b.bestellungid);
+
+                    // Berechne Gesamtpreis aus Positionen, falls nicht vorhanden
+                    let gesamtpreis = details.gesamtpreis || b.gesamtpreis;
+                    if (!gesamtpreis && details.positionen && details.positionen.length > 0) {
+                        gesamtpreis = details.positionen.reduce((sum, pos) => {
+                            return sum + (pos.zwischensumme || 0);
+                        }, 0);
+                    }
+
+                    return {
+                        ...b,
+                        restaurantName: nameMap[b.restaurantid],
+                        gesamtpreis: gesamtpreis
+                    };
+                } catch (err) {
+                    console.error(`Fehler bei Bestellung ${b.bestellungid}:`, err);
+                    return {
+                        ...b,
+                        restaurantName: nameMap[b.restaurantid]
+                    };
+                }
+            }));
+
+            setBestellungen(bestellungenMitDetails);
         } catch (err) {
             console.error(err);
             setStatusMsg('Fehler beim Abrufen der Daten.');
@@ -196,19 +220,40 @@ function Bestellhistorie() {
     };
 
     const handleOrderClick = async (bestellung) => {
-        setSelectedBestellung(bestellung);
+        // Behalte die ursprünglichen Daten
+        const originalData = {
+            bestellungid: bestellung.bestellungid,
+            gesamtpreis: bestellung.gesamtpreis,
+            restaurantName: bestellung.restaurantName,
+            status: bestellung.status,
+            bestellzeit: bestellung.bestellzeit
+        };
+
+        setSelectedBestellung({...originalData, positionen: []});
         setModalLoading(true);
+
         try {
             const details = await bestellungService.getDetails(bestellung.bestellungid);
             setSelectedBestellung({
-                ...details,
-                restaurantName: details.restaurant?.name,
-                adresseVoll: details.lieferadresse?.vollstaendige_adresse,
-                lieferantName: details.lieferant?.vollstaendiger_name,
-                positionen: details.positionen || []
+                ...originalData,
+                adresseVoll: details.lieferadresse?.vollstaendige_adresse || 'Nicht verfügbar',
+                lieferantName: details.lieferant?.vollstaendiger_name || 'Nicht verfügbar',
+                positionen: details.positionen || [],
+                // Falls die Details bessere Werte haben, verwende diese
+                restaurantName: details.restaurant?.name || originalData.restaurantName,
+                gesamtpreis: details.gesamtpreis || originalData.gesamtpreis
             });
-        } catch (err) { console.error("Fehler beim Laden:", err);
-        } finally { setModalLoading(false); }
+        } catch (err) {
+            console.error("Fehler beim Laden:", err);
+            setSelectedBestellung({
+                ...originalData,
+                adresseVoll: 'Nicht verfügbar',
+                lieferantName: 'Nicht verfügbar',
+                positionen: []
+            });
+        } finally {
+            setModalLoading(false);
+        }
     };
 
     return (
@@ -239,13 +284,12 @@ function Bestellhistorie() {
                                     <OrderTime>
                                         {new Date(b.bestellzeit).toLocaleDateString('de-DE', { day: '2-digit', month: 'short', year: 'numeric' })}
                                     </OrderTime>
-                                    <div style={{ fontSize: '0.7rem', color: colors.text.light, marginTop: '4px' }}>
-                                        Bestell-Nr: #{b.bestellungid}
-                                    </div>
                                 </div>
-                                <div style={{ textAlign: 'right' }}>
+                                <div style={{ textAlign: 'right', display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'flex-end' }}>
                                     <StatusBadge $bgColor={getStatusColor(b.status)}>{formatStatus(b.status)}</StatusBadge>
-                                    {b.gesamtpreis && <PriceTag>{Number(b.gesamtpreis).toFixed(2)} €</PriceTag>}
+                                    {b.gesamtpreis != null && b.gesamtpreis > 0 && (
+                                        <PriceTag>{Number(b.gesamtpreis).toFixed(2)} €</PriceTag>
+                                    )}
                                 </div>
                             </OrderHeader>
                         </OrderCard>
@@ -269,28 +313,40 @@ function Bestellhistorie() {
                                 <InfoSection>
                                     <InfoLabel>📦 Deine Bestellung</InfoLabel>
                                     <ItemsList>
-                                        {selectedBestellung.positionen.map((item, index) => (
-                                            <ItemRow key={index}>
-                                                <ItemInfo>
-                                                    <QuantityBadge>{item.menge}x</QuantityBadge>
-                                                    <ItemName>
-                                                        {item.gericht?.name}
-                                                        {item.aenderungswunsch && (
-                                                            <div style={{ fontSize: '0.8rem', color: colors.accent.orange, fontStyle: 'italic' }}>
-                                                                Notiz: {item.aenderungswunsch}
-                                                            </div>
-                                                        )}
-                                                    </ItemName>
-                                                </ItemInfo>
-                                                <div style={{ fontWeight: '600' }}>{item.zwischensumme?.toFixed(2)} €</div>
-                                            </ItemRow>
-                                        ))}
+                                        {selectedBestellung.positionen.length > 0 ? (
+                                            selectedBestellung.positionen.map((item, index) => (
+                                                <ItemRow key={index}>
+                                                    <ItemInfo>
+                                                        <QuantityBadge>{item.menge}x</QuantityBadge>
+                                                        <ItemName>
+                                                            {item.gericht?.name}
+                                                            {item.aenderungswunsch && (
+                                                                <div style={{ fontSize: '0.8rem', color: colors.accent.orange, fontStyle: 'italic' }}>
+                                                                    Notiz: {item.aenderungswunsch}
+                                                                </div>
+                                                            )}
+                                                        </ItemName>
+                                                    </ItemInfo>
+                                                    <div style={{ fontWeight: '600' }}>{item.zwischensumme?.toFixed(2)} €</div>
+                                                </ItemRow>
+                                            ))
+                                        ) : (
+                                            <div style={{ textAlign: 'center', padding: '20px', color: colors.text.light }}>
+                                                Keine Bestellung
+                                            </div>
+                                        )}
                                     </ItemsList>
                                 </InfoSection>
                                 <InfoSection><InfoLabel>Lieferant</InfoLabel><InfoValue>{selectedBestellung.lieferantName}</InfoValue></InfoSection>
-                                {selectedBestellung.gesamtpreis && (
-                                    <TotalPrice>Gesamtbetrag: {Number(selectedBestellung.gesamtpreis).toFixed(2)} €</TotalPrice>
-                                )}
+                                <TotalPrice>
+                                    Bestell-Nr: #{selectedBestellung.bestellungid}
+                                    {selectedBestellung.gesamtpreis && Number(selectedBestellung.gesamtpreis) > 0 && (
+                                        <>
+                                            <br />
+                                            Gesamtbetrag: {Number(selectedBestellung.gesamtpreis).toFixed(2)} €
+                                        </>
+                                    )}
+                                </TotalPrice>
                             </>
                         )}
                     </ModalContent>
