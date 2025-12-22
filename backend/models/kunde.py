@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, Date, Text
+from sqlalchemy import Column, Integer, String, ForeignKey, Date, Text, Boolean
 from sqlalchemy.orm import relationship
 from database import Base
 
@@ -14,6 +14,10 @@ class Kunde(Base):
     email = Column(String(255), nullable=False, unique=True)
     namenskuerzel = Column(String(100))
     passwordhash = Column(Text, nullable=False)
+
+    # Auth-Felder
+    is_active = Column(Boolean, default=True, nullable=False)
+    is_admin = Column(Boolean, default=False, nullable=False)
 
     adresse = relationship("Adresse", back_populates="kunden")
     kritiker = relationship("Kritiker", back_populates="kunde")
