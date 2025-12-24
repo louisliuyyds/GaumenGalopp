@@ -10,10 +10,10 @@ class LabelGerichtService:
         return self.db.query(LabelGericht).all()
 
     def get_by_label_id(self, label_id: int) -> List[type[LabelGericht]]:
-        return self.db.query(LabelGericht).filter(LabelGericht.labelid == label_id).all
+        return self.db.query(LabelGericht).filter(LabelGericht.labelid == label_id).all()
 
     def get_by_gericht_id(self, gericht_id: int) -> List[type[LabelGericht]]:
-        return self.db.query(LabelGericht).filter(LabelGericht.gerichtid == gericht_id).all
+        return self.db.query(LabelGericht).filter(LabelGericht.gerichtid == gericht_id).all()
 
     def create(self, label_data: dict) -> LabelGericht:
         new_label = LabelGericht(**label_data)

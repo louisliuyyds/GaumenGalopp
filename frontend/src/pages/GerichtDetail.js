@@ -3,8 +3,8 @@ import styled from 'styled-components';
 import { useParams, useNavigate } from 'react-router-dom';
 import colors from "../theme/colors";
 import { gerichtService } from "../services";
-//import { preisService } from "../services";
-//import { labelGerichtService } from "../services";
+import { labelService } from "../services";
+import { labelGerichtService } from "../services";
 import { bewertungService } from "../services";
 import { kundeService } from "../services";
 
@@ -41,6 +41,24 @@ const PreisTag = styled.div`
     font-size: 1.3em;
     font-weight: 700;
     margin-top: 15px;
+`;
+
+const LabelContainer = styled.div`
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 15px;
+    margin-bottom: 15px;
+`;
+
+const LabelTag = styled.div`
+    display: inline-block;
+    background: ${colors.gradients.accent};
+    color: ${colors.text.white};
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 0.95em;
+    font-weight: 600;
 `;
 
 const Beschreibung = styled.p`
@@ -172,13 +190,6 @@ const ErrorMessage = styled.div`
     text-align: center;
 `;
 
-const NoBewertungenMessage = styled.div`
-    text-align: center;
-    padding: 40px;
-    color: #999;
-    font-size: 1.1em;
-`;
-
 const BewertungStats = styled.div`
     display: flex;
     gap: 30px;
@@ -207,14 +218,16 @@ const StatLabel = styled.span`
 `;
 
 function GerichtDetail() {
-    const { restaurantId, gerichtId } = useParams();
+    const {restaurantId, gerichtId } = useParams();
     const [gericht, setGericht] = useState(null);
     const [bewertung, setBewertungen] = useState([]);
+    const [labels, setLabels] = useState([]);  // NEU: State für Labels
     const [loading, setLoading] = useState(true);
     const [loadingBewertungen, setLoadingBewertungen] = useState(true);
+    const [loadingLabels, setLoadingLabels] = useState(true);  // NEU: Loading für Labels
     const [error, setError] = useState(null);
     const [bewertungError, setBewertungError] = useState(null);
-    const [kunden, setKunden] = useState({})
+    const [kunden, setKunden] = useState({});
     const navigate = useNavigate();
 
     // Gericht laden
@@ -232,7 +245,45 @@ function GerichtDetail() {
             setLoading(false);
         }
     };
-    
+
+    // NEU: Labels laden
+    const fetchLabels = async () => {
+    try {
+        setLoadingLabels(true);
+        // 1. Hole alle LabelGericht-Verknüpfungen für dieses Gericht
+        const labelGerichtResponse = await labelGerichtService.getByGerichtId(gerichtId);
+        const labelGerichtData = labelGerichtResponse.data || labelGerichtResponse;
+        const labelGerichtArray = Array.isArray(labelGerichtData) ? labelGerichtData : [];
+        
+        console.log('LabelGericht geladen:', labelGerichtArray);
+        
+        // 2. Hole für jede labelID die entsprechenden Label-Details
+        if (labelGerichtArray.length > 0) {
+            const labelPromises = labelGerichtArray.map(async (labelGericht) => {
+                try {
+                    const labelData = await labelService.getById(labelGericht.labelid);
+                    return labelData;
+                } catch (err) {
+                    console.error(`Fehler beim Laden von Label ${labelGericht.labelid}:`, err);
+                    return null;
+                }
+            });
+            
+            const loadedLabels = await Promise.all(labelPromises);
+            // Filter null values aus (falls ein Label nicht geladen werden konnte)
+            const validLabels = loadedLabels.filter(label => label !== null);
+            setLabels(validLabels);
+            console.log('Labels mit Namen geladen:', validLabels);
+        } else {
+            setLabels([]);
+        }
+    } catch (err) {
+        console.error('Fehler beim Laden der Labels:', err);
+        setLabels([]);
+    } finally {
+        setLoadingLabels(false);
+    }
+    };
     
     const fetchBewertung = async () => {
         try {
@@ -306,7 +357,7 @@ function GerichtDetail() {
     useEffect(() => {
         fetchGericht();
         fetchBewertung();
-        fetchKundenFuerBewertungen();
+        fetchLabels();  // NEU: Labels laden
     }, [gerichtId]);
 
     // Gericht löschen
@@ -315,7 +366,6 @@ function GerichtDetail() {
             try {
                 await gerichtService.delete(gerichtId);
                 console.log('Gericht gelöscht:', gerichtId);
-                // Zurück zur Restaurant-Seite
                 navigate(`/restaurants/${restaurantId}`);
             } catch (err) {
                 console.error('Fehler beim Löschen:', err);
@@ -371,38 +421,42 @@ function GerichtDetail() {
 
     return (
         <Container>
-        <BackButton onClick={() => navigate(`/restaurants/${restaurantId}`)}>
-            ← Zurück zum Restaurant
-        </BackButton>
-        
-        <DetailCard>
-            <GerichtName>{gericht.name}</GerichtName>
+            <BackButton onClick={() => navigate(`/restaurants/${restaurantId}`)}>
+                ← Zurück zum Restaurant
+            </BackButton>
             
-            <PreisTag>€ {gericht.preis?.toFixed(2)}</PreisTag>
+            <DetailCard>
+                <GerichtName>{gericht.name}</GerichtName> 
+                    {!loadingLabels && labels.length > 0 && (
+                    <LabelContainer>
+                        {labels.map((label) => (
+                        <LabelTag key={label.labelid}>
+                            {label.labelname}
+                        </LabelTag>
+                        ))}
+                    </LabelContainer>
+                )}
 
-            {gericht.beschreibung && (
+                
+                <PreisTag>€ {gericht.preis?.toFixed(2)}</PreisTag>
+
+                {gericht.beschreibung && (
+                    <InfoSection>
+                        <InfoLabel>Beschreibung</InfoLabel>
+                        <Beschreibung>{gericht.beschreibung}</Beschreibung>
+                    </InfoSection>
+                )}
+
                 <InfoSection>
-                    <InfoLabel>Beschreibung</InfoLabel>
-                    <Beschreibung>{gericht.beschreibung}</Beschreibung>
+                    <InfoLabel>Kategorie</InfoLabel>
+                    <InfoValue>{gericht.kategorie || 'Nicht angegeben'}</InfoValue>
                 </InfoSection>
-            )}
-
-            <InfoSection>
-                <InfoLabel>Kategorie</InfoLabel>
-                <InfoValue>{gericht.kategorie || 'Nicht angegeben'}</InfoValue>
-            </InfoSection>
-
-            <InfoSection>
-                <InfoLabel>Gericht-ID</InfoLabel>
-                <InfoValue>{gericht.gerichtid}</InfoValue>
-            </InfoSection>
-        </DetailCard>
-        
-        {!loadingBewertungen && !bewertungError && bewertung.length > 0 && (
+            </DetailCard>
+            
+            {!loadingBewertungen && !bewertungError && bewertung.length > 0 && (
                 <DetailCard>
                     <BewertungenSection>
-                        <SectionTitle>⭐ Bewertungen</SectionTitle>
-
+                        <SectionTitle>Bewertungen</SectionTitle>
                         <BewertungStats>
                             <StatItem>
                                 <StatValue>{stats.durchschnitt}</StatValue>
@@ -423,14 +477,13 @@ function GerichtDetail() {
                                     <Sterne>{renderSterne(bewertung.rating)}</Sterne>
                                 </BewertungHeader>
                                 <Kommentar>{bewertung.kommentar}</Kommentar>
-                                <Kommentar>{bewertung.bewertungid}</Kommentar>
                                 <Datum>{formatDatum(bewertung.erstelltam)}</Datum>
                             </BewertungCard>
                         ))}
                     </BewertungenSection>
                 </DetailCard>
             )}
-    </Container>
+        </Container>
     );
 }
 
