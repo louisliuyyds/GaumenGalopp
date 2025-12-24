@@ -14,8 +14,8 @@ const oeffnungszeitDetailService = {
    * Ein Öffnungszeit-Detail nach ID abrufen
    * GET /api/oeffnungszeit-details/{id}
    */
-  getById: async (detailId) => {
-    return await apiClient.get(`/api/oeffnungszeit-details/${detailId}`);
+  getById: async (id) => {
+      return await apiClient.get(`/api/restaurants/${id}?restaurant_id=${id}`);
   },
 
   /**

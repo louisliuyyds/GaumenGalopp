@@ -11,6 +11,25 @@ router = APIRouter(prefix="/api/bestellungen", tags=["bestellungen"])
 def get_all_bestellung(db: Session = Depends(get_db)):
     return BestellungService(db).get_all()
 
+@router.get("/kunde/{kundenid}", response_model=List[schemas.BestellungResponse])
+def get_bestellungen_by_kunde(kundenid: int, db: Session = Depends(get_db)):
+    return BestellungService(db).get_by_kunde(kundenid)
+
+# WICHTIG: Dieser neue Endpunkt muss VOR /{bestellungid} stehen!
+@router.get("/{bestellungid}/details", response_model=schemas.BestellungDetailResponse)
+def get_bestellung_details(bestellungid: int, db: Session = Depends(get_db)):
+    """
+    Gibt eine Bestellung mit ALLEN Details zurück:
+    - Bestellpositionen mit Gerichten und Preisen
+    - Restaurant-Informationen
+    - Lieferant-Informationen
+    - Lieferadresse
+    - Gesamtpreis
+    """
+    details = BestellungService(db).get_detail_by_id(bestellungid)
+    if not details:
+        raise HTTPException(status_code=404, detail="Bestellung nicht gefunden")
+    return details
 
 @router.get("/{bestellungid}", response_model=schemas.BestellungResponse)
 def get_bestellung(bestellungid: int, db: Session = Depends(get_db)):
@@ -27,11 +46,9 @@ def get_order_total(bestellungid: int, db: Session = Depends(get_db)):
 def create_bestellung(data: schemas.BestellungCreate, db: Session = Depends(get_db)):
     return BestellungService(db).create(data.model_dump())
 
-
 @router.put("/{bestellungid}", response_model=schemas.BestellungResponse)
 def update_bestellung(bestellungid: int, data: schemas.BestellungUpdate, db: Session = Depends(get_db)):
     update_data = data.model_dump(exclude_unset=True)
-
     updated_order = BestellungService(db).update(bestellungid, update_data)
     if not updated_order:
         raise HTTPException(status_code=404, detail="Bestellung nicht gefunden")
