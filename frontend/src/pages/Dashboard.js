@@ -1,18 +1,36 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom';
 import colors from '../theme/colors';
+import restaurantService from '../services/restaurantService';
+import bestellungService from '../services/bestellungService';
+
+// --- STYLED COMPONENTS ---
 
 const Container = styled.div`
     max-width: 1400px;
     margin: 0 auto;
+    padding: 20px;
 `;
 
-const PageTitle = styled.h1`
+const WelcomeSection = styled.div`
+    background: ${colors.gradients.luxury};
+    border-radius: 20px;
+    padding: 40px;
+    margin-bottom: 30px;
+    box-shadow: ${colors.shadows.large};
+`;
+
+const WelcomeTitle = styled.h1`
     color: ${colors.text.primary};
     font-size: 2.5em;
-    margin-bottom: 30px;
+    margin-bottom: 10px;
     font-weight: 700;
+`;
+
+const WelcomeSubtitle = styled.p`
+    color: ${colors.text.secondary};
+    font-size: 1.2em;
 `;
 
 const StatsGrid = styled.div`
@@ -23,181 +41,471 @@ const StatsGrid = styled.div`
 `;
 
 const StatCard = styled.div`
-    background: ${colors.gradients.card};
+    background: ${colors.background.card};
     border-radius: 16px;
     padding: 30px;
     box-shadow: ${colors.shadows.medium};
-    border: 2px solid ${colors.border.light};
+    border-left: 5px solid ${props => props.$color || colors.accent.orange};
     transition: all 0.3s ease;
     cursor: pointer;
 
     &:hover {
         transform: translateY(-5px);
         box-shadow: ${colors.shadows.large};
-        border-color: ${colors.accent.orange};
     }
 `;
 
-const StatIcon = styled.div`
-    font-size: 3em;
+const StatHeader = styled.div`
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     margin-bottom: 15px;
+`;
+
+const StatIcon = styled.div`
+    font-size: 2.5em;
+    opacity: 0.8;
 `;
 
 const StatValue = styled.div`
     font-size: 2.5em;
     font-weight: 700;
     color: ${colors.text.primary};
-    margin-bottom: 10px;
+    margin-bottom: 5px;
 `;
 
 const StatLabel = styled.div`
-    font-size: 1.1em;
+    font-size: 0.95em;
     color: ${colors.text.secondary};
     font-weight: 500;
 `;
 
-const QuickActionsSection = styled.div`
-    background: ${colors.background.card};
-    border-radius: 16px;
-    padding: 40px;
-    box-shadow: ${colors.shadows.medium};
-    margin-bottom: 40px;
+const StatTrend = styled.div`
+    font-size: 0.85em;
+    color: ${props => props.$positive ? '#22c55e' : '#ef4444'};
+    margin-top: 8px;
+    font-weight: 600;
 `;
 
 const SectionTitle = styled.h2`
     color: ${colors.text.primary};
     font-size: 1.8em;
     margin-bottom: 25px;
-    padding-bottom: 15px;
-    border-bottom: 3px solid ${colors.accent.orange};
-    display: inline-block;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+    &::before {
+        content: '';
+        width: 4px;
+        height: 30px;
+        background: ${colors.accent.orange};
+        border-radius: 2px;
+    }
 `;
 
-const ActionsGrid = styled.div`
+const ContentGrid = styled.div`
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 20px;
+    grid-template-columns: 2fr 1fr;
+    gap: 30px;
+    margin-bottom: 40px;
+
+    @media (max-width: 1200px) {
+        grid-template-columns: 1fr;
+    }
+`;
+
+const Card = styled.div`
+    background: ${colors.background.card};
+    border-radius: 16px;
+    padding: 30px;
+    box-shadow: ${colors.shadows.medium};
+`;
+
+const StatusSummary = styled.div`
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 15px;
+    margin-bottom: 25px;
+`;
+
+const MiniStat = styled.div`
+    background: ${colors.background.light};
+    padding: 15px;
+    border-radius: 12px;
+    border: 1px solid ${colors.border.light};
+    text-align: center;
+
+    .count { font-size: 1.8em; font-weight: 700; color: ${props => props.$color}; }
+    .label { font-size: 0.75em; color: ${colors.text.light}; text-transform: uppercase; font-weight: 600; margin-top: 5px;}
+`;
+
+const QuickActionsGrid = styled.div`
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
 `;
 
 const ActionButton = styled.button`
     background: ${colors.gradients.primary};
-    color: ${colors.text.white};
+    color: white;
     border: none;
-    padding: 25px;
+    padding: 20px;
     border-radius: 12px;
     cursor: pointer;
-    font-size: 1.1em;
+    font-size: 1em;
     font-weight: 600;
     transition: all 0.3s ease;
-    box-shadow: ${colors.shadows.primarySmall};
+    box-shadow: ${colors.shadows.small};
     display: flex;
+    flex-direction: column;
     align-items: center;
-    gap: 12px;
-    text-align: left;
+    gap: 8px;
+    text-align: center;
 
     &:hover {
         transform: translateY(-3px);
-        box-shadow: ${colors.shadows.primaryMedium};
+        box-shadow: ${colors.shadows.medium};
     }
 `;
 
-const RecentActivitySection = styled.div`
-    background: ${colors.background.card};
-    border-radius: 16px;
-    padding: 40px;
-    box-shadow: ${colors.shadows.medium};
+const RestaurantList = styled.div`
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
 `;
 
-const ActivityItem = styled.div`
-    padding: 20px;
-    border-bottom: 1px solid ${colors.border.light};
+const RestaurantItem = styled.div`
+    padding: 15px;
+    border-radius: 10px;
+    background: ${colors.background.light};
     display: flex;
     justify-content: space-between;
     align-items: center;
     transition: all 0.2s ease;
-
-    &:last-child {
-        border-bottom: none;
-    }
+    cursor: pointer;
 
     &:hover {
-        background: ${colors.background.light};
-        border-radius: 8px;
+        background: ${colors.border.light};
+        transform: translateX(5px);
     }
 `;
 
-const ActivityText = styled.div`
+const RestaurantInfo = styled.div`
+    flex: 1;
+
+    .name {
+        font-weight: 600;
+        color: ${colors.text.primary};
+        margin-bottom: 5px;
+    }
+
+    .details {
+        font-size: 0.85em;
+        color: ${colors.text.light};
+    }
+`;
+
+const RestaurantStats = styled.div`
+    text-align: right;
+
+    .dishes {
+        font-size: 1.2em;
+        font-weight: 700;
+        color: ${colors.accent.orange};
+    }
+
+    .label {
+        font-size: 0.8em;
+        color: ${colors.text.light};
+    }
+`;
+
+const RecentOrdersList = styled.div`
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    max-height: 500px;
+    overflow-y: auto;
+    padding-right: 5px;
+`;
+
+const OrderItem = styled.div`
+    padding: 18px;
+    border-radius: 12px;
+    background: ${colors.background.light};
+    border-left: 5px solid ${props =>
+            props.$status === 'zugestellt' ? '#22c55e' :
+                    props.$status === 'in_zubereitung' ? '#f59e0b' :
+                            props.$status === 'unterwegs' ? '#06b6d4' :
+                                    props.$status === 'bestellt' ? '#3b82f6' : '#6b7280'
+    };
+    transition: transform 0.2s;
+    &:hover { transform: scale(1.01); }
+`;
+
+const OrderHeader = styled.div`
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 12px;
+`;
+
+const OrderId = styled.span`
+    font-weight: 700;
+    color: ${colors.text.primary};
+    display: block;
+`;
+
+const OrderStatus = styled.span`
+    font-size: 0.75em;
+    padding: 5px 12px;
+    border-radius: 20px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    background: ${props =>
+            props.$status === 'zugestellt' ? '#dcfce7' :
+                    props.$status === 'in_zubereitung' ? '#fef3c7' :
+                            props.$status === 'unterwegs' ? '#cffafe' :
+                                    props.$status === 'bestellt' ? '#dbeafe' : '#f3f4f6'
+    };
+    color: ${props =>
+            props.$status === 'zugestellt' ? '#166534' :
+                    props.$status === 'in_zubereitung' ? '#92400e' :
+                            props.$status === 'unterwegs' ? '#0891b2' :
+                                    props.$status === 'bestellt' ? '#1e40af' : '#374151'
+    };
+    font-weight: 800;
+`;
+
+const OrderDetails = styled.div`
+    font-size: 0.95em;
     color: ${colors.text.secondary};
-    font-size: 1em;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 `;
 
-const ActivityTime = styled.div`
-    color: ${colors.text.muted};
-    font-size: 0.9em;
+const LoadingState = styled.div`
+    text-align: center;
+    padding: 100px;
+    color: ${colors.text.light};
+    font-size: 1.5em;
 `;
 
-function Home() {
+// --- HAUPTKOMPONENTE ---
+
+function Dashboard() {
     const navigate = useNavigate();
+    const [loading, setLoading] = useState(true);
+    const [restaurants, setRestaurants] = useState([]);
+    const [orders, setOrders] = useState([]);
+    const [stats, setStats] = useState({
+        totalRestaurants: 0,
+        totalDishes: 0,
+        todayOrders: 0,
+        totalRevenue: 0
+    });
 
-    const stats = [
-        { icon: '🏪', value: '24', label: 'Restaurants', onClick: () => navigate('/restaurants') },
-        { icon: '🍽️', value: '156', label: 'Gerichte', onClick: () => navigate('/restaurants') },
-        { icon: '📦', value: '89', label: 'Bestellungen heute', onClick: () => {} },
-        { icon: '👥', value: '1,247', label: 'Aktive Kunden', onClick: () => {} },
-    ];
+    const getRelativeTime = (dateString) => {
+        const now = new Date();
+        const past = new Date(dateString);
+        const diffInMs = now - past;
+        const diffInMins = Math.floor(diffInMs / (1000 * 60));
 
-    const quickActions = [
-        { icon: '➕', label: 'Neues Restaurant', onClick: () => navigate('/neuesRestaurant') },
-        { icon: '🍕', label: 'Neues Gericht', onClick: () => navigate('/restaurants') },
-        { icon: '📊', label: 'Berichte ansehen', onClick: () => {} },
-        { icon: '⚙️', label: 'Einstellungen', onClick: () => {} },
-    ];
+        if (diffInMins < 1) return 'Gerade eben';
+        if (diffInMins < 60) return `Vor ${diffInMins} Min.`;
+        if (diffInMins < 1440) return `Vor ${Math.floor(diffInMins / 60)} Std.`;
+        return past.toLocaleDateString('de-DE');
+    };
 
-    const recentActivities = [
-        { text: 'Neues Restaurant "Sushi Paradise" hinzugefügt', time: 'vor 2 Stunden' },
-        { text: 'Gericht "Pizza Quattro Stagioni" aktualisiert', time: 'vor 3 Stunden' },
-        { text: 'Bestellung #1523 abgeschlossen', time: 'vor 4 Stunden' },
-        { text: 'Neue Bewertung für "Bella Italia" (5 Sterne)', time: 'vor 5 Stunden' },
-        { text: 'Restaurant "Le Bistro" Öffnungszeiten geändert', time: 'vor 1 Tag' },
-    ];
+    useEffect(() => {
+        const loadDashboardData = async () => {
+            try {
+                setLoading(true);
+
+                const [restaurantsData, ordersData] = await Promise.all([
+                    restaurantService.getAll(),
+                    bestellungService.getAll()
+                ]);
+
+                setRestaurants(restaurantsData || []);
+                setOrders(ordersData || []);
+
+                const totalDishes = restaurantsData.reduce((sum, r) => {
+                    return sum + (r.menue?.reduce((menuSum, m) =>
+                        menuSum + (m.gericht?.length || 0), 0) || 0);
+                }, 0);
+
+                const today = new Date().toDateString();
+                const todayOrders = ordersData.filter(o =>
+                    new Date(o.bestellzeit).toDateString() === today
+                ).length;
+
+                const totalRevenue = ordersData.reduce((sum, o) =>
+                    sum + (parseFloat(o.gesamtpreis) || 0), 0
+                );
+
+                setStats({
+                    totalRestaurants: restaurantsData.length,
+                    totalDishes: totalDishes,
+                    todayOrders: todayOrders,
+                    totalRevenue: totalRevenue
+                });
+
+            } catch (error) {
+                console.error('❌ Dashboard Fehler:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        loadDashboardData();
+    }, []);
+
+    if (loading) {
+        return <Container><LoadingState>📊 Analyse läuft...</LoadingState></Container>;
+    }
+
+    const statusCounts = orders.reduce((acc, o) => {
+        const s = o.status ? o.status.toLowerCase() : 'unbekannt';
+        acc[s] = (acc[s] || 0) + 1;
+        return acc;
+    }, {});
+
+    const topRestaurants = [...restaurants]
+        .map(r => ({
+            ...r,
+            dishCount: r.menue?.reduce((sum, m) => sum + (m.gericht?.length || 0), 0) || 0
+        }))
+        .sort((a, b) => b.dishCount - a.dishCount)
+        .slice(0, 5);
+
+    const recentOrders = [...orders]
+        .sort((a, b) => new Date(b.bestellzeit) - new Date(a.bestellzeit))
+        .slice(0, 10);
 
     return (
         <Container>
-            <PageTitle> Dashboard</PageTitle>
+            <WelcomeSection>
+                <WelcomeTitle>🎯 Verwaltungs-Dashboard</WelcomeTitle>
+                <WelcomeSubtitle>
+                    Überblick über GaumenGalopp am {new Date().toLocaleDateString('de-DE')}
+                </WelcomeSubtitle>
+            </WelcomeSection>
 
             <StatsGrid>
-                {stats.map((stat, index) => (
-                    <StatCard key={index} onClick={stat.onClick}>
-                        <StatIcon>{stat.icon}</StatIcon>
-                        <StatValue>{stat.value}</StatValue>
-                        <StatLabel>{stat.label}</StatLabel>
-                    </StatCard>
-                ))}
+                <StatCard $color="#3b82f6" onClick={() => navigate('/restaurants')}>
+                    <StatHeader><StatIcon>🏪</StatIcon></StatHeader>
+                    <StatValue>{stats.totalRestaurants}</StatValue>
+                    <StatLabel>Restaurants</StatLabel>
+                    <StatTrend $positive>📈 Aktiv</StatTrend>
+                </StatCard>
+
+                <StatCard $color="#22c55e" onClick={() => navigate('/restaurants')}>
+                    <StatHeader><StatIcon>🍽️</StatIcon></StatHeader>
+                    <StatValue>{stats.totalDishes}</StatValue>
+                    <StatLabel>Gerichte</StatLabel>
+                    <StatTrend $positive>✨ Verfügbar</StatTrend>
+                </StatCard>
+
+                <StatCard $color="#f59e0b">
+                    <StatHeader><StatIcon>📦</StatIcon></StatHeader>
+                    <StatValue>{stats.todayOrders}</StatValue>
+                    <StatLabel>Bestellungen heute</StatLabel>
+                    <StatTrend $positive>🔥 Hochbetrieb</StatTrend>
+                </StatCard>
+
+                <StatCard $color="#8b5cf6">
+                    <StatHeader><StatIcon>💰</StatIcon></StatHeader>
+                    <StatValue>{stats.totalRevenue.toLocaleString('de-DE', {minimumFractionDigits: 2})}€</StatValue>
+                    <StatLabel>Gesamtumsatz</StatLabel>
+                    <StatTrend $positive>💎 Brutto</StatTrend>
+                </StatCard>
             </StatsGrid>
 
-            <QuickActionsSection>
-                <SectionTitle> Schnellaktionen</SectionTitle>
-                <ActionsGrid>
-                    {quickActions.map((action, index) => (
-                        <ActionButton key={index} onClick={action.onClick}>
-                            <span style={{ fontSize: '1.5em' }}>{action.icon}</span>
-                            {action.label}
-                        </ActionButton>
-                    ))}
-                </ActionsGrid>
-            </QuickActionsSection>
+            <ContentGrid>
+                <Card>
+                    <SectionTitle>🏆 Beliebteste Restaurants</SectionTitle>
+                    <RestaurantList>
+                        {topRestaurants.map((restaurant, idx) => (
+                            <RestaurantItem key={restaurant.restaurantid} onClick={() => navigate(`/restaurants/${restaurant.restaurantid}`)}>
+                                <RestaurantInfo>
+                                    <div className="name">#{idx + 1} {restaurant.name}</div>
+                                    <div className="details">{restaurant.klassifizierung || 'Gastronomie'} • {restaurant.adresse?.ort || 'Berlin'}</div>
+                                </RestaurantInfo>
+                                <RestaurantStats>
+                                    <div className="dishes">{restaurant.dishCount}</div>
+                                    <div className="label">Gerichte</div>
+                                </RestaurantStats>
+                            </RestaurantItem>
+                        ))}
+                    </RestaurantList>
+                </Card>
 
-            <RecentActivitySection>
-                <SectionTitle> Letzte Aktivitäten</SectionTitle>
-                {recentActivities.map((activity, index) => (
-                    <ActivityItem key={index}>
-                        <ActivityText>{activity.text}</ActivityText>
-                        <ActivityTime>{activity.time}</ActivityTime>
-                    </ActivityItem>
-                ))}
-            </RecentActivitySection>
+                <Card>
+                    <SectionTitle>⚡ Schnellzugriff</SectionTitle>
+                    <QuickActionsGrid>
+                        <ActionButton onClick={() => navigate('/neuesRestaurant')}><span>➕</span>Restaurant</ActionButton>
+                        <ActionButton onClick={() => navigate('/restaurants')}><span>🍕</span>Speisen</ActionButton>
+                        <ActionButton onClick={() => navigate('/kunde')}><span>👁️</span>Live-Ansicht</ActionButton>
+                        <ActionButton onClick={() => navigate('/bestellhistorie')}><span>📜</span>Historie</ActionButton>
+                    </QuickActionsGrid>
+                </Card>
+            </ContentGrid>
+
+            <Card>
+                <SectionTitle>📊 Bestell-Monitor & Aktivität</SectionTitle>
+
+                <StatusSummary>
+                    <MiniStat $color="#3b82f6">
+                        <div className="count">{statusCounts['bestellt'] || 0}</div>
+                        <div className="label">Bestellt</div>
+                    </MiniStat>
+                    <MiniStat $color="#f59e0b">
+                        <div className="count">{statusCounts['in_zubereitung'] || 0}</div>
+                        <div className="label">In Zubereitung</div>
+                    </MiniStat>
+                    <MiniStat $color="#06b6d4">
+                        <div className="count">{statusCounts['unterwegs'] || 0}</div>
+                        <div className="label">Unterwegs</div>
+                    </MiniStat>
+                    <MiniStat $color="#22c55e">
+                        <div className="count">{statusCounts['zugestellt'] || 0}</div>
+                        <div className="label">Erledigt</div>
+                    </MiniStat>
+                </StatusSummary>
+
+                <RecentOrdersList>
+                    {recentOrders.length > 0 ? (
+                        recentOrders.map(order => (
+                            <OrderItem key={order.bestellungid} $status={order.status ? order.status.toLowerCase() : ''}>
+                                <OrderHeader>
+                                    <div>
+                                        <OrderId>Bestellung #{order.bestellungid}</OrderId>
+                                        <div style={{fontSize: '0.8em', color: colors.text.light}}>
+                                            {getRelativeTime(order.bestellzeit)}
+                                        </div>
+                                    </div>
+                                    <OrderStatus $status={order.status ? order.status.toLowerCase() : ''}>
+                                        {order.status}
+                                    </OrderStatus>
+                                </OrderHeader>
+                                <OrderDetails>
+                                    <span>👤 Kunde: {order.kundenid || 'Gast'}</span>
+                                    <span style={{fontWeight: '800', fontSize: '1.1em', color: colors.text.primary}}>
+                                        {parseFloat(order.gesamtpreis || 0).toLocaleString('de-DE', {minimumFractionDigits: 2})}€
+                                    </span>
+                                </OrderDetails>
+                            </OrderItem>
+                        ))
+                    ) : (
+                        <div style={{textAlign: 'center', padding: '40px', color: colors.text.light}}>Keine aktuellen Aktivitäten</div>
+                    )}
+                </RecentOrdersList>
+            </Card>
         </Container>
     );
 }
 
-export default Home;
+export default Dashboard;
