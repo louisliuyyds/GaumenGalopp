@@ -11,7 +11,7 @@ const bestellpositionService = {
   },
 
   /**
-   * Alle Positionen einer Bestellung abrufen
+   * Alle Positionen einer Warenkorb abrufen
    * GET /api/bestellpositionen/bestellung/{bestellungid}
    */
   getByBestellung: async (bestellungId) => {

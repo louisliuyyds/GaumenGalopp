@@ -11,7 +11,7 @@ const bestellungService = {
   },
 
   /**
-   * Eine Bestellung nach ID abrufen
+   * Eine Warenkorb nach ID abrufen
    * GET /api/bestellungen/{id}
    */
   getById: async (bestellungId) => {
@@ -19,7 +19,7 @@ const bestellungService = {
   },
 
   /**
-   * Gesamtpreis einer Bestellung abrufen
+   * Gesamtpreis einer Warenkorb abrufen
    * GET /api/bestellungen/{id}/total
    */
   getTotal: async (bestellungId) => {
@@ -27,7 +27,7 @@ const bestellungService = {
   },
 
   /**
-   * Neue Bestellung erstellen
+   * Neue Warenkorb erstellen
    * POST /api/bestellungen
    */
   create: async (bestellungData) => {
@@ -35,7 +35,7 @@ const bestellungService = {
   },
 
   /**
-   * Bestellung aktualisieren
+   * Warenkorb aktualisieren
    * PUT /api/bestellungen/{id}
    */
   update: async (bestellungId, bestellungData) => {

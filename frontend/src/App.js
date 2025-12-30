@@ -11,7 +11,7 @@ import GerichtDetail from "./pages/GerichtDetail";
 import EditRestaurantInfos from "./pages/EditRestaurantInfos";
 import colors from './theme/colors';
 import Restaurants from "./pages/Restaurant";
-import Bestellung from "./pages/Bestellung";
+import Warenkorb from "./pages/Warenkorb";
 import KundeHome from './pages/Kundehome';
 
 const AppContainer = styled.div`
@@ -44,7 +44,7 @@ function App() {
                         <Route path="/restaurants/:id/edit" element={<EditRestaurantInfos />} />
                         <Route path="/kunde" element={<KundeHome />} />
                         <Route path="/kunde/restaurants" element={<Restaurants />} />
-                        <Route path="/kunde/bestellungen" element={<Bestellung />} />
+                        <Route path="/kunde/warenkorb" element={<Warenkorb />} />
                     </Routes>
                 </ContentArea>
             </AppContainer>

@@ -15,6 +15,13 @@ const Header = styled.h1`
     font-weight: 700;
 `;
 
+const SubHeader = styled.h2`
+    color: ${colors.text.primary};
+    margin-bottom: 30px;
+    font-size: 2em;
+    font-weight: 550;
+`;
+
 const Bestellposition = styled.div`
     background: ${colors.background.card};
     border-radius: 12px;
@@ -66,28 +73,28 @@ color: ${colors.text.primary};
 font-weight: 600;
 `;
 
-const AdresseContainer = styled.div`
-    margin-top: 20px;
-    padding: 20px;
-    background: ${colors.background.card};
-    border-radius: 12px;
-    box-shadow: ${colors.shadows.medium};
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-`;
-
-const AdresseHeader = styled.h2`
-    font-size: 1.4em;
-    font-weight: 700;
-    margin-bottom: 10px;
-    color: ${colors.text.primary};
-`;
-
-const AdresseLine = styled.div`
-font-size: 1.2em;
-color: ${colors.text.primary};
-`;
+// const AdresseContainer = styled.div`
+//     margin-top: 20px;
+//     padding: 20px;
+//     background: ${colors.background.card};
+//     border-radius: 12px;
+//     box-shadow: ${colors.shadows.medium};
+//     display: flex;
+//     flex-direction: column;
+//     gap: 4px;
+// `;
+//
+// const AdresseHeader = styled.h2`
+//     font-size: 1.4em;
+//     font-weight: 700;
+//     margin-bottom: 10px;
+//     color: ${colors.text.primary};
+// `;
+//
+// const AdresseLine = styled.div`
+// font-size: 1.2em;
+// color: ${colors.text.primary};
+// `;
 
 const Footer = styled.div`
 margin-top: 30px;
@@ -123,7 +130,7 @@ background: ${colors.accent.black};
 }
 `;
 
-function Bestellung() {
+function Warenkorb() {
     // const [bestellung, setBestellung] = useState([]);
     // const [bestellpositionen, setBestellpositionen] = useState([]);
     // const [adresse, setAdresse] = useState(null);
@@ -173,6 +180,7 @@ function Bestellung() {
         <Container>
             <Header>Deine Bestellung</Header>
 
+            <SubHeader>Restaurant: Bella Italia</SubHeader>
 
             {cart.map(item => (
                 <Bestellposition key={item.id}>
@@ -194,14 +202,8 @@ function Bestellung() {
                 <BestellButton>Jetzt bestellen</BestellButton>
             </Footer>
 
-            <AdresseContainer>
-                <AdresseHeader>Lieferadresse:</AdresseHeader>
-                <AdresseLine>Straße 12</AdresseLine>
-                <AdresseLine>12345 Hamburg</AdresseLine>
-                <AdresseLine>Deutschland</AdresseLine>
-            </AdresseContainer>
 
         </Container>
     );
 }
-export default Bestellung;
+export default Warenkorb;
