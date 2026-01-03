@@ -1,5 +1,7 @@
 from sqlalchemy.orm import Session
 from typing import List, Optional
+
+from models import Kunde
 from models.adresse import Adresse
 
 

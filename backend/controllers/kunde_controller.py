@@ -30,6 +30,14 @@ def get_kunde(kunden_id: int, db: Session = Depends(get_db)):
 
     return kunde
 
+@router.get("/{kunden_id}/adressid")
+def get_adressid_by_kunden_id(kunden_id: int, db: Session = Depends(get_db)):
+    adressid = KundeService(db).get_adressid_by_kunden_id(kunden_id)
+    if adressid is None:
+        raise HTTPException(status_code=404, detail="Kunde not found")
+    return {"adressid": adressid}
+
+
 @router.post("/", response_model=KundeResponse, status_code=status.HTTP_201_CREATED)
 def create_kunde(
         kunde: KundeCreate,

@@ -32,6 +32,7 @@ class CartItemResponse(BaseModel):
 class CartResponse(BaseModel):
     bestellungid: int
     restaurantid: Optional[int]
+    restaurantname: Optional[str]
     items: List[CartItemResponse]
     subtotal: float
     item_count: int

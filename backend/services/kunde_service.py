@@ -20,6 +20,14 @@ class KundeService:
             .filter(Kunde.kundenid == kunden_id) \
             .first()
 
+    def get_adressid_by_kunden_id(self, kunden_id: int) -> Optional[int]:
+        return (
+            self.db.query(Kunde.adressid)
+            .filter(Kunde.kundenid == kunden_id)
+            .scalar()
+        )
+
+
     def create(self, kunde_data: dict) -> Kunde:
         kunde = Kunde(**kunde_data)
         self.db.add(kunde)

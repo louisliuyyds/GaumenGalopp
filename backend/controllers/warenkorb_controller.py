@@ -13,7 +13,7 @@ from schemas.warenkorb_schema import (
 
 router = APIRouter(
     prefix="/api/warenkorb",
-    tags=["Warenkorb"]
+    tags=["warenkorb"]
 )
 
 # GET /api/warenkorb/{kundenid} - Get cart

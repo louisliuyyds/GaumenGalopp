@@ -4,7 +4,7 @@ from database import Base
 
 class Bestellposition(Base):
 
-    __tablename__ = 'bestellpositionen'
+    __tablename__ = 'bestellposition'
     positionid = Column(Integer, primary_key=True, index=True)
     menge = Column(Integer, nullable=False, default=1)
     aenderungswunsch = Column(String(255), nullable=True)

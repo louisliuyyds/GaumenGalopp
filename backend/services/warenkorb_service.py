@@ -1,5 +1,7 @@
 import datetime
 from sqlalchemy.orm import Session
+
+from models import Restaurant
 from models.bestellungen import Bestellungen
 from models.bestellposition import Bestellposition
 from models.gericht import Gericht
@@ -10,6 +12,16 @@ class WarenkorbService:
     def __init__(self, db: Session):
         self.db = db
 
+    # ===== Get Cart (without creating) =====
+    def get_cart(self, kundenid: int) -> Optional[Bestellungen]:
+        """
+        Get active cart for customer, returns None if doesn't exist
+        """
+        return self.db.query(Bestellungen).filter(
+            Bestellungen.kundenid == kundenid,
+            Bestellungen.status == "warenkorb"
+        ).first()
+
     # ===== Get or Create Cart =====
     def get_or_create_cart(self, kundenid: int) -> Bestellungen:
         """
@@ -18,14 +30,14 @@ class WarenkorbService:
         # Find existing cart (status = "Warenkorb")
         cart = self.db.query(Bestellungen).filter(
             Bestellungen.kundenid == kundenid,
-            Bestellungen.status == "Warenkorb"
+            Bestellungen.status == "warenkorb"
         ).first()
 
         if not cart:
             # Create new cart
             cart = Bestellungen(
                 kundenid=kundenid,
-                status="Warenkorb",
+                status="warenkorb",
                 restaurantid=None,  # Will be set when first item added
                 lieferantid=None,   # Will be set later
                 adressid=None,   # Will be set at checkout
@@ -43,7 +55,6 @@ class WarenkorbService:
         Get all items in customer's cart with full details
         """
         cart = self.get_or_create_cart(kundenid)
-
         # Get all positions with gericht and preis details
         positions = self.db.query(Bestellposition).filter(
             Bestellposition.bestellungid == cart.bestellungid
@@ -69,10 +80,14 @@ class WarenkorbService:
                 "aenderungswunsch": position.aenderungswunsch,
                 "item_total": item_total
             })
+        if cart.restaurantid:
+            restaurantname = self.db.query(Restaurant).filter(Restaurant.restaurantid == cart.restaurantid).first().name
+        else: restaurantname = None
 
         return {
             "bestellungid": cart.bestellungid,
             "restaurantid": cart.restaurantid,
+            "restaurantname": restaurantname,
             "items": items,
             "subtotal": subtotal,
             "item_count": sum(item['menge'] for item in items)
@@ -189,18 +204,23 @@ class WarenkorbService:
         """
         Remove all items from cart
         """
-        cart = self.get_or_create_cart(kundenid)
+        cart = self.get_cart(kundenid)  # ← Uses get_cart() - no creation!
 
+        if not cart:
+            # No cart exists, return empty response
+            return {"message": "Cart already empty", "items": [], "subtotal": 0.0, "item_count": 0}
+
+        # Delete all positions first
         self.db.query(Bestellposition).filter(
             Bestellposition.bestellungid == cart.bestellungid
         ).delete()
 
-        # Reset restaurant
-        cart.restaurantid = None
+        # Delete the cart itself
+        self.db.delete(cart)
 
         self.db.commit()
 
-        return {"message": "Cart cleared", "items": [], "subtotal": 0.0}
+        return {"message": "Cart cleared", "items": [], "subtotal": 0.0, "item_count": 0}
 
     # ===== Convert to Order =====
     def checkout(self, kundenid: int, adressid: int, lieferantid: int) -> Bestellungen:
@@ -218,10 +238,9 @@ class WarenkorbService:
             raise ValueError("Cart is empty")
 
         # Update cart to order
-        cart.status = "Bestellt"
+        cart.status = "bestellt"
         cart.adressid = adressid
         cart.lieferantid = lieferantid
-        cart.bestellzeit = datetime.now()
 
         self.db.commit()
         self.db.refresh(cart)
