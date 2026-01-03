@@ -2,7 +2,6 @@ import React from 'react';
 import styled from 'styled-components';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Sidebar from './components/Sidebar';
-import Home from './pages/Dashboard';
 import Dashboard from './pages/Dashboard';
 import Beispiel from "./pages/Beispiel";
 import NeuesRestaurant from "./pages/NeuesRestaurant";
@@ -13,7 +12,7 @@ import colors from './theme/colors';
 import Restaurants from "./pages/Restaurant";
 import Warenkorb from "./pages/Warenkorb";
 import KundeHome from './pages/Kundehome';
-
+import Bestellhistorie from "./pages/Bestellhistorie";
 const AppContainer = styled.div`
     display: flex;
     flex-direction: row;
@@ -44,7 +43,11 @@ function App() {
                         <Route path="/restaurants/:id/edit" element={<EditRestaurantInfos />} />
                         <Route path="/kunde" element={<KundeHome />} />
                         <Route path="/kunde/restaurants" element={<Restaurants />} />
+
                         <Route path="/kunde/warenkorb" element={<Warenkorb />} />
+
+                        <Route path="/bestellhistorie" element={<Bestellhistorie />} />
+
                     </Routes>
                 </ContentArea>
             </AppContainer>
