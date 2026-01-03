@@ -7,6 +7,7 @@ import { labelService } from "../services";
 import { labelGerichtService } from "../services";
 import { bewertungService } from "../services";
 import { kundeService } from "../services";
+import { preisService } from "../services";  // Preis-Service importieren
 
 
 const InfoSection = styled.div`
@@ -221,16 +222,17 @@ function GerichtDetail() {
     const {restaurantId, gerichtId } = useParams();
     const [gericht, setGericht] = useState(null);
     const [bewertung, setBewertungen] = useState([]);
-    const [labels, setLabels] = useState([]);  // NEU: State für Labels
+    const [labels, setLabels] = useState([]);
+    const [preis, setPreis] = useState(null);  // Neuer State für Preis
     const [loading, setLoading] = useState(true);
     const [loadingBewertungen, setLoadingBewertungen] = useState(true);
-    const [loadingLabels, setLoadingLabels] = useState(true);  // NEU: Loading für Labels
+    const [loadingLabels, setLoadingLabels] = useState(true);
+    const [loadingPreis, setLoadingPreis] = useState(true);  // Loading-State für Preis
     const [error, setError] = useState(null);
     const [bewertungError, setBewertungError] = useState(null);
     const [kunden, setKunden] = useState({});
     const navigate = useNavigate();
 
-    // Gericht laden
     const fetchGericht = async () => {
         try {
             setLoading(true);
@@ -246,43 +248,65 @@ function GerichtDetail() {
         }
     };
 
-    // NEU: Labels laden
-    const fetchLabels = async () => {
-    try {
-        setLoadingLabels(true);
-        // 1. Hole alle LabelGericht-Verknüpfungen für dieses Gericht
-        const labelGerichtResponse = await labelGerichtService.getByGerichtId(gerichtId);
-        const labelGerichtData = labelGerichtResponse.data || labelGerichtResponse;
-        const labelGerichtArray = Array.isArray(labelGerichtData) ? labelGerichtData : [];
-        
-        console.log('LabelGericht geladen:', labelGerichtArray);
-        
-        // 2. Hole für jede labelID die entsprechenden Label-Details
-        if (labelGerichtArray.length > 0) {
-            const labelPromises = labelGerichtArray.map(async (labelGericht) => {
-                try {
-                    const labelData = await labelService.getById(labelGericht.labelid);
-                    return labelData;
-                } catch (err) {
-                    console.error(`Fehler beim Laden von Label ${labelGericht.labelid}:`, err);
-                    return null;
-                }
-            });
+    // Neue Funktion zum Abrufen des Preises
+    const fetchPreis = async () => {
+        try {
+            setLoadingPreis(true);
+            const response = await preisService.getByGerichtId(gerichtId);
+            const preisData = response.data || response;
             
-            const loadedLabels = await Promise.all(labelPromises);
-            // Filter null values aus (falls ein Label nicht geladen werden konnte)
-            const validLabels = loadedLabels.filter(label => label !== null);
-            setLabels(validLabels);
-            console.log('Labels mit Namen geladen:', validLabels);
-        } else {
-            setLabels([]);
+            // Falls mehrere Preise zurückkommen (Array), nimm den ersten oder aktuellsten
+            if (Array.isArray(preisData) && preisData.length > 0) {
+                setPreis(preisData[0]);
+                console.log('Preis geladen:', preisData[0]);
+            } else if (!Array.isArray(preisData)) {
+                setPreis(preisData);
+                console.log('Preis geladen:', preisData);
+            } else {
+                setPreis(null);
+                console.log('Kein Preis gefunden');
+            }
+        } catch (err) {
+            console.error('Fehler beim Laden des Preises:', err);
+            setPreis(null);
+        } finally {
+            setLoadingPreis(false);
         }
-    } catch (err) {
-        console.error('Fehler beim Laden der Labels:', err);
-        setLabels([]);
-    } finally {
-        setLoadingLabels(false);
-    }
+    };
+
+    const fetchLabels = async () => {
+        try {
+            setLoadingLabels(true);
+            const labelGerichtResponse = await labelGerichtService.getByGerichtId(gerichtId);
+            const labelGerichtData = labelGerichtResponse.data || labelGerichtResponse;
+            const labelGerichtArray = Array.isArray(labelGerichtData) ? labelGerichtData : [];
+            
+            console.log('LabelGericht geladen:', labelGerichtArray);
+        
+            if (labelGerichtArray.length > 0) {
+                const labelPromises = labelGerichtArray.map(async (labelGericht) => {
+                    try {
+                        const labelData = await labelService.getById(labelGericht.labelid);
+                        return labelData;
+                    } catch (err) {
+                        console.error(`Fehler beim Laden von Label ${labelGericht.labelid}:`, err);
+                        return null;
+                    }
+                });
+                
+                const loadedLabels = await Promise.all(labelPromises);
+                const validLabels = loadedLabels.filter(label => label !== null);
+                setLabels(validLabels);
+                console.log('Labels mit Namen geladen:', validLabels);
+            } else {
+                setLabels([]);
+            }
+        } catch (err) {
+            console.error('Fehler beim Laden der Labels:', err);
+            setLabels([]);
+        } finally {
+            setLoadingLabels(false);
+        }
     };
     
     const fetchBewertung = async () => {
@@ -314,7 +338,7 @@ function GerichtDetail() {
             await Promise.all(
                 kundenIds.map(async (kundenid) => {
                     try {
-                        const kundeData = await kundeService.getById(kundenid);
+                        const kundeData = await kundeService.getKuerzelById(kundenid);
                         kundenMap[kundenid] = kundeData;
                     } catch (err) {
                         console.error(`Fehler beim Laden von Kunde ${kundenid}:`, err);
@@ -353,14 +377,13 @@ function GerichtDetail() {
         });
     };
 
-    // Beim ersten Laden ausführen
     useEffect(() => {
         fetchGericht();
         fetchBewertung();
-        fetchLabels();  // NEU: Labels laden
+        fetchLabels();
+        fetchPreis();  // Preis abrufen
     }, [gerichtId]);
 
-    // Gericht löschen
     const handleDelete = async () => {
         if (window.confirm(`Möchten Sie das Gericht "${gericht?.name}" wirklich löschen?`)) {
             try {
@@ -374,12 +397,10 @@ function GerichtDetail() {
         }
     };
 
-    // Zur Bearbeitungsseite navigieren
     const handleEdit = () => {
         navigate(`/restaurants/${restaurantId}/gerichte/${gerichtId}/edit`);
     };
 
-    // Anzeige während des Ladens
     if (loading) {
         return (
             <Container>
@@ -388,7 +409,6 @@ function GerichtDetail() {
         );
     }
 
-    // Fehleranzeige
     if (error) {
         return (
             <Container>
@@ -405,7 +425,6 @@ function GerichtDetail() {
         );
     }
 
-    // Wenn kein Gericht gefunden wurde
     if (!gericht) {
         return (
             <Container>
@@ -427,18 +446,20 @@ function GerichtDetail() {
             
             <DetailCard>
                 <GerichtName>{gericht.name}</GerichtName> 
-                    {!loadingLabels && labels.length > 0 && (
+                {!loadingLabels && labels.length > 0 && (
                     <LabelContainer>
                         {labels.map((label) => (
-                        <LabelTag key={label.labelid}>
-                            {label.labelname}
-                        </LabelTag>
+                            <LabelTag key={label.labelid}>
+                                {label.labelname}
+                            </LabelTag>
                         ))}
                     </LabelContainer>
                 )}
 
-                
-                <PreisTag>€ {gericht.preis?.toFixed(2)}</PreisTag>
+                {/* Preis aus preisService anzeigen */}
+                {!loadingPreis && preis && (
+                    <PreisTag>{preis.betrag?.toFixed(2)} €</PreisTag>
+                )}
 
                 {gericht.beschreibung && (
                     <InfoSection>
