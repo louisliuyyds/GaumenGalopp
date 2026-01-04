@@ -385,10 +385,10 @@ function EditMenu() {
             }
 
             setGerichte(allGerichte);
-            console.log('✅ Gerichte geladen:', allGerichte.length);
+            console.log(' Gerichte geladen:', allGerichte.length);
 
         } catch (err) {
-            console.error('❌ Fehler beim Laden der Gerichte:', err);
+            console.error(' Fehler beim Laden der Gerichte:', err);
             setError('Gerichte konnten nicht geladen werden.');
         } finally {
             setLoading(false);
@@ -443,7 +443,7 @@ function EditMenu() {
             setSuccessMessage(null);
 
             if (editingGericht) {
-                // Gericht updaten
+                //  GERICHT UPDATEN (existiert schon)
                 await gerichtService.update(editingGericht.gerichtid, {
                     name: formData.name,
                     beschreibung: formData.beschreibung,
@@ -459,19 +459,54 @@ function EditMenu() {
 
                 setSuccessMessage('Gericht erfolgreich aktualisiert!');
             } else {
-                // Neues Gericht erstellen
-                // TODO: Implementieren wenn nötig
-                setSuccessMessage('Funktion "Neues Gericht" wird noch implementiert');
+                //  NEUES GERICHT ERSTELLEN
+
+                // 1. Hole alle Menüs des Restaurants
+                const restaurantData = await restaurantService.getById(id);
+
+                if (!restaurantData.menue || restaurantData.menue.length === 0) {
+                    setError('Dieses Restaurant hat noch keine Menüs. Bitte erstelle zuerst ein Menü.');
+                    return;
+                }
+
+                // 2. Nutze das erste Menü (oder lass User wählen - siehe unten)
+                const menuid = restaurantData.menue[0].menuid;
+
+                // 3. Erstelle das Gericht
+                const neuesGericht = await gerichtService.create({
+                    menuid: menuid,
+                    name: formData.name,
+                    beschreibung: formData.beschreibung,
+                    kategorie: formData.kategorie
+                });
+
+                console.log(' Gericht erstellt:', neuesGericht);
+
+                // 4. Erstelle einen Preis für das Gericht
+                if (formData.preis) {
+                    await preisService.create({
+                        gerichtid: neuesGericht.gerichtid,
+                        betrag: parseFloat(formData.preis),
+                        gueltigvon: new Date().toISOString(),
+                        gueltigbis: null,
+                        preistyp: 'Standard',
+                        istaktiv: true
+                    });
+                    console.log(' Preis erstellt');
+                }
+
+                setSuccessMessage('Gericht erfolgreich erstellt!');
             }
 
-            handleCloseModal();
-            await fetchGerichte();
-
-            setTimeout(() => setSuccessMessage(null), 3000);
+            // Modal schließen und Liste neu laden
+            setTimeout(() => {
+                handleCloseModal();
+                fetchGerichte();
+            }, 1000);
 
         } catch (err) {
-            console.error('❌ Fehler beim Speichern:', err);
-            setError('Fehler beim Speichern des Gerichts.');
+            console.error(' Fehler beim Speichern:', err);
+            setError('Fehler beim Speichern. Bitte versuche es erneut.');
         }
     };
 
@@ -488,7 +523,7 @@ function EditMenu() {
             await fetchGerichte();
             setTimeout(() => setSuccessMessage(null), 3000);
         } catch (err) {
-            console.error('❌ Fehler beim Löschen:', err);
+            console.error(' Fehler beim Löschen:', err);
             setError('Fehler beim Löschen des Gerichts.');
         }
     };
