@@ -8,6 +8,7 @@ class Restaurant(Base):
     restaurantid = Column(Integer, primary_key=True, autoincrement=True)
     name = Column(String(255), nullable=False)
     klassifizierung = Column(String(100))
+    email = Column(String(255))
     adresseid = Column(Integer, ForeignKey('adresse.adresseid'))
     telefon = Column(String(20))
     kuechenchef = Column(String(255))
@@ -26,6 +27,7 @@ class Restaurant(Base):
             "restaurantid": self.restaurantid,
             "name": self.name,
             "klassifizierung": self.klassifizierung,
+            "email": self.klassifizierung,
             "adresseid": self.adresseid,
             "telefon": self.telefon,
             "kuechenchef": self.kuechenchef

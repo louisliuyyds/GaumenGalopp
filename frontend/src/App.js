@@ -13,6 +13,8 @@ import Restaurants from "./pages/Restaurant";
 import Bestellung from "./pages/Bestellung";
 import KundeHome from './pages/KundeHome';
 import Bestellhistorie from "./pages/Bestellhistorie";
+import EditOpeningHours from "./pages/EditOpeningHours";
+import EditMenu from "./pages/EditMenu";
 
 const AppContainer = styled.div`
     display: flex;
@@ -37,14 +39,18 @@ function App() {
                     <Routes>
                         {/* Dashboard */}
                         <Route path="/" element={<Dashboard />} />
-                        <Route path="/beispiel" element={<Beispiel />} />
 
                         {/* Admin/Verwaltung Restaurant Routes */}
                         <Route path="/neuesRestaurant" element={<NeuesRestaurant />} />
                         <Route path="/restaurants" element={<Restaurants />} />
                         <Route path="/restaurants/:id" element={<RestaurantDetail />} />
-                        <Route path="/restaurants/:id/edit" element={<EditRestaurantInfos />} />
                         <Route path="/restaurants/:restaurantId/gericht/:gerichtId" element={<GerichtDetail />} />
+
+                        {/* Edit Pages */}
+
+                        <Route path="/restaurants/:id/edit/opening" element={<EditOpeningHours />} />
+                        <Route path="/restaurants/:id/edit/menu" element={<EditMenu />} />
+                        <Route path="/restaurants/:id/edit" element={<EditRestaurantInfos />} />
 
 
                         <Route path="/kunde" element={<KundeHome />} />

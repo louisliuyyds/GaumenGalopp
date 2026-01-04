@@ -17,7 +17,6 @@ def get_all_restaurants(db: Session = Depends(get_db)):
     service = RestaurantService(db)
     restaurants = service.get_all()
 
-
     return [
         {
             "restaurantid": r.restaurantid,
@@ -26,6 +25,7 @@ def get_all_restaurants(db: Session = Depends(get_db)):
             "adresseid": r.adresseid,
             "telefon": r.telefon,
             "kuechenchef": r.kuechenchef,
+            "email": r.email,
             # Adresse
             "adresse": {
                 "adresseid": r.adresse.adresseid,
@@ -70,6 +70,7 @@ def get_restaurant(
         "adresseid": restaurant.adresseid,
         "telefon": restaurant.telefon,
         "kuechenchef": restaurant.kuechenchef,
+        "email": restaurant.email,
         # Adresse
         "adresse": {
             "adresseid": restaurant.adresse.adresseid,
@@ -127,7 +128,6 @@ def create_restaurant(
     service = RestaurantService(db)
     new_restaurant = service.create(restaurant.model_dump())
     return new_restaurant
-
 
 
 # PUT /api/restaurants/{id} - Update restaurant
