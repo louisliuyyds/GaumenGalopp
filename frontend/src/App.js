@@ -4,15 +4,18 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Sidebar from './components/Sidebar';
 import Dashboard from './pages/Dashboard';
 import Beispiel from "./pages/Beispiel";
-import NeuesRestaurant from "./pages/NeuesRestaurant";
+import NeuesRestaurant from "./pages/Restaurant"
 import RestaurantDetail from "./pages/RestaurantDetail";
 import GerichtDetail from "./pages/GerichtDetail";
 import EditRestaurantInfos from "./pages/EditRestaurantInfos";
 import colors from './theme/colors';
 import Restaurants from "./pages/Restaurant";
+import Bestellung from "./pages/Bestellung";
+import KundeHome from './pages/KundeHome';
 import Warenkorb from "./pages/Warenkorb";
 import KundeHome from './pages/Kundehome';
 import Bestellhistorie from "./pages/Bestellhistorie";
+
 const AppContainer = styled.div`
     display: flex;
     flex-direction: row;
@@ -34,20 +37,21 @@ function App() {
                 <Sidebar />
                 <ContentArea>
                     <Routes>
+                        {/* Dashboard */}
                         <Route path="/" element={<Dashboard />} />
                         <Route path="/beispiel" element={<Beispiel />} />
+                        {/* Admin/Verwaltung Restaurant Routes */}
                         <Route path="/neuesRestaurant" element={<NeuesRestaurant />} />
                         <Route path="/restaurants" element={<Restaurants />} />
-                        <Route path="/restaurants/:restaurantId/gericht/:gerichtId" element={<GerichtDetail />} />
                         <Route path="/restaurants/:id" element={<RestaurantDetail />} />
                         <Route path="/restaurants/:id/edit" element={<EditRestaurantInfos />} />
+                        <Route path="/restaurants/:restaurantId/gericht/:gerichtId" element={<GerichtDetail />} />
                         <Route path="/kunde" element={<KundeHome />} />
+                        <Route path="/kunde/restaurants/:id" element={<RestaurantDetail />} />
+                        <Route path="/kunde/bestellungen" element={<Bestellung />} />
                         <Route path="/kunde/restaurants" element={<Restaurants />} />
-
                         <Route path="/kunde/warenkorb" element={<Warenkorb />} />
-
                         <Route path="/bestellhistorie" element={<Bestellhistorie />} />
-
                     </Routes>
                 </ContentArea>
             </AppContainer>
