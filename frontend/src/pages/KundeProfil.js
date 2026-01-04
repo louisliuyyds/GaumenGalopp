@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import styled from 'styled-components';
 import colors from '../theme/colors';
 import kundeService from '../services/kundeService';
+import kritikerService from '../services/kritikerService';
 
 const Container = styled.div`
     padding: 20px;
@@ -60,6 +61,21 @@ const Input = styled.input`
     border: 1px solid ${colors.border};
     border-radius: 4px;
     font-size: 16px;
+    &:disabled {
+        background-color: #f5f5f5;
+        cursor: not-allowed;
+    }
+`;
+
+const TextArea = styled.textarea`
+    width: 100%;
+    max-width: 480px;
+    min-height: 100px;
+    padding: 10px;
+    border: 1px solid ${colors.border};
+    border-radius: 4px;
+    font-size: 16px;
+    resize: vertical;
     &:disabled {
         background-color: #f5f5f5;
         cursor: not-allowed;
@@ -165,6 +181,13 @@ const mapApiToState = (payload) => ({
     }
 });
 
+const mapKritikerToState = (payload) => ({
+    kritikerid: payload?.kritikerid ? String(payload.kritikerid) : '',
+    kundenid: payload?.kundenid ? String(payload.kundenid) : '',
+    kritikername: payload?.kritikername ?? '',
+    beschreibung: payload?.beschreibung ?? ''
+});
+
 const mapStateToApi = (state) => ({
     vorname: state.vorname,
     nachname: state.nachname,
@@ -183,6 +206,7 @@ const mapStateToApi = (state) => ({
 
 const KundeProfil = () => {
     const [profile, setProfile] = useState(emptyProfile);
+    const [kritikerProfile, setKritikerProfile] = useState(null);
     const [kundenIdInput, setKundenIdInput] = useState('');
     const [isEditing, setIsEditing] = useState(false);
     const [loading, setLoading] = useState(false);
@@ -208,6 +232,14 @@ const KundeProfil = () => {
         }));
     };
 
+    const handleKritikerChange = (e) => {
+        const { name, value } = e.target;
+        setKritikerProfile(prev => (prev ? {
+            ...prev,
+            [name]: value
+        } : prev));
+    };
+
     const loadProfile = async (explicitId) => {
         const sourceId = explicitId ?? kundenIdInput;
         const trimmedId = (sourceId ?? '').toString().trim();
@@ -219,13 +251,29 @@ const KundeProfil = () => {
         setLoading(true);
         setStatus(null);
         try {
-            const data = await kundeService.getProfile(trimmedId);
-            setProfile(mapApiToState(data));
+            const kritikerPromise = kritikerService.getByKundenId(trimmedId)
+                .then(mapKritikerToState)
+                .catch(error => {
+                    if (error?.status === 404) {
+                        return null;
+                    }
+                    throw error;
+                });
+
+            const [kundeData, kritikerData] = await Promise.all([
+                kundeService.getProfile(trimmedId),
+                kritikerPromise
+            ]);
+
+            setProfile(mapApiToState(kundeData));
             setKundenIdInput(trimmedId);
-            setIsEditing(true);
-            setStatus({ type: 'success', text: `Profil ${data.kundenid} geladen.` });
+            setKritikerProfile(kritikerData);
+            setIsEditing(false);
+            setStatus({ type: 'success', text: `Profil ${kundeData.kundenid} geladen.` });
         } catch (error) {
             setProfile(emptyProfile);
+            setKritikerProfile(null);
+            setIsEditing(false);
             setStatus({ type: 'error', text: error.message || 'Profil konnte nicht geladen werden.' });
         } finally {
             setLoading(false);
@@ -243,7 +291,21 @@ const KundeProfil = () => {
         try {
             const payload = mapStateToApi(profile);
             const updated = await kundeService.updateProfile(profile.kundenid, payload);
+
+            let nextKritikerState = kritikerProfile;
+            if (kritikerProfile?.kritikerid) {
+                const updatedKritiker = await kritikerService.update(
+                    kritikerProfile.kritikerid,
+                    {
+                        kritikername: kritikerProfile.kritikername,
+                        beschreibung: kritikerProfile.beschreibung
+                    }
+                );
+                nextKritikerState = mapKritikerToState(updatedKritiker);
+            }
+
             setProfile(mapApiToState(updated));
+            setKritikerProfile(nextKritikerState);
             setIsEditing(false);
             setStatus({ type: 'success', text: 'Profil erfolgreich gespeichert.' });
         } catch (error) {
@@ -370,6 +432,30 @@ const KundeProfil = () => {
                                 />
                             </FormGroup>
                         ))}
+
+                        {kritikerProfile && (
+                            <>
+                                <SectionTitle>Kritikerprofil</SectionTitle>
+                                <FormGroup>
+                                    <Label>Kritikername</Label>
+                                    <Input
+                                        name="kritikername"
+                                        value={kritikerProfile.kritikername || ''}
+                                        onChange={handleKritikerChange}
+                                        disabled={!isEditing}
+                                    />
+                                </FormGroup>
+                                <FormGroup>
+                                    <Label>Beschreibung</Label>
+                                    <TextArea
+                                        name="beschreibung"
+                                        value={kritikerProfile.beschreibung || ''}
+                                        onChange={handleKritikerChange}
+                                        disabled={!isEditing}
+                                    />
+                                </FormGroup>
+                            </>
+                        )}
 
                         <ButtonGroup>
                             {!isEditing ? (

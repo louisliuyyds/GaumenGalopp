@@ -1,8 +1,7 @@
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 
-from models import Restaurant
-from models.restaurant import Restaurant
-from typing import List, Optional, Any
+from models import Restaurant, Adresse
+from typing import Optional
 
 
 class RestaurantService:
@@ -14,6 +13,14 @@ class RestaurantService:
     
     def get_by_id(self, restaurant_id: int) -> Optional[Restaurant]:
         return self.db.query(Restaurant).filter(Restaurant.restaurantid == restaurant_id).first()
+
+    def get_profile(self, restaurant_id: int) -> Optional[Restaurant]:
+        return (
+            self.db.query(Restaurant)
+            .options(joinedload(Restaurant.adresse))
+            .filter(Restaurant.restaurantid == restaurant_id)
+            .first()
+        )
     
     def get_by_name(self, name: str) -> list[type[Restaurant]]:
         return self.db.query(Restaurant).filter(Restaurant.name.ilike(f"%{name}%")).all()
@@ -52,3 +59,29 @@ class RestaurantService:
     def get_with_menue(self, restaurant_id: int) -> Optional[Restaurant]:
         """Get restaurant with its menu"""
         return self.db.query(Restaurant).filter(Restaurant.restaurantid == restaurant_id).first()
+
+    def update_profile(self, restaurant_id: int, restaurant_data: dict, adresse_data: Optional[dict]) -> Optional[Restaurant]:
+        restaurant = self.get_profile(restaurant_id)
+        if not restaurant:
+            return None
+
+        for key, value in restaurant_data.items():
+            if value is not None and hasattr(restaurant, key):
+                setattr(restaurant, key, value)
+
+        if adresse_data:
+            adresse = restaurant.adresse
+            if not adresse:
+                adresse = Adresse(**adresse_data)
+                self.db.add(adresse)
+                self.db.flush()
+                restaurant.adresseid = adresse.adresseid
+                restaurant.adresse = adresse
+            else:
+                for key, value in adresse_data.items():
+                    if value is not None:
+                        setattr(adresse, key, value)
+
+        self.db.commit()
+        self.db.refresh(restaurant)
+        return restaurant

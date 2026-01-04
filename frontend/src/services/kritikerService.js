@@ -19,6 +19,14 @@ const kritikerService = {
   },
 
   /**
+   * Kritiker eines Kunden abrufen
+   * GET /api/kritikers/by-kunden/{kundenId}
+   */
+  getByKundenId: async (kundenId) => {
+    return await apiClient.get(`/api/kritikers/by-kunden/${kundenId}`);
+  },
+
+  /**
    * Neuen Kritiker erstellen
    * POST /api/kritikers
    */

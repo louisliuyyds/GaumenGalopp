@@ -72,7 +72,10 @@ apiClient.interceptors.response.use(
       
       // Benutzerfreundliche Fehlermeldung
       const errorMessage = data?.detail || data?.message || 'Ein Fehler ist aufgetreten';
-      return Promise.reject(new Error(errorMessage));
+      const normalizedError = new Error(errorMessage);
+      normalizedError.status = status;
+      normalizedError.details = data;
+      return Promise.reject(normalizedError);
     } else if (error.request) {
       // Request wurde gesendet, aber keine Antwort erhalten
       console.error('Keine Antwort vom Server erhalten');

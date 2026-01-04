@@ -14,6 +14,7 @@ import Restaurants from "./pages/Restaurant";
 import Bestellung from "./pages/Bestellung";
 import KundeHome from './pages/Kundehome';
 import KundeProfil from './pages/KundeProfil';
+import RestaurantProfil from './pages/RestaurantProfil';
 
 const AppContainer = styled.div`
     display: flex;
@@ -43,6 +44,7 @@ function App() {
                         <Route path="/restaurants/:restaurantId/gericht/:gerichtId" element={<GerichtDetail />} />
                         <Route path="/restaurants/:id" element={<RestaurantDetail />} />
                         <Route path="/restaurants/:id/edit" element={<EditRestaurantInfos />} />
+                        <Route path="/restaurants/profil" element={<RestaurantProfil />} />
                         <Route path="/kunde" element={<KundeHome />} />
                         <Route path="/kunde/restaurants" element={<Restaurants />} />
                         <Route path="/kunde/bestellungen" element={<Bestellung />} />

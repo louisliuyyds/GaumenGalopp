@@ -1,6 +1,8 @@
 from pydantic import BaseModel
 from typing import Optional
 
+from schemas.adresse_schema import AdresseResponse, AdresseUpdate
+
 # What data comes IN when creating a restaurant
 class RestaurantCreate(BaseModel):
     name: str
@@ -30,3 +32,15 @@ class RestaurantResponse(BaseModel):
     
     class Config:
         from_attributes = True
+
+
+class RestaurantProfileResponse(RestaurantResponse):
+    adresse: AdresseResponse
+
+
+class RestaurantProfileUpdate(BaseModel):
+    name: Optional[str] = None
+    klassifizierung: Optional[str] = None
+    telefon: Optional[str] = None
+    kuechenchef: Optional[str] = None
+    adresse: Optional[AdresseUpdate] = None

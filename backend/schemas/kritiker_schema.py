@@ -3,16 +3,20 @@ from typing import Optional
 
 # What data comes IN when creating a Kritiker
 class KritikerCreate(BaseModel):
+    kundenid: int
     beschreibung: str
     kritikername: str
 
 # What data comes IN when updating
 class KritikerUpdate(BaseModel):
+    kundenid: Optional[int] = None
     kritikername: Optional[str] = None
     beschreibung: Optional[str] = None
 
 # What data goes OUT to the frontend
 class KritikerResponse(BaseModel):
+    kritikerid: int
+    kundenid: int
     beschreibung: str
     kritikername: str
 
