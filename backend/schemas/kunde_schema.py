@@ -32,3 +32,9 @@ class KundeResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+class KundeKuerzelResponse(BaseModel):
+    namenskuerzel: Optional[str] = None
+
+    class Config:
+        from_attributes = True

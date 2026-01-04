@@ -1,28 +1,30 @@
 import apiClient from '../api/apiClient';
 
 const bestellungService = {
+  /**
+   * Alle Bestellungen abrufen
+   * GET /api/bestellungen
+   */
+  getAll: async () => {
+    return await apiClient.get('/api/bestellungen');
+  },
 
-    getByKunde: async (kundenId) => {
-        const response = await apiClient.get(
-            `/api/bestellungen/kunde/${kundenId}`
-        );
-        console.log("API Response:", response);
-        const data = response?.data || response;
-        console.log("Extrahierte Daten:", data);
-        return data;
-    },
+  /**
+   * Eine Warenkorb nach ID abrufen
+   * GET /api/bestellungen/{id}
+   */
+  getById: async (bestellungId) => {
+    return await apiClient.get(`/api/bestellungen/${bestellungId}`);
+  },
 
-    getAll: async () => {
-        const response = await apiClient.get('/api/bestellungen/');
-        return response?.data || response;
-    },
-
-    getById: async (bestellungId) => {
-        const response = await apiClient.get(`/api/bestellungen/${bestellungId}`);
-        return response?.data || response;
-    },
-
-    // NEU: Hole Details für eine Bestellung
+  /**
+   * Gesamtpreis einer Warenkorb abrufen
+   * GET /api/bestellungen/{id}/total
+   */
+  getTotal: async (bestellungId) => {
+    return await apiClient.get(`/api/bestellungen/${bestellungId}/total`);
+  },
+  // NEU: Hole Details für eine Bestellung
     getDetails: async (bestellungId) => {
         try {
             // Versuche zuerst den /details Endpunkt
@@ -44,23 +46,21 @@ const bestellungService = {
         }
     },
 
-    getTotal: async (bestellungId) => {
-        const response = await apiClient.get(`/api/bestellungen/${bestellungId}/total`);
-        return response?.data || response;
-    },
+  /**
+   * Neue Warenkorb erstellen
+   * POST /api/bestellungen
+   */
+  create: async (bestellungData) => {
+    return await apiClient.post('/api/bestellungen', bestellungData);
+  },
 
-    create: async (bestellungData) => {
-        const response = await apiClient.post('/api/bestellungen/', bestellungData);
-        return response?.data || response;
-    },
-
-    update: async (bestellungId, bestellungData) => {
-        const response = await apiClient.put(
-            `/api/bestellungen/${bestellungId}`,
-            bestellungData
-        );
-        return response?.data || response;
-    },
+  /**
+   * Warenkorb aktualisieren
+   * PUT /api/bestellungen/{id}
+   */
+  update: async (bestellungId, bestellungData) => {
+    return await apiClient.put(`/api/bestellungen/${bestellungId}`, bestellungData);
+  },
 };
 
 export default bestellungService;

@@ -48,7 +48,7 @@ const adresseService = {
    */
   searchByPlz: async (postleitzahl) => {
     return await apiClient.get(`/api/adresse/plz/${postleitzahl}`);
-  },
+  }
 };
 
 export default adresseService;

@@ -12,6 +12,12 @@ class BewertungService:
     def get_by_id(self, bewertungid: int) -> Optional[Bewertung]:
         return self.db.query(Bewertung).filter(Bewertung.bewertungid == bewertungid).first()
     
+    def get_by_gericht(self, gerichtid: int) -> List[Bewertung]:
+        """
+        Alle Bewertungen für ein bestimmtes Gericht abrufen
+        """
+        return self.db.query(Bewertung).filter(Bewertung.gerichtid == gerichtid).all()
+    
     def create(self, bewertung_data: dict) -> Bewertung:
         bewertung = Bewertung(**bewertung_data)
         self.db.add(bewertung)
@@ -38,5 +44,4 @@ class BewertungService:
             return False
         self.db.delete(bewertung)
         self.db.commit()
-        self.db.refresh(bewertung)
         return True
