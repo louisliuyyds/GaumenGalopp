@@ -18,6 +18,13 @@ def get_all_bewertungen(db: Session = Depends(get_db)):
     bewertungen = service.get_all()
     return bewertungen
 
+# GET /api/bewertungen/gericht/{gerichtid} - Get bewertungen by gericht
+@router.get("/gericht/{gerichtid}", response_model=List[BewertungResponse])
+def get_bewertungen_by_gericht(gerichtid: int, db: Session = Depends(get_db)):
+    service = BewertungService(db)
+    bewertungen = service.get_by_gericht(gerichtid)
+    return bewertungen
+
 # GET /api/bewertungen/{id} - Get specific bewertung
 @router.get("/{bewertungid}", response_model=BewertungResponse)
 def get_bewertung(bewertungid: int, db: Session = Depends(get_db)):

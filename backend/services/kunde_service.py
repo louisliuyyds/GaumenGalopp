@@ -19,6 +19,14 @@ class KundeService:
             .options(joinedload(Kunde.adresse)) \
             .filter(Kunde.kundenid == kunden_id) \
             .first()
+    
+    def get_kuerzel_by_id(self, kunden_id: int) -> Optional[str]:
+        """Hole nur das Namenskürzel eines Kunden"""
+        result = self.db.query(Kunde.namenskuerzel) \
+            .filter(Kunde.kundenid == kunden_id) \
+            .first()
+        return result[0] if result else None
+
 
     def get_adressid_by_kunden_id(self, kunden_id: int) -> Optional[int]:
         return (

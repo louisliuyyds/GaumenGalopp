@@ -19,6 +19,14 @@ const bewertungService = {
   },
 
   /**
+   * Alle Bewertungen für ein bestimmtes Gericht abrufen
+   * GET /api/bewertungen/gericht/{gerichtid}
+   */
+  getByGericht: async (gerichtId) => {
+    return await apiClient.get(`/api/bewertungen/gericht/${gerichtId}`);
+  },
+
+  /**
    * Neue Bewertung erstellen
    * POST /api/bewertungen
    */

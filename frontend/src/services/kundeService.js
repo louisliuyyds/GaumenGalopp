@@ -23,6 +23,10 @@ const kundeService = {
     return res
   },
 
+    getKuerzelById: async (kundenId) => {
+    return await apiClient.get(`/api/kunden/getKuerzelById/${kundenId}`);
+  },
+
   /**
    * Neuen Kunden erstellen
    * POST /api/kunden

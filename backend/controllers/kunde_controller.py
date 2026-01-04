@@ -4,7 +4,7 @@ from typing import List
 
 from database import get_db
 from services.kunde_service import KundeService
-from schemas.kunde_schema import KundeCreate, KundeUpdate, KundeResponse
+from schemas.kunde_schema import KundeCreate, KundeUpdate, KundeResponse, KundeKuerzelResponse
 
 router = APIRouter(
     prefix="/api/kunden",
@@ -37,6 +37,17 @@ def get_adressid_by_kunden_id(kunden_id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Kunde not found")
     return {"adressid": adressid}
 
+@router.get("/getKuerzelById/{kunden_id}", response_model=KundeKuerzelResponse)
+def get_kundenkuerzel(kunden_id: int, db: Session = Depends(get_db)):
+    service = KundeService(db)
+    kuerzel = service.get_kuerzel_by_id(kunden_id)
+    if kuerzel is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Kunde with id {kunden_id} not found"
+        )
+
+    return {"namenskuerzel": kuerzel}
 
 @router.post("/", response_model=KundeResponse, status_code=status.HTTP_201_CREATED)
 def create_kunde(
