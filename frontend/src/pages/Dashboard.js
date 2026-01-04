@@ -156,7 +156,7 @@ function Home() {
     const recentActivities = [
         { text: 'Neues Restaurant "Sushi Paradise" hinzugefügt', time: 'vor 2 Stunden' },
         { text: 'Gericht "Pizza Quattro Stagioni" aktualisiert', time: 'vor 3 Stunden' },
-        { text: 'Bestellung #1523 abgeschlossen', time: 'vor 4 Stunden' },
+        { text: 'Warenkorb #1523 abgeschlossen', time: 'vor 4 Stunden' },
         { text: 'Neue Bewertung für "Bella Italia" (5 Sterne)', time: 'vor 5 Stunden' },
         { text: 'Restaurant "Le Bistro" Öffnungszeiten geändert', time: 'vor 1 Tag' },
     ];

@@ -126,8 +126,11 @@ function Sidebar() {
     const customerNavItems = [
         { path: '/kunde', label: 'Home' },
         { path: '/kunde/restaurants', label: 'Restaurants'},
-        { path: '/kunde/bestellungen', label: 'Meine Bestellungen' },
+
+        { path: '/kunde/warenkorb', label: 'Warenkorb' },
+       
         { path: '/bestellhistorie', label: 'Bestellhistorie' },
+
         { path: '/kunde/favoriten', label: 'Favoriten' },
         { path: '/kunde/profil', label: 'Profil' },
     ];
