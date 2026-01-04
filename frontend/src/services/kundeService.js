@@ -18,6 +18,10 @@ const kundeService = {
     return await apiClient.get(`/api/kunden/${kundenId}`);
   },
 
+    getKuerzelById: async (kundenId) => {
+    return await apiClient.get(`/api/kunden/getKuerzelById/${kundenId}`);
+  },
+
   /**
    * Neuen Kunden erstellen
    * POST /api/kunden

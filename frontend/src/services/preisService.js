@@ -14,8 +14,12 @@ const preisService = {
    * Einen Preis nach ID abrufen
    * GET /api/preis/{id}
    */
-  getById: async (preisId) => {
-    return await apiClient.get(`/api/preis/${preisId}`);
+  getByPreisId: async (preisId) => {
+    return await apiClient.get(`/api/preis/byPreisId/${preisId}`);
+  },
+
+  getByGerichtId: async (gerichtId) => {
+    return await apiClient.get(`/api/preis/byGerichtId/${gerichtId}`);
   },
 
   /**
