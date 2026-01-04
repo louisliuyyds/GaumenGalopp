@@ -1,11 +1,17 @@
+import self
 from sqlalchemy.orm import Session, joinedload
 from typing import List, Optional
+
+from models import kunde
 from models.kunde import Kunde
+from services.adresse_service import AdresseService
+
 
 
 class KundeService:
     def __init__(self, db: Session):
         self.db = db
+        self.adresse_service = AdresseService(db)
 
 # wenn wir eine Detailed Ansicht von den Kunden haben im Frontend (z.B. im Profil)
 # wäre es sinnvoll hier einen JoinedLoad zu machen
@@ -48,8 +54,34 @@ class KundeService:
         if not kunde:
             return None
 
-        for key, value in update_data.items():
-            if value is not None:
+        # Trenne Adress- von Kunde-Feldern
+        adress_fields = ['straße', 'hausnummer', 'postleitzahl', 'ort', 'land']
+        adress_data = {k: v for k, v in update_data.items() if k in adress_fields}
+        kunde_data = {k: v for k, v in update_data.items() if k not in adress_fields}
+
+        # Prüfe was geschickt wurde
+        has_adress_id = 'adresseid' in kunde_data
+        has_adress_data = bool(adress_data)
+
+        if has_adress_id and has_adress_data:
+            raise ValueError("Sende entweder adresseid ODER Adress-Daten!")
+
+        elif has_adress_data and kunde.adresseid:
+            # Smart Adress-Update
+            updated_adresse = self.adresse_service.update(
+                kunde.adresseid,
+                adress_data
+            )
+            kunde.adresseid = updated_adresse.adresseid
+
+        elif has_adress_id:
+            # Direkt setzen
+            kunde.adresseid = kunde_data['adresseid']
+            kunde_data.pop('adresseid')
+
+        # Kunde-Update
+        for key, value in kunde_data.items():
+            if value is not None and hasattr(kunde, key):
                 setattr(kunde, key, value)
 
         self.db.commit()

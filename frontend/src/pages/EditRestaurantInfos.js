@@ -8,7 +8,7 @@ import EditNavigationTabs from '../components/EditNavigationTabs';
 // ==================== STYLED COMPONENTS ====================
 
 const Container = styled.div`
-    max-width: 1000px;
+    max-width: 900px;
     margin: 0 auto;
 `;
 
@@ -42,8 +42,6 @@ const Subtitle = styled.p`
     color: ${colors.text.light};
     font-size: 1.1em;
     margin-bottom: 40px;
-    padding-bottom: 20px;
-    border-bottom: 2px solid ${colors.border.light};
 `;
 
 const Form = styled.form`
@@ -82,10 +80,6 @@ const InputGroup = styled.div`
     flex-direction: column;
     gap: 8px;
     margin-bottom: 20px;
-
-    &:last-child {
-        margin-bottom: 0;
-    }
 `;
 
 const Label = styled.label`
@@ -115,7 +109,6 @@ const Input = styled.input`
     &:disabled {
         background: #f5f5f5;
         cursor: not-allowed;
-        color: ${colors.text.light};
     }
 `;
 
@@ -126,6 +119,22 @@ const ButtonContainer = styled.div`
     margin-top: 40px;
     padding-top: 30px;
     border-top: 2px solid ${colors.border.light};
+`;
+
+const CancelButton = styled.button`
+    background: ${colors.background.card};
+    color: ${colors.text.primary};
+    border: 2px solid ${colors.border.medium};
+    padding: 14px 32px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1.1em;
+    font-weight: 600;
+    transition: all 0.3s ease;
+
+    &:hover {
+        background: ${colors.border.light};
+    }
 `;
 
 const SaveButton = styled.button`
@@ -149,23 +158,6 @@ const SaveButton = styled.button`
         opacity: 0.5;
         cursor: not-allowed;
         transform: none;
-    }
-`;
-
-const CancelButton = styled.button`
-    background: ${colors.background.card};
-    color: ${colors.text.primary};
-    border: 2px solid ${colors.border.medium};
-    padding: 14px 32px;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 1.1em;
-    font-weight: 600;
-    transition: all 0.3s ease;
-
-    &:hover {
-        background: ${colors.border.light};
-        border-color: ${colors.text.secondary};
     }
 `;
 
@@ -196,20 +188,38 @@ const SuccessMessage = styled.div`
     font-weight: 500;
 `;
 
+const InfoBox = styled.div`
+    background: ${colors.primary.light};
+    border-left: 4px solid ${colors.primary.main};
+    padding: 15px 20px;
+    border-radius: 8px;
+    margin-top: 15px;
+    color: ${colors.text.secondary};
+    font-size: 0.9em;
+    line-height: 1.6;
+`;
+
 // ==================== HAUPTKOMPONENTE ====================
 
 function EditRestaurantInfos() {
     const { id } = useParams();
     const navigate = useNavigate();
 
-    // States
+    // Ein State für ALLES (Restaurant + Adresse)
     const [formData, setFormData] = useState({
+        // Restaurant-Felder
         name: '',
         klassifizierung: '',
         telefon: '',
         email: '',
         kuechenchef: '',
-        adresseid: ''
+
+        // Adress-Felder (Backend macht Copy-on-Write!)
+        straße: '',
+        hausnummer: '',
+        postleitzahl: '',
+        ort: '',
+        land: ''
     });
 
     const [loading, setLoading] = useState(true);
@@ -217,24 +227,31 @@ function EditRestaurantInfos() {
     const [error, setError] = useState(null);
     const [successMessage, setSuccessMessage] = useState(null);
 
-    // Daten beim Laden holen (wie in RestaurantDetail.js)
+    // Daten beim Laden holen
     useEffect(() => {
         const fetchRestaurantData = async () => {
             try {
                 setLoading(true);
                 setError(null);
-                
+
                 const data = await restaurantService.getById(id);
                 console.log('Restaurant geladen:', data);
 
-                // Formular mit DB-Daten befüllen
+                // Alle Felder in einen State
                 setFormData({
+                    // Restaurant
                     name: data.name || '',
                     klassifizierung: data.klassifizierung || '',
                     telefon: data.telefon || '',
                     email: data.email || '',
                     kuechenchef: data.kuechenchef || '',
-                    adresseid: data.adresseid || ''
+
+                    // Adresse (aus nested Object)
+                    straße: data.adresse?.straße || '',
+                    hausnummer: data.adresse?.hausnummer || '',
+                    postleitzahl: data.adresse?.postleitzahl || '',
+                    ort: data.adresse?.ort || '',
+                    land: data.adresse?.land || ''
                 });
 
             } catch (err) {
@@ -248,7 +265,7 @@ function EditRestaurantInfos() {
         fetchRestaurantData();
     }, [id]);
 
-    // Input-Änderungen tracken
+    // Ein Handler für ALLE Felder
     const handleInputChange = (e) => {
         const { name, value } = e.target;
         setFormData(prev => ({
@@ -257,19 +274,20 @@ function EditRestaurantInfos() {
         }));
     };
 
-    // Formular absenden
+    // Formular absenden - Backend macht Copy-on-Write automatisch!
     const handleSubmit = async (e) => {
         e.preventDefault();
-        
+
         try {
             setSaving(true);
             setError(null);
             setSuccessMessage(null);
 
-            // Restaurant updaten (wie in Restaurant.js mit delete)
+            // Einfach ALLES an Backend senden
+            // Backend entscheidet automatisch ob neue Adresse nötig ist!
             await restaurantService.update(id, formData);
-            
-            console.log('✅ Restaurant erfolgreich aktualisiert:', formData);
+
+            console.log('✅ Restaurant erfolgreich aktualisiert');
             setSuccessMessage('Restaurant erfolgreich gespeichert!');
 
             // Nach 1.5 Sekunden zurück zur Detail-Seite
@@ -295,14 +313,13 @@ function EditRestaurantInfos() {
         return (
             <Container>
                 <LoadingState>
-                    <div style={{ fontSize: '3rem', marginBottom: '20px' }}>🍳</div>
+                    <div style={{ fontSize: '3rem', marginBottom: '20px' }}>🍽️</div>
                     Lade Restaurant-Daten...
                 </LoadingState>
             </Container>
         );
     }
 
-    // Hauptansicht
     return (
         <Container>
             <BackButton onClick={() => navigate(`/restaurants/${id}`)}>
@@ -323,25 +340,25 @@ function EditRestaurantInfos() {
                     <CardTitle>🍽️ Basis-Informationen</CardTitle>
 
                     <InputGroup>
-                        <Label>🏷️ Restaurant-Name</Label>
+                        <Label>📝 Name</Label>
                         <Input
                             type="text"
                             name="name"
                             value={formData.name}
                             onChange={handleInputChange}
-                            placeholder="z.B. Bella Italia"
+                            placeholder="z.B. Restaurant Bella Vista"
                             required
                         />
                     </InputGroup>
 
                     <InputGroup>
-                        <Label>🍕 Klassifizierung / Cuisine</Label>
+                        <Label>🏷️ Klassifizierung</Label>
                         <Input
                             type="text"
                             name="klassifizierung"
                             value={formData.klassifizierung}
                             onChange={handleInputChange}
-                            placeholder="z.B. Italienisch"
+                            placeholder="z.B. Italienisch, Sterne-Restaurant"
                         />
                     </InputGroup>
 
@@ -352,7 +369,7 @@ function EditRestaurantInfos() {
                             name="kuechenchef"
                             value={formData.kuechenchef}
                             onChange={handleInputChange}
-                            placeholder="z.B. Mario Rossi"
+                            placeholder="z.B. Giovanni Rossi"
                         />
                     </InputGroup>
                 </InfoCard>
@@ -368,7 +385,7 @@ function EditRestaurantInfos() {
                             name="telefon"
                             value={formData.telefon}
                             onChange={handleInputChange}
-                            placeholder="z.B. +49 (0) 123 456789"
+                            placeholder="z.B. +49 30 12345678"
                         />
                     </InputGroup>
 
@@ -384,28 +401,75 @@ function EditRestaurantInfos() {
                     </InputGroup>
                 </InfoCard>
 
-                {/* CARD 3: Adresse (nur Anzeige, da ID) */}
+                {/* CARD 3: Adresse */}
                 <InfoCard>
                     <CardTitle>📍 Adresse</CardTitle>
 
                     <InputGroup>
-                        <Label>🏠 Adress-ID</Label>
+                        <Label>🏠 Straße</Label>
                         <Input
                             type="text"
-                            name="adresseid"
-                            value={formData.adresseid}
+                            name="straße"
+                            value={formData.straße}
                             onChange={handleInputChange}
-                            placeholder="Adress-ID aus der Datenbank"
-                            disabled
+                            placeholder="z.B. Hauptstraße"
+                            required
                         />
-                        <small style={{ 
-                            color: colors.text.light, 
-                            fontSize: '0.85em',
-                            marginTop: '-4px'
-                        }}>
-                            ℹ️ Die Adress-ID kann aktuell nicht direkt bearbeitet werden
-                        </small>
                     </InputGroup>
+
+                    <InputGroup>
+                        <Label>🔢 Hausnummer</Label>
+                        <Input
+                            type="text"
+                            name="hausnummer"
+                            value={formData.hausnummer}
+                            onChange={handleInputChange}
+                            placeholder="z.B. 123"
+                            required
+                        />
+                    </InputGroup>
+
+                    <InputGroup>
+                        <Label>📮 Postleitzahl</Label>
+                        <Input
+                            type="text"
+                            name="postleitzahl"
+                            value={formData.postleitzahl}
+                            onChange={handleInputChange}
+                            placeholder="z.B. 10115"
+                            required
+                        />
+                    </InputGroup>
+
+                    <InputGroup>
+                        <Label>🏙️ Ort</Label>
+                        <Input
+                            type="text"
+                            name="ort"
+                            value={formData.ort}
+                            onChange={handleInputChange}
+                            placeholder="z.B. Berlin"
+                            required
+                        />
+                    </InputGroup>
+
+                    <InputGroup>
+                        <Label>🌍 Land</Label>
+                        <Input
+                            type="text"
+                            name="land"
+                            value={formData.land}
+                            onChange={handleInputChange}
+                            placeholder="z.B. Deutschland"
+                            required
+                        />
+                    </InputGroup>
+
+                    <InfoBox>
+                        🧠 <strong>Intelligentes Backend-System:</strong><br/>
+                        Das Backend entscheidet automatisch, ob eine neue Adresse erstellt werden muss.
+                        Wenn andere Restaurants oder Kunden die gleiche Adresse nutzen, bleibt ihre Adresse unverändert.
+                    </InfoBox>
                 </InfoCard>
 
                 {/* Buttons */}

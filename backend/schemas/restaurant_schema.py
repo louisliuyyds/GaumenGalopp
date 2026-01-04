@@ -12,11 +12,20 @@ class RestaurantCreate(BaseModel):
 
 # What data comes IN when updating
 class RestaurantUpdate(BaseModel):
+    # Restaurant
     name: Optional[str] = None
     klassifizierung: Optional[str] = None
-    adresseid: Optional[int] = None
     telefon: Optional[str] = None
     kuechenchef: Optional[str] = None
+    email: Optional[str] = None
+
+    # Adresse
+    adresseid: Optional[int] = None  # Option A
+    straße: Optional[str] = None     # Option B
+    hausnummer: Optional[str] = None
+    postleitzahl: Optional[str] = None
+    ort: Optional[str] = None
+    land: Optional[str] = None
 
 
 # What data goes OUT to the frontend
