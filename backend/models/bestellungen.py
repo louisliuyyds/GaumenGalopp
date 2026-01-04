@@ -7,10 +7,10 @@ class Bestellungen(Base):
     __tablename__= 'bestellung'
     bestellungid = Column(Integer, primary_key=True, index=True)
     kundenid = Column(Integer, ForeignKey('kunde.kundenid'), nullable=False)
-    restaurantid = Column(Integer, ForeignKey('restaurant.restaurantid'), nullable=False)
-    lieferantid = Column(Integer, ForeignKey('lieferant.lieferantid'), nullable= False)
-    adressid = Column(Integer, ForeignKey('adresse.adresseid'), nullable=False)
-    bestellzeit = Column(DateTime(timezone=True), server_default=func.now())
+    restaurantid = Column(Integer, ForeignKey('restaurant.restaurantid'), nullable=True)
+    lieferantid = Column(Integer, ForeignKey('lieferant.lieferantid'), nullable=True)
+    adressid = Column(Integer, ForeignKey('adresse.adresseid'), nullable=True)
+    bestellzeit = Column(DateTime(timezone=True), server_default=func.now(), nullable=True)
 
     bestellposition = relationship("Bestellposition", back_populates="bestellungen")
     kunde = relationship("Kunde", back_populates="bestellungen")
