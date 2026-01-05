@@ -112,7 +112,10 @@ def get_restaurant(
                                 "istaktiv": preis.istaktiv
                             } for preis in (gericht.preis if hasattr(gericht, 'preis') else [])
                         ]
-                    } for gericht in (menu.gericht if hasattr(menu, 'gericht') else [])
+                    } for gericht in (
+                        [g for g in menu.gericht if getattr(g, "ist_aktiv", True)]
+                        if hasattr(menu, "gericht") and menu.gericht else []
+                    )
                 ]
             } for menu in (restaurant.menue if hasattr(restaurant, 'menue') else [])
         ]

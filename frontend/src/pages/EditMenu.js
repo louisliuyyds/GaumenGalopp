@@ -512,19 +512,23 @@ function EditMenu() {
 
     // Gericht löschen
     const handleDelete = async (gerichtId, name) => {
-        if (!window.confirm(`Möchtest du "${name}" wirklich löschen?`)) {
+        if (!window.confirm(`Möchtest du "${name}" wirklich deaktivieren?`)) {
             return;
         }
 
         try {
             setError(null);
+
+            // Backend macht jetzt Soft Delete (ist_aktiv = false)
             await gerichtService.delete(gerichtId);
-            setSuccessMessage('Gericht erfolgreich gelöscht!');
-            await fetchGerichte();
+
+            setSuccessMessage('Gericht wurde erfolgreich deaktiviert.');
+            await fetchGerichte(); // neu laden (zeigt nur aktive)
             setTimeout(() => setSuccessMessage(null), 3000);
+
         } catch (err) {
-            console.error(' Fehler beim Löschen:', err);
-            setError('Fehler beim Löschen des Gerichts.');
+            console.error('Fehler beim Deaktivieren:', err);
+            setError('Fehler beim Deaktivieren des Gerichts.');
         }
     };
 

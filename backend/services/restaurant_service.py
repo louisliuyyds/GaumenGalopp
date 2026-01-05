@@ -1,5 +1,5 @@
 # services/restaurant_service.py
-from sqlalchemy.orm import Session, joinedload
+from sqlalchemy.orm import Session, joinedload, with_loader_criteria
 from models.restaurant import Restaurant
 from models.menue import Menue
 from models.gericht import Gericht
@@ -32,31 +32,34 @@ class RestaurantService:
         ).first()
 
     def get_by_id_with_menu(self, restaurant_id: int) -> Optional[Restaurant]:
-        """
-        Get restaurant WITH all relationships:
-        - Adresse (Adresse des Restaurants)
-        - Kochstil (Kochstile des Restaurants)
-        - Menue (Menüs)
-        - Gericht (Gerichte in jedem Menü)
-        - Preis (Preise für jedes Gericht)
-        """
-        return self.db.query(Restaurant).options(
-            joinedload(Restaurant.adresse),
-            joinedload(Restaurant.kochstil)
-            .joinedload(KochstilRestaurant.kochstil),
-            joinedload(Restaurant.menue)
-            .joinedload(Menue.gericht)
-            .joinedload(Gericht.preis)
-        ).filter(
-            Restaurant.restaurantid == restaurant_id
-        ).first()
+        return (
+            self.db.query(Restaurant)
+            .options(
+                joinedload(Restaurant.adresse),
+                joinedload(Restaurant.kochstil)
+                .joinedload(KochstilRestaurant.kochstil),
 
-    def get_by_name(self, name: str) -> List[Restaurant]:
+                joinedload(Restaurant.menue)
+                .joinedload(Menue.gericht)
+                .joinedload(Gericht.preis),
+
+                #NUR aktive Gerichte laden (wirkt auch für joinedload)
+                with_loader_criteria(
+                    Gericht,
+                    Gericht.ist_aktiv.is_(True),
+                    include_aliases=True
+                )
+            )
+            .filter(Restaurant.restaurantid == restaurant_id)
+            .first()
+        )
+
+    def get_by_name(self, name: str) -> list[type[Restaurant]]:
         return self.db.query(Restaurant).filter(
             Restaurant.name.ilike(f"%{name}%")
         ).all()
 
-    def get_by_klassifizierung(self, klassifizierung: str) -> List[Restaurant]:
+    def get_by_klassifizierung(self, klassifizierung: str) -> list[type[Restaurant]]:
         return self.db.query(Restaurant).filter(
             Restaurant.klassifizierung == klassifizierung
         ).all()
