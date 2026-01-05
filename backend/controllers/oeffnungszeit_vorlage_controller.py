@@ -19,14 +19,14 @@ def get_all_oeffnungszeit_vorlagen(db: Session = Depends(get_db)):
 
 # GET /api/oeffnungszeit-vorlagen/{id} - Get specific oeffnungszeit_vorlage
 @router.get("/{oeffnungszeitid}", response_model=OeffnungszeitVorlageResponse)
-def get_oeffnungszeit_vorlage(oeffnungszeit_id: int, db: Session = Depends(get_db)):
+def get_oeffnungszeit_vorlage(oeffnungszeitid: int, db: Session = Depends(get_db)):
     service = OeffnungszeitVorlageService(db)
-    vorlage = service.get_by_id(oeffnungszeit_id)
+    vorlage = service.get_by_id(oeffnungszeitid)
     
     if not vorlage:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"OeffnungszeitVorlage with id {oeffnungszeit_id} not found"
+            detail=f"OeffnungszeitVorlage with id {oeffnungszeitid} not found"
         )
     
     return vorlage
@@ -44,34 +44,34 @@ def create_oeffnungszeit_vorlage(
 # PUT /api/oeffnungszeit-vorlagen/{id} - Update oeffnungszeit_vorlage
 @router.put("/{oeffnungszeitid}", response_model=OeffnungszeitVorlageResponse)
 def update_oeffnungszeit_vorlage(
-    oeffnungszeit_id: int,
+    oeffnungszeitid: int,
     vorlage_update: OeffnungszeitVorlageUpdate,
     db: Session = Depends(get_db)
 ):
     service = OeffnungszeitVorlageService(db)
     updated_vorlage = service.update(
-        oeffnungszeit_id,
+        oeffnungszeitid,
         vorlage_update.model_dump(exclude_unset=True)
     )
     
     if not updated_vorlage:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"OeffnungszeitVorlage with id {oeffnungszeit_id} not found"
+            detail=f"OeffnungszeitVorlage with id {oeffnungszeitid} not found"
         )
     
     return updated_vorlage
 
 # DELETE /api/oeffnungszeit-vorlagen/{id} - Delete oeffnungszeit_vorlage
 @router.delete("/{oeffnungszeitid}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_oeffnungszeit_vorlage(oeffnungszeit_id: int, db: Session = Depends(get_db)):
+def delete_oeffnungszeit_vorlage(oeffnungszeitid: int, db: Session = Depends(get_db)):
     service = OeffnungszeitVorlageService(db)
-    success = service.delete(oeffnungszeit_id)
+    success = service.delete(oeffnungszeitid)
     
     if not success:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"OeffnungszeitVorlage with id {oeffnungszeit_id} not found"
+            detail=f"OeffnungszeitVorlage with id {oeffnungszeitid} not found"
         )
     
     return None
