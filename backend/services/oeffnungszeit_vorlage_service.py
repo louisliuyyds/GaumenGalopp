@@ -3,6 +3,8 @@ from sqlalchemy.orm import Session
 from models import OeffnungszeitVorlage
 from models.oeffnungszeit_vorlage import OeffnungszeitVorlage
 from typing import List, Optional, Any
+from sqlalchemy.exc import IntegrityError
+
 
 
 class OeffnungszeitVorlageService:
@@ -26,13 +28,20 @@ class OeffnungszeitVorlageService:
         return self.db.query(OeffnungszeitVorlage).filter(
             OeffnungszeitVorlage.bezeichnung.ilike(f"%{bezeichnung}%")
         ).all()
-    
-    def create(self, vorlage_data: dict) -> OeffnungszeitVorlage:
-        vorlage = OeffnungszeitVorlage(**vorlage_data)
-        self.db.add(vorlage)
-        self.db.commit()
-        self.db.refresh(vorlage)
-        return vorlage
+
+    def create(self, vorlage_data: dict):
+        try:
+            new_vorlage = OeffnungszeitVorlage(**vorlage_data)
+            self.db.add(new_vorlage)
+            self.db.commit()
+            self.db.refresh(new_vorlage)
+            return new_vorlage
+        except IntegrityError:
+            self.db.rollback()
+            # Vorlage mit gleichem Namen existiert - hole sie
+            return self.db.query(OeffnungszeitVorlage).filter(
+                OeffnungszeitVorlage.bezeichnung == vorlage_data['bezeichnung']
+            ).first()
     
     def update(self, oeffnungszeit_id: int, update_data: dict) -> Optional[OeffnungszeitVorlage]:
         vorlage = self.get_by_id(oeffnungszeit_id)

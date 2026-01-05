@@ -33,8 +33,8 @@ export const areOpeningHoursEqual = (hours1, hours2) => {
         // Vergleiche die Zeiten
         return (
             day1.wochentag === day2.wochentag &&
-            day1.oeffnungszeitvon === day2.oeffnungszeitvon &&
-            day1.oeffnungszeitbis === day2.oeffnungszeitbis
+            day1.oeffnungszeit === day2.oeffnungszeit &&
+            day1.schliessungszeit === day2.schliessungszeit
         );
     });
 };
@@ -57,8 +57,8 @@ export const findMatchingTemplate = async (openingHours, existingTemplates, vorl
             const templateHours = vorlage.details.map(detail => ({
                 wochentag: detail.wochentag,
                 ist_geschlossen: detail.ist_geschlossen,
-                oeffnungszeitvon: detail.oeffnungszeitvon || '',
-                oeffnungszeitbis: detail.oeffnungszeitbis || '',
+                oeffnungszeit: detail.oeffnungszeit || '',
+                schliessungszeit: detail.schliessungszeit || '',
             }));
 
             // Vergleiche
@@ -91,12 +91,12 @@ export const generateTemplateName = (openingHours) => {
         // Alle Tage offen - prüfe ob immer gleiche Zeiten
         const firstOpenDay = openingHours[0];
         const allSameTimes = openingHours.every(day =>
-            day.oeffnungszeitvon === firstOpenDay.oeffnungszeitvon &&
-            day.oeffnungszeitbis === firstOpenDay.oeffnungszeitbis
+            day.oeffnungszeit === firstOpenDay.oeffnungszeit &&
+            day.schliessungszeit === firstOpenDay.schliessungszeit
         );
 
         if (allSameTimes) {
-            return `Täglich ${firstOpenDay.oeffnungszeitvon} - ${firstOpenDay.oeffnungszeitbis} Uhr`;
+            return `Täglich ${firstOpenDay.oeffnungszeit} - ${firstOpenDay.schliessungszeit} Uhr`;
         }
     }
 
@@ -131,13 +131,13 @@ export const validateOpeningHours = (openingHours) => {
         }
 
         // Prüfe ob Zeiten vorhanden sind
-        if (!day.oeffnungszeitvon || !day.oeffnungszeitbis) {
+        if (!day.oeffnungszeit || !day.schliessungszeit) {
             errors.push(`${day.tagName}: Öffnungs- und Schließzeiten müssen angegeben sein`);
             return;
         }
 
         // Prüfe ob Schließzeit nach Öffnungszeit liegt
-        if (day.oeffnungszeitvon >= day.oeffnungszeitbis) {
+        if (day.oeffnungszeit >= day.schliessungszeit) {
             errors.push(`${day.tagName}: Schließzeit muss nach der Öffnungszeit liegen`);
         }
     });
@@ -165,7 +165,7 @@ export const formatOpeningHoursDisplay = (openingHours) => {
             if (day.ist_geschlossen) {
                 return `${day.tagName}: Geschlossen`;
             }
-            return `${day.tagName}: ${day.oeffnungszeitvon} - ${day.oeffnungszeitbis} Uhr`;
+            return `${day.tagName}: ${day.oeffnungszeit} - ${day.schliessungszeit} Uhr`;
         })
         .join('\n');
 };

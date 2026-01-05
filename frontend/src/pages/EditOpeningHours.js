@@ -1,6 +1,3 @@
-// EditOpeningHours.js - FINALE VERSION mit intelligenter Vorlagen-Verwaltung
-// Diese Version vermeidet Duplikate und nutzt existierende Vorlagen wo möglich
-
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
@@ -228,8 +225,8 @@ const initializeEmptyWeek = () => {
         wochentag: index + 1,
         tagName: tag,
         ist_geschlossen: false,
-        oeffnungszeitvon: '09:00',
-        oeffnungszeitbis: '22:00',
+        oeffnungszeit: '09:00',
+        schliessungszeit: '22:00',
     }));
 };
 
@@ -263,16 +260,20 @@ function EditOpeningHours() {
                     const currentAssignment = assignments[0];
                     setCurrentVorlageId(currentAssignment.oeffnungszeitid);
 
-                    const vorlage = await oeffnungszeitVorlageService.getById(currentAssignment.oeffnungszeitid);
+                    const vorlageData = await oeffnungszeitVorlageService.getById(currentAssignment.oeffnungszeitid);
+                    const vorlage = Array.isArray(vorlageData) ? vorlageData[0] : vorlageData;
 
-                    if (vorlage && vorlage.details) {
-                        const sortedDetails = [...vorlage.details].sort((a, b) => a.wochentag - b.wochentag);
+                    // Details separat laden
+                    const vorlageDetails = await oeffnungszeitDetailService.getByVorlageId(vorlage.oeffnungszeitid);
+
+                    if (vorlageDetails && vorlageDetails.length > 0) {
+                        const sortedDetails = [...vorlageDetails].sort((a, b) => a.wochentag - b.wochentag);
                         const formattedHours = sortedDetails.map(detail => ({
                             wochentag: detail.wochentag,
                             tagName: WOCHENTAGE[detail.wochentag - 1],
                             ist_geschlossen: detail.ist_geschlossen,
-                            oeffnungszeitvon: detail.oeffnungszeitvon || '09:00',
-                            oeffnungszeitbis: detail.oeffnungszeitbis || '22:00',
+                            oeffnungszeit: detail.oeffnungszeit,
+                            schliessungszeit: detail.schliessungszeit,
                             detailid: detail.detailid
                         }));
                         setOpeningHours(formattedHours);
@@ -362,8 +363,8 @@ function EditOpeningHours() {
                     await oeffnungszeitDetailService.create({
                         oeffnungszeitid: vorlageId,
                         wochentag: day.wochentag,
-                        oeffnungszeitvon: day.ist_geschlossen ? null : day.oeffnungszeitvon,
-                        oeffnungszeitbis: day.ist_geschlossen ? null : day.oeffnungszeitbis,
+                        oeffnungszeit: day.ist_geschlossen ? null : day.oeffnungszeit,
+                        schliessungszeit: day.ist_geschlossen ? null : day.schliessungszeit,
                         ist_geschlossen: day.ist_geschlossen
                     });
                 }
@@ -446,8 +447,8 @@ function EditOpeningHours() {
                                     <Label>🕐 Öffnung</Label>
                                     <TimeInput
                                         type="time"
-                                        value={day.oeffnungszeitvon}
-                                        onChange={(e) => handleTimeChange(day.wochentag, 'oeffnungszeitvon', e.target.value)}
+                                        value={day.oeffnungszeit}
+                                        onChange={(e) => handleTimeChange(day.wochentag, 'oeffnungszeit', e.target.value)}
                                         disabled={saving}
                                     />
                                 </TimeInputGroup>
@@ -458,8 +459,8 @@ function EditOpeningHours() {
                                     <Label>🕐 Schließung</Label>
                                     <TimeInput
                                         type="time"
-                                        value={day.oeffnungszeitbis}
-                                        onChange={(e) => handleTimeChange(day.wochentag, 'oeffnungszeitbis', e.target.value)}
+                                        value={day.schliessungszeit}
+                                        onChange={(e) => handleTimeChange(day.wochentag, 'schliessungszeit', e.target.value)}
                                         disabled={saving}
                                     />
                                 </TimeInputGroup>

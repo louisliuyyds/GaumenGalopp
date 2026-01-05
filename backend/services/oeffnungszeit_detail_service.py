@@ -1,6 +1,8 @@
 from sqlalchemy.orm import Session
 from models.oeffnungszeit_detail import OeffnungszeitDetail
 from typing import List, Optional, Any
+from sqlalchemy.exc import IntegrityError
+
 
 
 class OeffnungszeitDetailService:
@@ -34,13 +36,21 @@ class OeffnungszeitDetailService:
             OeffnungszeitDetail.oeffnungszeitid == oeffnungszeit_id,
             OeffnungszeitDetail.ist_geschlossen == False
         ).all()
-    
-    def create(self, detail_data: dict) -> OeffnungszeitDetail:
-        detail = OeffnungszeitDetail(**detail_data)
-        self.db.add(detail)
-        self.db.commit()
-        self.db.refresh(detail)
-        return detail
+
+    def create(self, detail_data: dict):
+        try:
+            new_detail = OeffnungszeitDetail(**detail_data)
+            self.db.add(new_detail)
+            self.db.commit()
+            self.db.refresh(new_detail)
+            return new_detail
+        except IntegrityError:
+            self.db.rollback()
+            # Detail existiert bereits - hole es
+            return self.db.query(OeffnungszeitDetail).filter(
+                OeffnungszeitDetail.oeffnungszeitid == detail_data['oeffnungszeitid'],
+                OeffnungszeitDetail.wochentag == detail_data['wochentag']
+            ).first()
     
     def update(self, detail_id: int, update_data: dict) -> Optional[OeffnungszeitDetail]:
         detail = self.get_by_id(detail_id)

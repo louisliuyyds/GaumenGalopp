@@ -4,6 +4,8 @@ from models import RestaurantOeffnungszeit
 from models.restaurant_oeffnungszeit import RestaurantOeffnungszeit
 from typing import List, Optional, Any
 from datetime import date
+from sqlalchemy.exc import IntegrityError
+
 
 
 class RestaurantOeffnungszeitService:
@@ -45,13 +47,22 @@ class RestaurantOeffnungszeitService:
             (RestaurantOeffnungszeit.gueltig_bis >= current_date) | 
             (RestaurantOeffnungszeit.gueltig_bis == None)
         ).first()
-    
-    def create(self, assignment_data: dict) -> RestaurantOeffnungszeit:
-        assignment = RestaurantOeffnungszeit(**assignment_data)
-        self.db.add(assignment)
-        self.db.commit()
-        self.db.refresh(assignment)
-        return assignment
+
+    def create(self, assignment_data: dict):
+        try:
+            new_assignment = RestaurantOeffnungszeit(**assignment_data)
+            self.db.add(new_assignment)
+            self.db.commit()
+            self.db.refresh(new_assignment)
+            return new_assignment
+        except IntegrityError:
+            self.db.rollback()
+            # Existiert bereits - hole den vorhandenen Eintrag
+            return self.db.query(RestaurantOeffnungszeit).filter(
+                RestaurantOeffnungszeit.restaurantid == assignment_data['restaurantid'],
+                RestaurantOeffnungszeit.oeffnungszeitid == assignment_data['oeffnungszeitid'],
+                RestaurantOeffnungszeit.gueltig_von == assignment_data['gueltig_von']
+            ).first()
     
     def update(self, restaurant_id: int, oeffnungszeit_id: int, gueltig_von: date, 
                update_data: dict) -> Optional[RestaurantOeffnungszeit]:

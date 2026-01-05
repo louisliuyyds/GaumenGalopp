@@ -19,6 +19,14 @@ const oeffnungszeitDetailService = {
     },
 
     /**
+     * Details für eine Vorlage abrufen
+     * GET /api/oeffnungszeit-details/vorlage/{oeffnungszeit_id}
+     */
+    getByVorlageId: async (oeffnungszeitId) => {
+        return await apiClient.get(`/api/oeffnungszeit-details/vorlage/${oeffnungszeitId}`);
+    },
+
+    /**
      * Neues Öffnungszeit-Detail erstellen
      * POST /api/oeffnungszeit-details
      */

@@ -23,7 +23,7 @@ const oeffnungszeitVorlageService = {
    * POST /api/oeffnungszeit-vorlagen
    */
   create: async (vorlageData) => {
-    return await apiClient.post('/api/oeffnungszeit-vorlagen', vorlageData);
+      return await apiClient.post('/api/oeffnungszeit-vorlagen', vorlageData); // OHNE Slash am Ende
   },
 
   /**
