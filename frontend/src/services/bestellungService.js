@@ -1,4 +1,3 @@
-// services/bestellungService.js
 import apiClient from '../api/apiClient';
 
 const bestellungService = {
@@ -11,7 +10,7 @@ const bestellungService = {
   },
 
   /**
-   * Eine Bestellung nach ID abrufen
+   * Eine Warenkorb nach ID abrufen
    * GET /api/bestellungen/{id}
    */
   getById: async (bestellungId) => {
@@ -19,15 +18,36 @@ const bestellungService = {
   },
 
   /**
-   * Gesamtpreis einer Bestellung abrufen
+   * Gesamtpreis einer Warenkorb abrufen
    * GET /api/bestellungen/{id}/total
    */
   getTotal: async (bestellungId) => {
     return await apiClient.get(`/api/bestellungen/${bestellungId}/total`);
   },
+  // NEU: Hole Details für eine Bestellung
+    getDetails: async (bestellungId) => {
+        try {
+            // Versuche zuerst den /details Endpunkt
+            const response = await apiClient.get(`/api/bestellungen/${bestellungId}/details`);
+            return response?.data || response;
+        } catch (error) {
+            // Falls /details nicht existiert, hole Daten separat
+            console.log("Details-Endpunkt nicht verfügbar, hole Daten separat...");
+
+            const [bestellung, total] = await Promise.all([
+                apiClient.get(`/api/bestellungen/${bestellungId}`),
+                apiClient.get(`/api/bestellungen/${bestellungId}/total`)
+            ]);
+
+            return {
+                ...(bestellung?.data || bestellung),
+                gesamtpreis: total?.data || total
+            };
+        }
+    },
 
   /**
-   * Neue Bestellung erstellen
+   * Neue Warenkorb erstellen
    * POST /api/bestellungen
    */
   create: async (bestellungData) => {
@@ -35,7 +55,7 @@ const bestellungService = {
   },
 
   /**
-   * Bestellung aktualisieren
+   * Warenkorb aktualisieren
    * PUT /api/bestellungen/{id}
    */
   update: async (bestellungId, bestellungData) => {

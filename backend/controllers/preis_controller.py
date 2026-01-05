@@ -12,9 +12,13 @@ router = APIRouter(prefix="/api/preis", tags=["preis"])
 def get_all_preis(db: Session = Depends(get_db)):
     return PreisService(db).get_all()
 
-@router.get("/{preisid}", response_model=schemas.PreisResponse)
-def get_by_id(preisid: int, db: Session = Depends(get_db)):
-    return PreisService(db).get_by_id(preisid)
+@router.get("/byPreisId/{preisid}", response_model=schemas.PreisResponse)
+def get_by_preis_id(preisid: int, db: Session = Depends(get_db)):
+    return PreisService(db).get_by_preis_id(preisid)
+
+@router.get("/byGerichtId/{gerichtid}", response_model=schemas.PreisResponse)
+def get_by_gericht_id(gerichtid: int, db: Session = Depends(get_db)):
+    return PreisService(db).get_by_gericht_id(gerichtid)
 
 @router.post("/", response_model=schemas.PreisResponse, status_code=status.HTTP_201_CREATED)
 def create_preis(data: schemas.PreisCreate, db: Session = Depends(get_db)):

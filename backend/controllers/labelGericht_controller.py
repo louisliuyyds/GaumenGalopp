@@ -6,6 +6,10 @@ from sqlalchemy.orm import Session
 
 router = APIRouter(prefix="/api/labelGericht", tags=["labelGericht"])
 
+@router.get("/")
+def get_all_labelGericht(db: Session = Depends(get_db)):
+    return LabelGerichtService(db).get_all()
+
 @router.get("/byLabelId/{labelid}")
 def get_by_label_id(labelid: int, db: Session = Depends(get_db)):
     return LabelGerichtService(db).get_by_label_id(labelid)

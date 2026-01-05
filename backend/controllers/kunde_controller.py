@@ -11,6 +11,7 @@ from schemas.kunde_schema import (
     KundeResponse,
     KundeProfileResponse,
     KundeProfileUpdate,
+    KundeKuerzelResponse,
 )
 from models.kunde import Kunde
 
@@ -68,6 +69,25 @@ def get_kunde(kunden_id: int, db: Session = Depends(get_db)):
         )
 
     return kunde
+
+@router.get("/{kunden_id}/adressid")
+def get_adressid_by_kunden_id(kunden_id: int, db: Session = Depends(get_db)):
+    adressid = KundeService(db).get_adressid_by_kunden_id(kunden_id)
+    if adressid is None:
+        raise HTTPException(status_code=404, detail="Kunde not found")
+    return {"adressid": adressid}
+
+@router.get("/getKuerzelById/{kunden_id}", response_model=KundeKuerzelResponse)
+def get_kundenkuerzel(kunden_id: int, db: Session = Depends(get_db)):
+    service = KundeService(db)
+    kuerzel = service.get_kuerzel_by_id(kunden_id)
+    if kuerzel is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Kunde with id {kunden_id} not found"
+        )
+
+    return {"namenskuerzel": kuerzel}
 
 @router.post("/", response_model=KundeResponse, status_code=status.HTTP_201_CREATED)
 def create_kunde(

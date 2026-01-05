@@ -14,8 +14,9 @@ const restaurantService = {
    * Ein Restaurant nach ID abrufen
    * GET /api/restaurants/{id}
    */
-  getById: async (restaurantId) => {
-    return await apiClient.get(`/api/restaurants/${restaurantId}`);
+  getById: async (id) => {
+      // Der "Trick" für dein spezielles Backend:
+      return await apiClient.get(`/api/restaurants/${id}?restaurant_id=${id}`);
   },
 
   /**

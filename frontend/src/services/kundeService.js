@@ -20,6 +20,15 @@ const kundeService = {
     return await apiClient.get(`${BASE_PATH}/${kundenId}`);
   },
 
+  getAdressIdByKundenId: async (kundenId) => {
+    const res = await apiClient.get(`/api/kunden/${kundenId}/adressid`);
+    return res
+  },
+
+    getKuerzelById: async (kundenId) => {
+    return await apiClient.get(`/api/kunden/getKuerzelById/${kundenId}`);
+  },
+
   /**
    * Neuen Kunden erstellen
    * POST /api/kunde

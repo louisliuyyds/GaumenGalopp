@@ -70,3 +70,8 @@ class KundeProfileUpdate(BaseModel):
     email: Optional[str] = None
     namenskuerzel: Optional[str] = None
     adresse: Optional[AdresseProfileData] = None
+class KundeKuerzelResponse(BaseModel):
+    namenskuerzel: Optional[str] = None
+
+    class Config:
+        from_attributes = True
