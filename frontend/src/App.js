@@ -10,10 +10,8 @@ import GerichtDetail from "./pages/GerichtDetail";
 import EditRestaurantInfos from "./pages/EditRestaurantInfos";
 import colors from './theme/colors';
 import Restaurants from "./pages/Restaurant";
-import Bestellung from "./pages/Bestellung";
 import KundeHome from './pages/KundeHome';
 import Warenkorb from "./pages/Warenkorb";
-import KundeHome from './pages/Kundehome';
 import KundeProfil from './pages/KundeProfil';
 import RestaurantProfil from './pages/RestaurantProfil';
 import Bestellhistorie from "./pages/Bestellhistorie";
@@ -51,7 +49,7 @@ function App() {
                         <Route path="/restaurants/:restaurantId/gericht/:gerichtId" element={<GerichtDetail />} />
                         <Route path="/kunde" element={<KundeHome />} />
                         <Route path="/kunde/restaurants/:id" element={<RestaurantDetail />} />
-                        <Route path="/kunde/bestellungen" element={<Bestellung />} />
+                        <Route path="/kunde/bestellungen" element={<Bestellhistorie />} />
                         <Route path="/kunde/profil" element={<KundeProfil />} />
                         <Route path="/kunde/restaurants" element={<Restaurants />} />
                         <Route path="/kunde/warenkorb" element={<Warenkorb />} />
