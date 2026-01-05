@@ -19,7 +19,7 @@ class Bestellposition(Base):
     def to_dict(self):
         """Wandelt das Objekt in ein Dictionary um."""
         return {
-            "id": self.positionid,
+            "bestellungid": self.positionid,
             "menge": self.menge,
             "aenderungswunsch": self.aenderungswunsch,
             "bestellung_id": self.bestellungid,
