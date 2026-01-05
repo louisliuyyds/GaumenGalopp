@@ -71,7 +71,7 @@ def delete_kunde(kunden_id: int, db: Session = Depends(get_db)):
         )
 
     return None
-
+'''
 @router.get("/email/{email}", response_model=KundeResponse)
 def search_kunde_by_email(email: str, db: Session = Depends(get_db)):
     service = KundeService(db)
@@ -90,3 +90,4 @@ def search_kunden_by_nachname(nachname: str, db: Session = Depends(get_db)):
     service = KundeService(db)
     kunden = service.search_by_name(nachname)
     return kunden
+'''

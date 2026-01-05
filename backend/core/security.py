@@ -13,6 +13,8 @@ from sqlalchemy.orm import Session
 import os
 from dotenv import load_dotenv
 
+from database import get_db
+
 load_dotenv()
 
 # ===== KONFIGURATION =====
@@ -95,7 +97,7 @@ def get_current_claims(creds: HTTPAuthorizationCredentials = Depends(bearer)) ->
 
 async def get_current_user(
         creds: HTTPAuthorizationCredentials = Depends(bearer),
-        db: Session = Depends(None)
+        db: Session = Depends(get_db)
 ):
     """
     FastAPI Dependency: Holt aktuellen User (Kunde oder Restaurant) aus Token
@@ -103,7 +105,6 @@ async def get_current_user(
     Returns:
         User-Objekt (Kunde oder Restaurant) mit zusätzlichem Attribut 'user_type'
     """
-    from database import get_db
     from models.kunde import Kunde
     from models.restaurant import Restaurant
 
@@ -116,10 +117,6 @@ async def get_current_user(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid token claims"
         )
-
-    # DB Session holen wenn nicht übergeben
-    if db is None:
-        db = next(get_db())
 
     # Je nach User-Typ den entsprechenden User holen
     if user_type == "kunde":
@@ -158,13 +155,12 @@ async def get_current_user(
 
 async def get_current_kunde(
         creds: HTTPAuthorizationCredentials = Depends(bearer),
-        db: Session = Depends(None)
+        db: Session = Depends(get_db)
 ):
     """
     FastAPI Dependency: Holt aktuellen Kunde aus Token
     Wirft Fehler wenn User kein Kunde ist
     """
-    from database import get_db
     from models.kunde import Kunde
 
     claims = decode_token(creds.credentials)
@@ -182,9 +178,6 @@ async def get_current_kunde(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid token"
         )
-
-    if db is None:
-        db = next(get_db())
 
     kunde = db.query(Kunde).filter(Kunde.kundenid == int(user_id)).first()
 
@@ -205,13 +198,12 @@ async def get_current_kunde(
 
 async def get_current_restaurant(
         creds: HTTPAuthorizationCredentials = Depends(bearer),
-        db: Session = Depends(None)
+        db: Session = Depends(get_db)
 ):
     """
     FastAPI Dependency: Holt aktuelles Restaurant aus Token
     Wirft Fehler wenn User kein Restaurant ist
     """
-    from database import get_db
     from models.restaurant import Restaurant
 
     claims = decode_token(creds.credentials)
@@ -229,9 +221,6 @@ async def get_current_restaurant(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid token"
         )
-
-    if db is None:
-        db = next(get_db())
 
     restaurant = db.query(Restaurant).filter(Restaurant.restaurantid == int(user_id)).first()
 

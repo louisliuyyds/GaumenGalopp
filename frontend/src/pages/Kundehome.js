@@ -354,7 +354,7 @@ const featuredRestaurants = [
     },
 ];
 
-function KundeHome() {
+function Kundehome() {
     const navigate = useNavigate();
     const [searchQuery, setSearchQuery] = useState('');
     const [favorites, setFavorites] = useState([1, 4]);
@@ -451,4 +451,4 @@ function KundeHome() {
     );
 }
 
-export default KundeHome;
+export default Kundehome;

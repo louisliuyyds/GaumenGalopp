@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 from models.user import User
-from utils.auth import get_password_hash, verify_password
+from core.security import get_password_hash, verify_password
 from typing import Optional, List
 
 class UserService:

@@ -1,8 +1,7 @@
 from sqlalchemy.orm import Session, joinedload
 from typing import List, Optional
 from models.kunde import Kunde
-from utils.auth import get_password_hash, verify_password
-
+from core.security import get_password_hash, verify_password
 
 class KundeService:
     def __init__(self, db: Session):
