@@ -5,6 +5,7 @@ from core.security import verify_password, create_access_token, get_password_has
 from models.kunde import Kunde
 from models.restaurant import Restaurant
 from models.kritiker import Kritiker
+from models.adresse import Adresse
 
 
 class AuthService:
@@ -17,20 +18,24 @@ class AuthService:
             nachname: str,
             email: str,
             password: str,
-            adressid: int,
+            strasse: str,
+            hausnummer: str,
+            plz: str,
+            stadt: str,
+            land: str = "Deutschland",
             telefonnummer: str = None,
             geburtsdatum = None,
             namenskuerzel: str = None
     ) -> Kunde:
         """
-        Registriert einen neuen Kunden
+        Registriert einen neuen Kunden mit automatischer Adress-Erstellung
 
         Args:
             vorname: Vorname des Kunden
             nachname: Nachname des Kunden
             email: E-Mail-Adresse
             password: Klartext-Passwort
-            adressid: ID der Adresse
+            strasse, hausnummer, plz, stadt, land: Adressangaben
             telefonnummer: Optional - Telefonnummer
             geburtsdatum: Optional - Geburtsdatum
             namenskuerzel: Optional - Namenskürzel
@@ -49,16 +54,27 @@ class AuthService:
                 detail="Email already registered"
             )
 
-        # Passwort hashen
+        # 1. Adresse erstellen (DB-Spaltennamen verwenden)
+        adresse = Adresse(
+            straße=strasse,        # DB: straße (mit ß)
+            hausnummer=hausnummer,
+            postleitzahl=plz,      # DB: postleitzahl
+            ort=stadt,             # DB: ort
+            land=land
+        )
+        self.db.add(adresse)
+        self.db.flush()  # Damit adresseid verfügbar wird
+
+        # 2. Passwort hashen
         passwordhash = get_password_hash(password)
 
-        # Kunde erstellen
+        # 3. Kunde mit Adresse erstellen
         kunde = Kunde(
             vorname=vorname,
             nachname=nachname,
             email=email,
             passwordhash=passwordhash,
-            adressid=adressid,
+            adressid=adresse.adresseid,
             telefonnummer=telefonnummer,
             geburtsdatum=geburtsdatum,
             namenskuerzel=namenskuerzel,
@@ -77,21 +93,25 @@ class AuthService:
             name: str,
             email: str,
             password: str,
-            adresseid: int,
+            strasse: str,
+            hausnummer: str,
+            plz: str,
+            stadt: str,
+            land: str = "Deutschland",
             telefon: str = None,
             klassifizierung: str = None,
             kuechenchef: str = None
     ) -> Restaurant:
         """
-        Registriert ein neues Restaurant
+        Registriert ein neues Restaurant mit automatischer Adress-Erstellung
 
         Args:
             name: Name des Restaurants
             email: E-Mail-Adresse
             password: Klartext-Passwort
-            adresseid: ID der Adresse
+            strasse, hausnummer, plz, stadt, land: Adressangaben
             telefon: Optional - Telefonnummer
-            klassifizierung: Optional - Klassifizierung (z.B. "Italienisch")
+            klassifizierung: Optional - Klassifizierung
             kuechenchef: Optional - Name des Küchenchefs
 
         Returns:
@@ -108,15 +128,26 @@ class AuthService:
                 detail="Email already registered"
             )
 
-        # Passwort hashen
+        # 1. Adresse erstellen (DB-Spaltennamen verwenden)
+        adresse = Adresse(
+            straße=strasse,        # DB: straße (mit ß)
+            hausnummer=hausnummer,
+            postleitzahl=plz,      # DB: postleitzahl
+            ort=stadt,             # DB: ort
+            land=land
+        )
+        self.db.add(adresse)
+        self.db.flush()
+
+        # 2. Passwort hashen
         passwordhash = get_password_hash(password)
 
-        # Restaurant erstellen
+        # 3. Restaurant mit Adresse erstellen
         restaurant = Restaurant(
             name=name,
             email=email,
             passwordhash=passwordhash,
-            adresseid=adresseid,
+            adresseid=adresse.adresseid,
             telefon=telefon,
             klassifizierung=klassifizierung,
             kuechenchef=kuechenchef
@@ -180,6 +211,7 @@ class AuthService:
                 "role": role,
                 "user_id": kunde.kundenid,
                 "user_type": "kunde",
+                "token_type": "bearer"
             }
 
         elif login_type == "restaurant":
@@ -213,10 +245,11 @@ class AuthService:
                 "role": "restaurant",
                 "user_id": restaurant.restaurantid,
                 "user_type": "restaurant",
+                "token_type": "bearer"
             }
 
         else:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Unknown login type. Use 'kunde' or 'restaurant'"
+                detail="Invalid login type. Must be 'kunde' or 'restaurant'"
             )

@@ -4,112 +4,109 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import colors from '../theme/colors';
 
+// Styled Components
 const RegisterContainer = styled.div`
-    display: flex;
-    justify-content: center;
-    align-items: center;
     min-height: 100vh;
-    background: ${colors.gradients.background};
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, ${colors.primary.light} 0%, ${colors.primary.main} 100%);
     padding: 20px;
 `;
 
 const RegisterCard = styled.div`
-    background: ${colors.background.card};
-    border-radius: 20px;
-    padding: 50px;
+    background: white;
+    border-radius: 16px;
     box-shadow: ${colors.shadows.large};
+    padding: 40px;
     width: 100%;
-    max-width: 550px;
-    border: 1px solid ${colors.border.light};
+    max-width: 500px;
 `;
 
 const Logo = styled.h1`
-    color: ${colors.primary.main};
-    font-size: 2.5em;
     text-align: center;
+    color: ${colors.primary.main};
+    font-size: 2em;
     margin-bottom: 10px;
-    font-weight: 800;
-    background: ${colors.gradients.primary};
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+    font-weight: 700;
 `;
 
 const Subtitle = styled.p`
-    color: ${colors.text.light};
     text-align: center;
-    margin-bottom: 40px;
-    font-size: 1em;
+    color: ${colors.text.light};
+    margin-bottom: 30px;
 `;
 
 const ToggleContainer = styled.div`
     display: flex;
     gap: 10px;
     margin-bottom: 30px;
-    background: ${colors.background.main};
-    padding: 5px;
-    border-radius: 12px;
+    background: ${colors.background.light};
+    padding: 4px;
+    border-radius: 8px;
 `;
 
 const ToggleButton = styled.button`
     flex: 1;
     padding: 12px;
     border: none;
-    border-radius: 8px;
+    border-radius: 6px;
     font-size: 1em;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.3s ease;
-    background: ${props => props.active ? colors.gradients.primary : 'transparent'};
-    color: ${props => props.active ? colors.text.white : colors.text.light};
-    box-shadow: ${props => props.active ? colors.shadows.primarySmall : 'none'};
+    background: ${props => props.$active ? colors.primary.main : 'transparent'};
+    color: ${props => props.$active ? 'white' : colors.text.light};
 
     &:hover {
-        background: ${props => props.active ? colors.gradients.primary : colors.background.card};
+        background: ${props => props.$active ? colors.primary.main : colors.background.main};
     }
+`;
+
+const HelpText = styled.div`
+    background: ${colors.background.light};
+    padding: 12px;
+    border-radius: 8px;
+    font-size: 0.9em;
+    color: ${colors.text.light};
+    margin-bottom: 20px;
+    text-align: center;
 `;
 
 const Form = styled.form`
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: 16px;
 `;
 
 const FormRow = styled.div`
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 15px;
-
-    @media (max-width: 600px) {
-        grid-template-columns: 1fr;
-    }
+    gap: 16px;
 `;
 
 const FormGroup = styled.div`
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 6px;
 `;
 
 const Label = styled.label`
-    color: ${colors.text.primary};
+    color: ${colors.text.main};
+    font-weight: 500;
     font-size: 0.9em;
-    font-weight: 600;
 `;
 
 const Input = styled.input`
-    padding: 14px;
-    border: 2px solid ${colors.border.light};
+    padding: 12px;
+    border: 2px solid ${colors.background.main};
     border-radius: 8px;
     font-size: 1em;
-    transition: all 0.3s ease;
-    background: ${colors.background.main};
-    color: ${colors.text.primary};
+    transition: border-color 0.3s ease;
 
     &:focus {
         outline: none;
         border-color: ${colors.primary.main};
-        box-shadow: 0 0 0 3px ${colors.primary.main}20;
     }
 
     &::placeholder {
@@ -118,10 +115,10 @@ const Input = styled.input`
 `;
 
 const RegisterButton = styled.button`
-    background: ${colors.gradients.primary};
-    color: ${colors.text.white};
+    background: ${colors.primary.main};
+    color: white;
+    padding: 14px;
     border: none;
-    padding: 16px;
     border-radius: 8px;
     font-size: 1.1em;
     font-weight: 700;
@@ -184,16 +181,6 @@ const LoginLink = styled.div`
     }
 `;
 
-const HelpText = styled.div`
-    background: ${colors.background.main};
-    padding: 12px;
-    border-radius: 8px;
-    font-size: 0.85em;
-    color: ${colors.text.light};
-    margin-bottom: 20px;
-    border-left: 3px solid ${colors.primary.main};
-`;
-
 function Register() {
     const [userType, setUserType] = useState('kunde'); // 'kunde' oder 'restaurant'
     const [error, setError] = useState('');
@@ -210,8 +197,7 @@ function Register() {
         email: '',
         password: '',
         passwordConfirm: '',
-        telefonnummer: '',
-        adressid: 1 // Demo: Hardcoded - in Produktion dynamisch
+        telefonnummer: ''
     });
 
     // Restaurant Formular State
@@ -222,8 +208,16 @@ function Register() {
         passwordConfirm: '',
         telefon: '',
         kuechenchef: '',
-        klassifizierung: '',
-        adresseid: 1 // Demo: Hardcoded - in Produktion dynamisch
+        klassifizierung: ''
+    });
+
+    // Adresse State (für beide User-Typen)
+    const [adresse, setAdresse] = useState({
+        strasse: '',
+        hausnummer: '',
+        plz: '',
+        stadt: '',
+        land: 'Deutschland'
     });
 
     const handleKundeChange = (e) => {
@@ -236,6 +230,13 @@ function Register() {
     const handleRestaurantChange = (e) => {
         setRestaurantData({
             ...restaurantData,
+            [e.target.name]: e.target.value
+        });
+    };
+
+    const handleAdresseChange = (e) => {
+        setAdresse({
+            ...adresse,
             [e.target.name]: e.target.value
         });
     };
@@ -255,6 +256,10 @@ function Register() {
         }
         if (kundeData.password !== kundeData.passwordConfirm) {
             setError('Passwörter stimmen nicht überein');
+            return false;
+        }
+        if (!adresse.strasse || !adresse.hausnummer || !adresse.plz || !adresse.stadt) {
+            setError('Bitte vollständige Adresse eingeben');
             return false;
         }
         return true;
@@ -277,6 +282,10 @@ function Register() {
             setError('Passwörter stimmen nicht überein');
             return false;
         }
+        if (!adresse.strasse || !adresse.hausnummer || !adresse.plz || !adresse.stadt) {
+            setError('Bitte vollständige Adresse eingeben');
+            return false;
+        }
         return true;
     };
 
@@ -294,14 +303,19 @@ function Register() {
                     return;
                 }
 
-                // Registrierung
+                // Registrierung mit Adresse
                 await registerKunde({
                     vorname: kundeData.vorname,
                     nachname: kundeData.nachname,
                     email: kundeData.email,
                     password: kundeData.password,
-                    adressid: kundeData.adressid,
-                    telefonnummer: kundeData.telefonnummer || undefined
+                    telefonnummer: kundeData.telefonnummer || undefined,
+                    // Adresse
+                    strasse: adresse.strasse,
+                    hausnummer: adresse.hausnummer,
+                    plz: adresse.plz,
+                    stadt: adresse.stadt,
+                    land: adresse.land
                 });
 
                 setSuccess('Registrierung erfolgreich! Du wirst weitergeleitet...');
@@ -322,10 +336,15 @@ function Register() {
                     name: restaurantData.name,
                     email: restaurantData.email,
                     password: restaurantData.password,
-                    adresseid: restaurantData.adresseid,
                     telefon: restaurantData.telefon || undefined,
                     kuechenchef: restaurantData.kuechenchef || undefined,
-                    klassifizierung: restaurantData.klassifizierung || undefined
+                    klassifizierung: restaurantData.klassifizierung || undefined,
+                    // Adresse
+                    strasse: adresse.strasse,
+                    hausnummer: adresse.hausnummer,
+                    plz: adresse.plz,
+                    stadt: adresse.stadt,
+                    land: adresse.land
                 });
 
                 setSuccess('Registrierung erfolgreich! Du wirst weitergeleitet...');
@@ -357,23 +376,19 @@ function Register() {
                 <ToggleContainer>
                     <ToggleButton
                         type="button"
-                        active={userType === 'kunde'}
+                        $active={userType === 'kunde'}
                         onClick={() => setUserType('kunde')}
                     >
                         👤 Kunde
                     </ToggleButton>
                     <ToggleButton
                         type="button"
-                        active={userType === 'restaurant'}
+                        $active={userType === 'restaurant'}
                         onClick={() => setUserType('restaurant')}
                     >
                         🍽️ Restaurant
                     </ToggleButton>
                 </ToggleContainer>
-
-                <HelpText>
-                    💡 Demo-Hinweis: Adresse wird automatisch gesetzt. In der Produktionsversion kannst du deine eigene Adresse eingeben.
-                </HelpText>
 
                 {error && <ErrorMessage>{error}</ErrorMessage>}
                 {success && <SuccessMessage>{success}</SuccessMessage>}
@@ -540,6 +555,71 @@ function Register() {
                             </FormGroup>
                         </>
                     )}
+
+                    {/* ADRESSE - für beide User-Typen */}
+                    <HelpText style={{ marginTop: '20px' }}>
+                        📍 Deine Adresse
+                    </HelpText>
+
+                    <FormGroup>
+                        <Label>Straße *</Label>
+                        <Input
+                            type="text"
+                            name="strasse"
+                            placeholder="Hauptstraße"
+                            value={adresse.strasse}
+                            onChange={handleAdresseChange}
+                            required
+                        />
+                    </FormGroup>
+
+                    <FormRow>
+                        <FormGroup>
+                            <Label>Hausnummer *</Label>
+                            <Input
+                                type="text"
+                                name="hausnummer"
+                                placeholder="42"
+                                value={adresse.hausnummer}
+                                onChange={handleAdresseChange}
+                                required
+                            />
+                        </FormGroup>
+                        <FormGroup>
+                            <Label>PLZ *</Label>
+                            <Input
+                                type="text"
+                                name="plz"
+                                placeholder="10115"
+                                value={adresse.plz}
+                                onChange={handleAdresseChange}
+                                required
+                            />
+                        </FormGroup>
+                    </FormRow>
+
+                    <FormGroup>
+                        <Label>Stadt *</Label>
+                        <Input
+                            type="text"
+                            name="stadt"
+                            placeholder="Berlin"
+                            value={adresse.stadt}
+                            onChange={handleAdresseChange}
+                            required
+                        />
+                    </FormGroup>
+
+                    <FormGroup>
+                        <Label>Land</Label>
+                        <Input
+                            type="text"
+                            name="land"
+                            placeholder="Deutschland"
+                            value={adresse.land}
+                            onChange={handleAdresseChange}
+                        />
+                    </FormGroup>
 
                     <RegisterButton type="submit" disabled={loading}>
                         {loading ? 'Wird registriert...' : 'Registrieren'}

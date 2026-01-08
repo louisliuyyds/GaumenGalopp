@@ -59,12 +59,12 @@ const ToggleButton = styled.button`
     font-weight: 600;
     cursor: pointer;
     transition: all 0.3s ease;
-    background: ${props => props.active ? colors.gradients.primary : 'transparent'};
-    color: ${props => props.active ? colors.text.white : colors.text.light};
-    box-shadow: ${props => props.active ? colors.shadows.primarySmall : 'none'};
+    background: ${props => props.$active ? colors.gradients.primary : 'transparent'};
+    color: ${props => props.$active ? colors.text.white : colors.text.light};
+    box-shadow: ${props => props.$active ? colors.shadows.primarySmall : 'none'};
 
     &:hover {
-        background: ${props => props.active ? colors.gradients.primary : colors.background.card};
+        background: ${props => props.$active ? colors.gradients.primary : colors.background.card};
     }
 `;
 
@@ -210,14 +210,14 @@ function Login() {
                 <ToggleContainer>
                     <ToggleButton
                         type="button"
-                        active={userType === 'kunde'}
+                        $active={userType === 'kunde'}
                         onClick={() => setUserType('kunde')}
                     >
                         👤 Kunde
                     </ToggleButton>
                     <ToggleButton
                         type="button"
-                        active={userType === 'restaurant'}
+                        $active={userType === 'restaurant'}
                         onClick={() => setUserType('restaurant')}
                     >
                         🍽️ Restaurant

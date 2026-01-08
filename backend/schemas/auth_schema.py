@@ -15,10 +15,15 @@ class RegisterRequest(BaseModel):
     nachname: str = Field(..., min_length=1, max_length=50)
     email: EmailStr
     password: str = Field(..., min_length=8, description="Mindestens 8 Zeichen")
-    adressid: int
     telefonnummer: Optional[str] = Field(None, max_length=20)
     geburtsdatum: Optional[date] = None
     namenskuerzel: Optional[str] = Field(None, max_length=100)
+    # Adresse direkt eingeben
+    strasse: str = Field(..., min_length=1, max_length=255)
+    hausnummer: str = Field(..., min_length=1, max_length=10)
+    plz: str = Field(..., min_length=1, max_length=10)
+    stadt: str = Field(..., min_length=1, max_length=100)
+    land: str = Field(default="Deutschland", max_length=100)
 
 
 class RestaurantRegisterRequest(BaseModel):
@@ -26,10 +31,15 @@ class RestaurantRegisterRequest(BaseModel):
     name: str = Field(..., min_length=1, max_length=255, description="Restaurant-Name")
     email: EmailStr
     password: str = Field(..., min_length=8, description="Mindestens 8 Zeichen")
-    adresseid: int = Field(..., description="ID der Restaurant-Adresse")
     telefon: Optional[str] = Field(None, max_length=20)
     klassifizierung: Optional[str] = Field(None, max_length=100, description="z.B. 'Italienisch', 'Sterne-Restaurant'")
     kuechenchef: Optional[str] = Field(None, max_length=255)
+    # Adresse direkt
+    strasse: str = Field(..., min_length=1, max_length=255)
+    hausnummer: str = Field(..., min_length=1, max_length=10)
+    plz: str = Field(..., min_length=1, max_length=10)
+    stadt: str = Field(..., min_length=1, max_length=100)
+    land: str = Field(default="Deutschland", max_length=100)
 
 
 class LoginRequest(BaseModel):
