@@ -330,13 +330,19 @@ function EditOpeningHours() {
                 setSuccessMessage(`Vorlage "${matchingVorlage.bezeichnung}" wird verwendet`);
             } else {
                 // Neue Vorlage erstellen (Backend erstellt auch die Details)
-                console.log('➕ Erstelle neue Vorlage...');
                 const templateName = generateTemplateName(openingHours);
+
+                const cleanedDetails = openingHours.map(day => ({
+                    wochentag: day.wochentag,
+                    oeffnungszeit: day.oeffnungszeit,
+                    schliessungszeit: day.schliessungszeit,
+                    ist_geschlossen: day.ist_geschlossen
+                }));
 
                 const newVorlage = await oeffnungszeitVorlageService.createWithHash({
                     bezeichnung: templateName,
                     beschreibung: 'Automatisch erstellt'
-                }, openingHours);
+                }, cleanedDetails);
 
                 vorlageId = newVorlage.oeffnungszeitid;
                 console.log('✅ Neue Vorlage erstellt');
@@ -377,7 +383,31 @@ function EditOpeningHours() {
                 gueltig_bis: null
             });
 
-            console.log('✅ Öffnungszeiten gespeichert');
+            const newAssignments = await restaurantOeffnungszeitService.getActiveForRestaurant(id);
+            if (newAssignments && newAssignments.length > 0) {
+                const newAssignment = newAssignments[0];
+                setCurrentVorlageId(newAssignment.oeffnungszeitid);
+
+                const vorlageData = await oeffnungszeitVorlageService.getById(newAssignment.oeffnungszeitid);
+                const vorlage = Array.isArray(vorlageData) ? vorlageData[0] : vorlageData;
+
+                const vorlageDetails = await oeffnungszeitDetailService.getByVorlageId(vorlage.oeffnungszeitid);
+
+                if (vorlageDetails && vorlageDetails.length > 0) {
+                    const sortedDetails = [...vorlageDetails].sort((a, b) => a.wochentag - b.wochentag);
+                    const formattedHours = sortedDetails.map(detail => ({
+                        wochentag: detail.wochentag,
+                        tagName: WOCHENTAGE[detail.wochentag - 1],
+                        ist_geschlossen: detail.ist_geschlossen,
+                        oeffnungszeit: detail.oeffnungszeit,
+                        schliessungszeit: detail.schliessungszeit,
+                        detailid: detail.detailid
+                    }));
+                    setOpeningHours(formattedHours);
+                }
+            }
+
+            console.log('✅ Öffnungszeiten gespeichert und neu geladen');
             setSuccessMessage('Öffnungszeiten erfolgreich gespeichert!');
 
             setTimeout(() => {

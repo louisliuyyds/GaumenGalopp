@@ -18,64 +18,7 @@ def get_all_oeffnungszeit_vorlagen(db: Session = Depends(get_db)):
     vorlagen = service.get_all()
     return vorlagen
 
-# GET /api/oeffnungszeit-vorlagen/{id} - Get specific oeffnungszeit_vorlage
-@router.get("/{oeffnungszeitid}", response_model=OeffnungszeitVorlageResponse)
-def get_oeffnungszeit_vorlage(oeffnungszeitid: int, db: Session = Depends(get_db)):
-    service = OeffnungszeitVorlageService(db)
-    vorlage = service.get_by_id(oeffnungszeitid)
-    
-    if not vorlage:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"OeffnungszeitVorlage with id {oeffnungszeitid} not found"
-        )
-    
-    return vorlage
-
-# POST /api/oeffnungszeit-vorlagen - Create new oeffnungszeit_vorlage
-@router.post("/", response_model=OeffnungszeitVorlageResponse, status_code=status.HTTP_201_CREATED)
-def create_oeffnungszeit_vorlage(
-    vorlage: OeffnungszeitVorlageCreate,
-    db: Session = Depends(get_db)
-):
-    service = OeffnungszeitVorlageService(db)
-    new_vorlage = service.create(vorlage.model_dump())
-    return new_vorlage
-
-# PUT /api/oeffnungszeit-vorlagen/{id} - Update oeffnungszeit_vorlage
-@router.put("/{oeffnungszeitid}", response_model=OeffnungszeitVorlageResponse)
-def update_oeffnungszeit_vorlage(
-    oeffnungszeitid: int,
-    vorlage_update: OeffnungszeitVorlageUpdate,
-    db: Session = Depends(get_db)
-):
-    service = OeffnungszeitVorlageService(db)
-    updated_vorlage = service.update(
-        oeffnungszeitid,
-        vorlage_update.model_dump(exclude_unset=True)
-    )
-    
-    if not updated_vorlage:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"OeffnungszeitVorlage with id {oeffnungszeitid} not found"
-        )
-    
-    return updated_vorlage
-
-# DELETE /api/oeffnungszeit-vorlagen/{id} - Delete oeffnungszeit_vorlage
-@router.delete("/{oeffnungszeitid}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_oeffnungszeit_vorlage(oeffnungszeitid: int, db: Session = Depends(get_db)):
-    service = OeffnungszeitVorlageService(db)
-    success = service.delete(oeffnungszeitid)
-    
-    if not success:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"OeffnungszeitVorlage with id {oeffnungszeitid} not found"
-        )
-    
-    return None
+# SPEZIFISCHE ROUTEN ZUERST (vor /{id})!
 
 # GET /api/oeffnungszeit-vorlagen/hash/{hash_signatur}
 @router.get("/hash/{hash_signatur}", response_model=OeffnungszeitVorlageResponse)
@@ -94,6 +37,7 @@ def create_vorlage_with_hash(data: dict, db: Session = Depends(get_db)):
     service = OeffnungszeitVorlageService(db)
     return service.create_with_hash(data['vorlage'], data['details'])
 
+# POST /api/oeffnungszeit-vorlagen/update-all-hashes
 @router.post("/update-all-hashes", status_code=200)
 def update_all_hashes(db: Session = Depends(get_db)):
     """Einmaliges Update aller Vorlagen mit Hashes"""
@@ -118,3 +62,64 @@ def update_all_hashes(db: Session = Depends(get_db)):
 
     db.commit()
     return {"updated": updated}
+
+# parametrisierten Routen
+
+# GET /api/oeffnungszeit-vorlagen/{id} - Get specific oeffnungszeit_vorlage
+@router.get("/{oeffnungszeitid}", response_model=OeffnungszeitVorlageResponse)
+def get_oeffnungszeit_vorlage(oeffnungszeitid: int, db: Session = Depends(get_db)):
+    service = OeffnungszeitVorlageService(db)
+    vorlage = service.get_by_id(oeffnungszeitid)
+
+    if not vorlage:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"OeffnungszeitVorlage with id {oeffnungszeitid} not found"
+        )
+
+    return vorlage
+
+# POST /api/oeffnungszeit-vorlagen - Create new oeffnungszeit_vorlage
+@router.post("/", response_model=OeffnungszeitVorlageResponse, status_code=status.HTTP_201_CREATED)
+def create_oeffnungszeit_vorlage(
+        vorlage: OeffnungszeitVorlageCreate,
+        db: Session = Depends(get_db)
+):
+    service = OeffnungszeitVorlageService(db)
+    new_vorlage = service.create(vorlage.model_dump())
+    return new_vorlage
+
+# PUT /api/oeffnungszeit-vorlagen/{id} - Update oeffnungszeit_vorlage
+@router.put("/{oeffnungszeitid}", response_model=OeffnungszeitVorlageResponse)
+def update_oeffnungszeit_vorlage(
+        oeffnungszeitid: int,
+        vorlage_update: OeffnungszeitVorlageUpdate,
+        db: Session = Depends(get_db)
+):
+    service = OeffnungszeitVorlageService(db)
+    updated_vorlage = service.update(
+        oeffnungszeitid,
+        vorlage_update.model_dump(exclude_unset=True)
+    )
+
+    if not updated_vorlage:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"OeffnungszeitVorlage with id {oeffnungszeitid} not found"
+        )
+
+    return updated_vorlage
+
+# DELETE /api/oeffnungszeit-vorlagen/{id} - Delete oeffnungszeit_vorlage
+@router.delete("/{oeffnungszeitid}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_oeffnungszeit_vorlage(oeffnungszeitid: int, db: Session = Depends(get_db)):
+    service = OeffnungszeitVorlageService(db)
+    success = service.delete(oeffnungszeitid)
+
+    if not success:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"OeffnungszeitVorlage with id {oeffnungszeitid} not found"
+        )
+
+    return None
