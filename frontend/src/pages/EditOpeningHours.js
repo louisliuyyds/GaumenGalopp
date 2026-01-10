@@ -1,3 +1,4 @@
+// EditOpeningHours.js - Hash-basierte Vorlagen-Verwaltung
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
@@ -7,14 +8,12 @@ import restaurantOeffnungszeitService from '../services/restaurantOeffnungszeitS
 import oeffnungszeitVorlageService from '../services/oeffnungszeitVorlageService';
 import oeffnungszeitDetailService from '../services/oeffnungszeitDetailService';
 import {
-    areOpeningHoursEqual,
-    findMatchingTemplate,
+    generateOpeningHoursHash,
     generateTemplateName,
     validateOpeningHours
 } from '../utils/openingHoursUtils';
 
 // ==================== STYLED COMPONENTS ====================
-// [Alle Styled Components wie in der vorherigen Version]
 
 const Container = styled.div`
     max-width: 1200px;
@@ -74,16 +73,6 @@ const SuccessMessage = styled.div`
     margin-bottom: 20px;
     border-left: 4px solid ${colors.status.success};
     font-weight: 500;
-`;
-
-const InfoBox = styled.div`
-    background: ${colors.primary.light};
-    border-left: 4px solid ${colors.primary.main};
-    padding: 15px 20px;
-    border-radius: 8px;
-    margin-bottom: 20px;
-    color: ${colors.text.secondary};
-    font-size: 0.95em;
 `;
 
 const InfoCard = styled.div`
@@ -242,7 +231,6 @@ function EditOpeningHours() {
     const [successMessage, setSuccessMessage] = useState(null);
 
     const [openingHours, setOpeningHours] = useState(initializeEmptyWeek());
-    const [availableVorlagen, setAvailableVorlagen] = useState([]);
     const [currentVorlageId, setCurrentVorlageId] = useState(null);
     const [hasChanges, setHasChanges] = useState(false);
 
@@ -280,10 +268,6 @@ function EditOpeningHours() {
                     }
                 }
 
-                // Alle Vorlagen laden
-                const vorlagen = await oeffnungszeitVorlageService.getAll();
-                setAvailableVorlagen(vorlagen || []);
-
             } catch (err) {
                 console.error('❌ Fehler beim Laden:', err);
                 setError('Öffnungszeiten konnten nicht geladen werden.');
@@ -318,7 +302,7 @@ function EditOpeningHours() {
         setHasChanges(true);
     };
 
-    // INTELLIGENTES SPEICHERN
+    // HASH-BASIERTES SPEICHERN
     const handleSave = async () => {
         try {
             setSaving(true);
@@ -332,58 +316,68 @@ function EditOpeningHours() {
                 return;
             }
 
-            // 2. Prüfe ob eine identische Vorlage bereits existiert
-            console.log('🔍 Suche nach identischer Vorlage...');
-            const matchingTemplate = await findMatchingTemplate(
-                openingHours,
-                availableVorlagen,
-                oeffnungszeitVorlageService
-            );
+            // 2. Hash generieren und nach existierender Vorlage suchen
+            console.log('🔍 Generiere Hash und suche Vorlage...');
+            const hash = await generateOpeningHoursHash(openingHours);
 
+            let matchingVorlage = await oeffnungszeitVorlageService.findByHash(hash);
             let vorlageId;
 
-            if (matchingTemplate) {
-                // Existierende Vorlage verwenden
-                console.log('✅ Identische Vorlage gefunden:', matchingTemplate.bezeichnung);
-                vorlageId = matchingTemplate.oeffnungszeitid;
-                setSuccessMessage(`Bestehende Vorlage "${matchingTemplate.bezeichnung}" wird verwendet`);
+            if (matchingVorlage) {
+                // Existierende Vorlage gefunden
+                console.log('✅ Vorlage gefunden:', matchingVorlage.bezeichnung);
+                vorlageId = matchingVorlage.oeffnungszeitid;
+                setSuccessMessage(`Vorlage "${matchingVorlage.bezeichnung}" wird verwendet`);
             } else {
-                // Neue Vorlage erstellen
+                // Neue Vorlage erstellen (Backend erstellt auch die Details)
                 console.log('➕ Erstelle neue Vorlage...');
                 const templateName = generateTemplateName(openingHours);
 
-                const newVorlage = await oeffnungszeitVorlageService.create({
+                const newVorlage = await oeffnungszeitVorlageService.createWithHash({
                     bezeichnung: templateName,
                     beschreibung: 'Automatisch erstellt'
-                });
+                }, openingHours);
+
                 vorlageId = newVorlage.oeffnungszeitid;
-
-                // Details erstellen
-                for (const day of openingHours) {
-                    await oeffnungszeitDetailService.create({
-                        oeffnungszeitid: vorlageId,
-                        wochentag: day.wochentag,
-                        oeffnungszeit: day.ist_geschlossen ? null : day.oeffnungszeit,
-                        schliessungszeit: day.ist_geschlossen ? null : day.schliessungszeit,
-                        ist_geschlossen: day.ist_geschlossen
-                    });
-                }
-
-                console.log('✅ Neue Vorlage erstellt:', templateName);
+                console.log('✅ Neue Vorlage erstellt');
             }
 
-            // 3. Vorlage dem Restaurant zuordnen
-            const today = new Date().toISOString().split('T')[0];
+            // 3. Alte Zuordnungen deaktivieren (nur die aus der Vergangenheit)
+            const today = new Date();
+            const todayStr = today.toISOString().split('T')[0];
+            const yesterday = new Date();
+            yesterday.setDate(yesterday.getDate() - 1);
+            const yesterdayStr = yesterday.toISOString().split('T')[0];
 
+            const activeAssignments = await restaurantOeffnungszeitService.getActiveForRestaurant(id);
+            for (const old of activeAssignments) {
+                // Nur deaktivieren wenn gueltig_von in der Vergangenheit liegt
+                if (old.gueltig_von < todayStr) {
+                    await restaurantOeffnungszeitService.update(
+                        old.restaurantid,
+                        old.oeffnungszeitid,
+                        old.gueltig_von,
+                        { gueltig_bis: yesterdayStr }
+                    );
+                } else {
+                    // Zuordnung die heute startet -> löschen statt beenden
+                    await restaurantOeffnungszeitService.delete(
+                        old.restaurantid,
+                        old.oeffnungszeitid,
+                        old.gueltig_von
+                    );
+                }
+            }
+
+            // 4. Neue Zuordnung erstellen
             await restaurantOeffnungszeitService.create({
                 restaurantid: parseInt(id),
                 oeffnungszeitid: vorlageId,
-                gueltig_von: today,
-                gueltig_bis: null,
-                ist_aktiv: true
+                gueltig_von: todayStr,
+                gueltig_bis: null
             });
 
-            console.log('✅ Öffnungszeiten erfolgreich gespeichert');
+            console.log('✅ Öffnungszeiten gespeichert');
             setSuccessMessage('Öffnungszeiten erfolgreich gespeichert!');
 
             setTimeout(() => {
@@ -391,7 +385,7 @@ function EditOpeningHours() {
             }, 1500);
 
         } catch (err) {
-            console.error('❌ Fehler beim Speichern:', err);
+            console.error('❌ Fehler:', err);
             setError('Fehler beim Speichern der Öffnungszeiten.');
         } finally {
             setSaving(false);

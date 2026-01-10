@@ -1,6 +1,4 @@
 from sqlalchemy.orm import Session
-
-from models import RestaurantOeffnungszeit
 from models.restaurant_oeffnungszeit import RestaurantOeffnungszeit
 from typing import List, Optional, Any
 from datetime import date
@@ -27,25 +25,25 @@ class RestaurantOeffnungszeitService:
         return self.db.query(RestaurantOeffnungszeit).filter(
             RestaurantOeffnungszeit.restaurantid == restaurant_id
         ).all()
-    
-    def get_active_by_restaurant_id(self, restaurant_id: int) -> list[type[RestaurantOeffnungszeit]]:
-        """Get active opening hours for a restaurant"""
+
+    def get_active_by_restaurant_id(self, restaurant_id: int):
+        """Hole aktive Zuordnungen (zeitbasiert)"""
+        today = date.today()
         return self.db.query(RestaurantOeffnungszeit).filter(
             RestaurantOeffnungszeit.restaurantid == restaurant_id,
-            RestaurantOeffnungszeit.ist_aktiv == True
+            RestaurantOeffnungszeit.gueltig_von <= today,
+            (RestaurantOeffnungszeit.gueltig_bis.is_(None) |
+             (RestaurantOeffnungszeit.gueltig_bis >= today))
         ).all()
-    
-    def get_current_for_restaurant(self, restaurant_id: int, current_date: date = None) -> Optional[RestaurantOeffnungszeit]:
-        """Get currently valid opening hours for a restaurant"""
-        if current_date is None:
-            current_date = date.today()
-        
+
+    def get_current_for_restaurant(self, restaurant_id: int):
+        """Hole aktuell gültige Zuordnung"""
+        today = date.today()
         return self.db.query(RestaurantOeffnungszeit).filter(
             RestaurantOeffnungszeit.restaurantid == restaurant_id,
-            RestaurantOeffnungszeit.ist_aktiv == True,
-            RestaurantOeffnungszeit.gueltig_von <= current_date,
-            (RestaurantOeffnungszeit.gueltig_bis >= current_date) | 
-            (RestaurantOeffnungszeit.gueltig_bis == None)
+            RestaurantOeffnungszeit.gueltig_von <= today,
+            (RestaurantOeffnungszeit.gueltig_bis.is_(None) |
+             (RestaurantOeffnungszeit.gueltig_bis >= today))
         ).first()
 
     def create(self, assignment_data: dict):
@@ -85,7 +83,3 @@ class RestaurantOeffnungszeitService:
         self.db.delete(assignment)
         self.db.commit()
         return True
-    
-    def deactivate(self, restaurant_id: int, oeffnungszeit_id: int, gueltig_von: date) -> Optional[RestaurantOeffnungszeit]:
-        """Deactivate an opening hours assignment"""
-        return self.update(restaurant_id, oeffnungszeit_id, gueltig_von, {"ist_aktiv": False})

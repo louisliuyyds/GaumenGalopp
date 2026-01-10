@@ -1,78 +1,3 @@
-// utils/openingHoursUtils.js
-// Utility-Funktionen für Öffnungszeiten-Verwaltung
-
-/**
- * Vergleicht zwei Öffnungszeit-Arrays und prüft, ob sie identisch sind
- * @param {Array} hours1 - Erstes Öffnungszeiten-Array
- * @param {Array} hours2 - Zweites Öffnungszeiten-Array
- * @returns {boolean} - true wenn identisch, sonst false
- */
-export const areOpeningHoursEqual = (hours1, hours2) => {
-    if (!hours1 || !hours2 || hours1.length !== hours2.length) {
-        return false;
-    }
-
-    // Sortiere beide Arrays nach Wochentag
-    const sorted1 = [...hours1].sort((a, b) => a.wochentag - b.wochentag);
-    const sorted2 = [...hours2].sort((a, b) => a.wochentag - b.wochentag);
-
-    // Vergleiche jeden Tag
-    return sorted1.every((day1, index) => {
-        const day2 = sorted2[index];
-
-        // Wenn beide geschlossen sind, sind sie gleich
-        if (day1.ist_geschlossen && day2.ist_geschlossen) {
-            return true;
-        }
-
-        // Wenn nur einer geschlossen ist, sind sie unterschiedlich
-        if (day1.ist_geschlossen !== day2.ist_geschlossen) {
-            return false;
-        }
-
-        // Vergleiche die Zeiten
-        return (
-            day1.wochentag === day2.wochentag &&
-            day1.oeffnungszeit === day2.oeffnungszeit &&
-            day1.schliessungszeit === day2.schliessungszeit
-        );
-    });
-};
-
-/**
- * Sucht in vorhandenen Vorlagen nach einer identischen Vorlage
- * @param {Array} openingHours - Zu vergleichende Öffnungszeiten
- * @param {Array} existingTemplates - Array von existierenden Vorlagen
- * @returns {Object|null} - Gefundene Vorlage oder null
- */
-export const findMatchingTemplate = async (openingHours, existingTemplates, vorlageService) => {
-    for (const template of existingTemplates) {
-        try {
-            // Lade die Details der Vorlage
-            const vorlage = await vorlageService.getById(template.oeffnungszeitid);
-
-            if (!vorlage || !vorlage.details) continue;
-
-            // Formatiere die Vorlage-Details
-            const templateHours = vorlage.details.map(detail => ({
-                wochentag: detail.wochentag,
-                ist_geschlossen: detail.ist_geschlossen,
-                oeffnungszeit: detail.oeffnungszeit || '',
-                schliessungszeit: detail.schliessungszeit || '',
-            }));
-
-            // Vergleiche
-            if (areOpeningHoursEqual(openingHours, templateHours)) {
-                return vorlage;
-            }
-        } catch (err) {
-            console.error('Fehler beim Vergleichen der Vorlage:', err);
-        }
-    }
-
-    return null;
-};
-
 /**
  * Generiert einen lesbaren Namen für eine Öffnungszeit-Vorlage
  * basierend auf dem Muster der Öffnungszeiten
@@ -168,4 +93,24 @@ export const formatOpeningHoursDisplay = (openingHours) => {
             return `${day.tagName}: ${day.oeffnungszeit} - ${day.schliessungszeit} Uhr`;
         })
         .join('\n');
+};
+
+export const generateOpeningHoursHash = (openingHours) => {
+    const hashData = openingHours
+        .sort((a, b) => a.wochentag - b.wochentag)
+        .map(day => {
+            if (day.ist_geschlossen) {
+                return `${day.wochentag}:CLOSED`;
+            }
+            // Entferne Sekunden falls vorhanden
+            const oeffnung = day.oeffnungszeit?.substring(0, 5) || '';
+            const schliessung = day.schliessungszeit?.substring(0, 5) || '';
+            return `${day.wochentag}:${oeffnung}-${schliessung}`;
+        })
+        .join('|');
+
+    return crypto.subtle.digest('SHA-256', new TextEncoder().encode(hashData))
+        .then(buf => Array.from(new Uint8Array(buf))
+            .map(b => b.toString(16).padStart(2, '0'))
+            .join(''));
 };

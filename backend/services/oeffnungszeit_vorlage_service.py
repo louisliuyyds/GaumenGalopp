@@ -5,6 +5,7 @@ from models.oeffnungszeit_vorlage import OeffnungszeitVorlage
 from typing import List, Optional, Any
 from sqlalchemy.exc import IntegrityError
 
+from utils.opening_hours_hash import generate_opening_hours_hash
 
 
 class OeffnungszeitVorlageService:
@@ -63,6 +64,30 @@ class OeffnungszeitVorlageService:
         self.db.delete(vorlage)
         self.db.commit()
         return True
+
+    def find_by_hash(self, hash_signatur: str):
+        """Finde Vorlage per Hash"""
+        return self.db.query(OeffnungszeitVorlage).filter(
+            OeffnungszeitVorlage.hash_signatur == hash_signatur
+        ).first()
+
+    def create_with_hash(self, vorlage_data: dict, details_list: list):
+        """Erstelle Vorlage mit automatischem Hash"""
+        try:
+            # Hash generieren
+            hash_sig = generate_opening_hours_hash(details_list)
+            vorlage_data['hash_signatur'] = hash_sig
+
+            new_vorlage = OeffnungszeitVorlage(**vorlage_data)
+            self.db.add(new_vorlage)
+            self.db.commit()
+            self.db.refresh(new_vorlage)
+            return new_vorlage
+        except IntegrityError:
+            self.db.rollback()
+            return self.db.query(OeffnungszeitVorlage).filter(
+                OeffnungszeitVorlage.bezeichnung == vorlage_data['bezeichnung']
+            ).first()
     
     def get_with_details(self, oeffnungszeit_id: int) -> Optional[OeffnungszeitVorlage]:
         """Get opening hours template with all details"""
