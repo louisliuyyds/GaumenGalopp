@@ -4,8 +4,10 @@ import { useParams, useNavigate } from 'react-router-dom';
 import colors from '../theme/colors';
 import MenuSection from '../components/MenuSection';
 import restaurantService from '../services/restaurantService';
+import restaurantOeffnungszeitService from '../services/restaurantOeffnungszeitService';
+import oeffnungszeitDetailService from '../services/oeffnungszeitDetailService';
 
-// --- VERBESSERTE STYLED COMPONENTS ---
+// --- STYLED COMPONENTS ---
 
 const Container = styled.div`
     max-width: 1200px;
@@ -37,19 +39,14 @@ const BackButton = styled.button`
 `;
 
 const HeaderSection = styled.div`
-
     background: linear-gradient(135deg, #8a6d3b 0%, #b8860b 100%);
-
-   
     box-shadow: inset 0 0 50px rgba(0,0,0,0.1), 0 10px 30px rgba(0,0,0,0.1);
-
     border-radius: 24px;
     padding: 60px 50px;
     margin-bottom: 40px;
-    color: #ffffff; 
+    color: #ffffff;
     position: relative;
     overflow: hidden;
-
 
     &::after {
         content: "";
@@ -152,14 +149,22 @@ const LoadingState = styled.div`
     color: ${colors.text.light};
 `;
 
-// --- HAUPTKOMPONENTE (LOGIK UNVERÄNDERT) ---
+// --- KONSTANTEN ---
+
+const WOCHENTAGE = ['Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag', 'Sonntag'];
+
+// --- HAUPTKOMPONENTE ---
 
 function RestaurantDetail() {
     const { id } = useParams();
     const navigate = useNavigate();
+
     const [restaurant, setRestaurant] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [openingHours, setOpeningHours] = useState([]);
+    const [loadingHours, setLoadingHours] = useState(true);
 
+    // Restaurant-Daten laden
     useEffect(() => {
         const fetchRestaurantData = async () => {
             try {
@@ -173,6 +178,33 @@ function RestaurantDetail() {
             }
         };
         fetchRestaurantData();
+    }, [id]);
+
+    // Öffnungszeiten laden
+    useEffect(() => {
+        const loadOpeningHours = async () => {
+            try {
+                setLoadingHours(true);
+
+                const assignments = await restaurantOeffnungszeitService.getActiveForRestaurant(id);
+
+                if (assignments && assignments.length > 0) {
+                    const vorlageId = assignments[0].oeffnungszeitid;
+                    const details = await oeffnungszeitDetailService.getByVorlageId(vorlageId);
+
+                    if (details && details.length > 0) {
+                        const sorted = [...details].sort((a, b) => a.wochentag - b.wochentag);
+                        setOpeningHours(sorted);
+                    }
+                }
+            } catch (err) {
+                console.error('❌ Fehler beim Laden der Öffnungszeiten:', err);
+            } finally {
+                setLoadingHours(false);
+            }
+        };
+
+        if (id) loadOpeningHours();
     }, [id]);
 
     if (loading) {
@@ -263,18 +295,34 @@ function RestaurantDetail() {
 
                 <InfoCard>
                     <CardTitle>🕐 Öffnungszeiten</CardTitle>
-                    <InfoRow>
-                        <Label>Mo - Fr</Label>
-                        <Value>11:30 - 22:00 Uhr</Value>
-                    </InfoRow>
-                    <InfoRow>
-                        <Label>Samstag</Label>
-                        <Value>12:00 - 23:30 Uhr</Value>
-                    </InfoRow>
-                    <InfoRow>
-                        <Label>Sonntag</Label>
-                        <Value style={{color: colors.accent.orange}}>12:00 - 21:00 Uhr</Value>
-                    </InfoRow>
+                    {loadingHours ? (
+                        <InfoRow>
+                            <Value style={{width: '100%', textAlign: 'center', color: colors.text.light}}>
+                                Lade Öffnungszeiten...
+                            </Value>
+                        </InfoRow>
+                    ) : openingHours.length > 0 ? (
+                        openingHours.map((day) => (
+                            <InfoRow key={day.wochentag}>
+                                <Label>{WOCHENTAGE[day.wochentag - 1]}</Label>
+                                <Value style={{
+                                    color: day.ist_geschlossen ? colors.status.error : colors.text.primary,
+                                    fontWeight: day.ist_geschlossen ? '600' : '500'
+                                }}>
+                                    {day.ist_geschlossen
+                                        ? 'Geschlossen'
+                                        : `${day.oeffnungszeit?.slice(0, 5)} - ${day.schliessungszeit?.slice(0, 5)} Uhr`
+                                    }
+                                </Value>
+                            </InfoRow>
+                        ))
+                    ) : (
+                        <InfoRow>
+                            <Value style={{width: '100%', textAlign: 'center', color: colors.text.light}}>
+                                Keine Öffnungszeiten hinterlegt
+                            </Value>
+                        </InfoRow>
+                    )}
                 </InfoCard>
             </ContentGrid>
 
