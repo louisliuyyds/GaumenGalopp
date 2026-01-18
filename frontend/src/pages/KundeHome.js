@@ -218,7 +218,7 @@ function KundeHome() {
     const [filter, setFilter] = useState('Alle');
     const [searchQuery, setSearchQuery] = useState('');
 
-    const TEST_KUNDEN_ID = 20;
+    const TEST_KUNDEN_ID = 11;
 
     const getDeliveryTime = (restaurantId) => {
         const seed = restaurantId * 7;
@@ -232,7 +232,7 @@ function KundeHome() {
             try {
                 const [resData, orderData] = await Promise.all([
                     restaurantService.getAll(),
-                    bestellungService.getByKunde(TEST_KUNDEN_ID)
+
                 ]);
                 setRestaurants(resData || []);
                 setRecentOrders(Array.isArray(orderData) ? orderData.slice(0, 4) : []);

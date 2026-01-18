@@ -4,9 +4,9 @@ import apiClient from '../api/apiClient';
 export const warenkorbService = {
     // Get cart
     getCart: async (kundenid) => {
-        console.log('API call: GET /warenkorb/' + kundenid); // ← ADD THIS
+        console.log('API call: GET /warenkorb/' + kundenid);
         const response = await apiClient.get(`/api/warenkorb/${kundenid}`);
-        console.log('API response:', response); // ← ADD THIS
+        console.log('API response:', response);
         return response;
     },
 

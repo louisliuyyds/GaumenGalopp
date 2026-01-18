@@ -210,7 +210,7 @@ function RestaurantDetail() {
             </div>
         );
     };
-
+    
     return (
         <Container>
             <BackButton onClick={() => navigate('/kunde')}>

@@ -1,6 +1,7 @@
 import React from 'react';
 import styled from 'styled-components';
 import colors from '../theme/colors';
+import { warenkorbService } from "../services/warenkorbService";
 
 // ✅ FIXED: styled.di → styled.div, styled.h → styled.h2, styled.butto → styled.button
 const Section = styled.div`
@@ -97,6 +98,12 @@ const AddButton = styled.button`
     &:active {
         transform: scale(0.95);
     }
+
+    &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        transform: none;
+    }
 `;
 
 const EmptyState = styled.div`
@@ -115,7 +122,7 @@ const MenuHeader = styled.h2`
 `;
 
 function MenuSection({ restaurant }) {
-    console.log('🔍 MenuSection received restaurant:', restaurant);
+    console.log('🍽 MenuSection received restaurant:', restaurant);
 
     // Sammle ALLE Gerichte aus ALLEN Menüs
     const allDishes = [];
@@ -175,6 +182,45 @@ function MenuSection({ restaurant }) {
         return parseFloat(preisArray[0].betrag);
     };
 
+    // Hilfsfunktion: Hole die aktive Preis-ID
+    const getActivePriceId = (preisArray) => {
+        if (!preisArray || preisArray.length === 0) return null;
+
+        // Suche aktiven Preis (istaktiv: true)
+        const activePrice = preisArray.find(p => p.istaktiv === true);
+        if (activePrice) {
+            return activePrice.preisid;
+        }
+
+        // Fallback: Ersten Preis nehmen
+        return preisArray[0].preisid;
+    };
+
+    // Warenkorb-Handler (wie in GerichtDetail.js)
+    const handleAddToCart = async (gericht) => {
+        if (window.confirm('Artikel in den Warenkorb hinzufügen?')) {
+            const kundenId = 20; // TODO: Aus Auth-Context holen
+            try {
+                const itemData = {
+                    restaurantid: parseInt(restaurant.restaurantid),
+                    gerichtid: parseInt(gericht.gerichtid),
+                    preisid: getActivePriceId(gericht.preis),
+                    menge: 1,
+                    aenderungswunsch: null
+                };
+                
+                console.log('Sending to cart:', itemData);
+                
+                await warenkorbService.addItem(kundenId, itemData);
+                alert('Artikel wurde dem Warenkorb hinzugefügt!');
+            } catch (err) {
+                console.error('Fehler beim Hinzufügen:', err);
+                console.error('Fehlerdetails:', err.response?.data);
+                alert('Fehler beim Hinzufügen des Artikels');
+            }
+        }
+    };
+
     return (
         <Section>
             <MenuHeader>🍴 Speisekarte</MenuHeader>
@@ -195,10 +241,8 @@ function MenuSection({ restaurant }) {
                                     </div>
                                     <AddButton
                                         title="In den Warenkorb"
-                                        onClick={() => {
-                                            console.log('➕ Gericht hinzugefügt:', gericht.name);
-                                            // Hier später Warenkorb-Logik
-                                        }}
+                                        onClick={() => handleAddToCart(gericht)}
+                                        disabled={!getActivePriceId(gericht.preis)}
                                     >
                                         +
                                     </AddButton>
