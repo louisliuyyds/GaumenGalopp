@@ -9,23 +9,26 @@ from controllers import kunde_controller
 from controllers import gericht_controller, kritiker_controller, kochstil_controller, kochstilrestaurant_controller
 from controllers import label_controller, labelGericht_controller, lieferant_controller, preis_controller
 from controllers import bewertungkritiker_controller, oeffnungszeit_vorlage_controller
+from controllers import auth_controller
+
 
 # Create FastAPI app
 app = FastAPI(
-   title="Food Delivery API",
-   description="Backend API for food delivery application",
+    title="Food Delivery API",
+    description="Backend API for food delivery application",
     version="1.0.0"
 )
 
 # Enable CORS for React frontend
 app.add_middleware(
-   CORSMiddleware,
-   allow_origins=["http://localhost:3000", "http://localhost:5173"],  # React/Vite
-   allow_credentials=True,
-   allow_methods=["*"],
-   allow_headers=["*"],
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000", "http://localhost:5173"],  # React/Vite
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
+app.include_router(auth_controller.router)
 app.include_router(menue_controller.router)
 app.include_router(restaurant_controller.router)
 app.include_router(adresse_controller.router)
@@ -50,15 +53,13 @@ app.include_router(warenkorb_controller.router)
 # Root endpoint
 @app.get("/")
 def root():
-   return {
-       "message": "Food Delivery API",
-       "version": "1.0.0",
-       "docs": "/docs"
+    return {
+        "message": "Food Delivery API",
+        "version": "1.0.0",
+        "docs": "/docs"
     }
 
 # Health check
 @app.get("/health")
 def health_check():
-   return {"status": "healthy"}
-
-# Run with: uvicorn main:app --reload
+    return {"status": "healthy"}

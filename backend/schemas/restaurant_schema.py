@@ -8,8 +8,9 @@ class RestaurantCreate(BaseModel):
     name: str
     klassifizierung: Optional[str] = None
     adresseid: int
-    telefon: Optional[str] = None
-    kuechenchef: Optional[str] = None
+    telefon: str
+    kuechenchef: str
+    email: str
 
 
 # What data comes IN when updating
@@ -36,8 +37,9 @@ class RestaurantResponse(BaseModel):
     name: str
     klassifizierung: Optional[str]
     adresseid: int
-    telefon: Optional[str]
-    kuechenchef: Optional[str]
+    telefon: str
+    kuechenchef: str
+    email: str
     
     class Config:
         from_attributes = True

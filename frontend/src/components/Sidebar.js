@@ -1,116 +1,121 @@
-import React, { useState } from 'react';
+import React from 'react';
 import styled from 'styled-components';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import colors from '../theme/colors';
 
 const SidebarContainer = styled.div`
-    width: 200px;
+    width: 220px;
     height: 100vh;
-    background: ${colors.gradients.primary};
+    background: ${colors.background.card};
+    border-right: 1px solid ${colors.border.light};
+    display: flex;
+    flex-direction: column;
     position: fixed;
     left: 0;
     top: 0;
-    padding: 20px;
-    box-shadow: 4px 0 15px ${colors.overlay.dark};
-    display: flex;
-    flex-direction: column;
+    box-shadow: ${colors.shadows.medium};
 `;
 
-const LogoContainer = styled.div`
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 12px;
-    margin-bottom: 30px;
-`;
-
-const LogoImage = styled.img`
-    width: 100px;
-    height: auto;
-    object-fit: contain;
-`;
-
-const LogoText = styled.h1`
-    color: ${colors.text.white};
+const Logo = styled.div`
+    padding: 30px 20px;
     font-size: 1.5em;
-    font-weight: 700;
+    font-weight: 800;
+    color: ${colors.primary.main};
+    border-bottom: 1px solid ${colors.border.light};
+    background: ${colors.gradients.primary};
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+`;
+
+const UserInfo = styled.div`
+    padding: 15px 20px;
+    border-bottom: 1px solid ${colors.border.light};
+    background: ${colors.background.main};
+`;
+
+const UserType = styled.div`
+    font-size: 0.75em;
+    color: ${colors.text.light};
+    text-transform: uppercase;
     letter-spacing: 0.5px;
-    margin: 0;
+    margin-bottom: 5px;
 `;
 
-const ToggleContainer = styled.div`
-    background: ${colors.overlay.dark};
-    border-radius: 10px;
-    padding: 4px;
+const UserRole = styled.div`
+    font-size: 0.9em;
+    color: ${colors.text.primary};
+    font-weight: 600;
     display: flex;
-    margin-bottom: 30px;
-    position: relative;
+    align-items: center;
+    gap: 8px;
 `;
 
-const ToggleButton = styled.button`
-    flex: 1;
-    padding: 10px 8px;
-    border: none;
-    background: ${props => props.$active ? colors.gradients.accent : 'transparent'};
-    color: ${props => props.$active ? colors.text.white : colors.primary.light};
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 0.85em;
-    font-weight: ${props => props.$active ? '700' : '500'};
-    transition: all 0.3s ease;
-    z-index: 1;
-
-    &:hover {
-        color: ${colors.text.white};
-    }
+const RoleBadge = styled.span`
+    background: ${props => props.type === 'restaurant' ? colors.primary.main : colors.secondary.main};
+    color: white;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.7em;
+    font-weight: 700;
 `;
 
-const NavList = styled.ul`
-    list-style: none;
-    padding: 0;
-    margin: 0;
+const NavMenu = styled.nav`
     flex: 1;
+    padding: 20px 0;
     overflow-y: auto;
 `;
 
-const NavItem = styled.li`
-    margin-bottom: 8px;
-`;
-
-const NavLink = styled(Link)`
+const NavItem = styled(Link)`
     display: block;
-    padding: 12px 15px;
-    color: ${colors.primary.light};
+    padding: 12px 20px;
+    color: ${colors.text.primary};
     text-decoration: none;
-    border-radius: 8px;
     transition: all 0.3s ease;
     font-weight: 500;
-    font-size: 0.95em;
+    border-left: 3px solid transparent;
 
     &:hover {
-        background-color: ${colors.overlay.light};
-        transform: translateX(5px);
+        background: ${colors.background.main};
+        border-left-color: ${colors.primary.main};
+        color: ${colors.primary.main};
     }
 
     &.active {
-        background: ${colors.gradients.accent};
-        color: ${colors.text.white};
-        box-shadow: ${colors.shadows.accent};
+        background: ${colors.background.main};
+        border-left-color: ${colors.primary.main};
+        color: ${colors.primary.main};
+        font-weight: 700;
     }
 `;
 
-const ViewLabel = styled.div`
-    color: ${colors.primary.light};
-    font-size: 0.75em;
+const LogoutButton = styled.button`
+    margin: 20px;
+    padding: 12px;
+    background: ${colors.gradients.primary};
+    color: white;
+    border: none;
+    border-radius: 8px;
     font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    margin-bottom: 15px;
-    padding: 0 5px;
-    opacity: 0.7;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: ${colors.shadows.primarySmall};
+
+    &:hover {
+        transform: translateY(-2px);
+        box-shadow: ${colors.shadows.primaryMedium};
+    }
 `;
 
 function Sidebar() {
+    const { user, logout, isRestaurant, isKunde, isKritiker } = useAuth();
+    const navigate = useNavigate();
+
+    const handleLogout = () => {
+        logout();
+        navigate('/login');
+    };
     const location = useLocation();
     const [isAdminView, setIsAdminView] = useState(true); // true = Verwaltung, false = Kunde
 
@@ -138,44 +143,46 @@ function Sidebar() {
 
     return (
         <SidebarContainer>
-            <LogoContainer>
-                <LogoImage src="/horseLogo.png" alt="GaumenGalopp Logo" />
-                <LogoText>GaumenGalopp</LogoText>
-            </LogoContainer>
+            <Logo>GaumenGalopp</Logo>
 
-            <ToggleContainer>
-                <ToggleButton
-                    $active={!isAdminView}
-                    onClick={() => setIsAdminView(false)}
-                >
-                    Kunde
-                </ToggleButton>
-                <ToggleButton
-                    $active={isAdminView}
-                    onClick={() => setIsAdminView(true)}
-                >
-                    Verwaltung
-                </ToggleButton>
-            </ToggleContainer>
+            {user && (
+                <UserInfo>
+                    <UserType>
+                        {isRestaurant ? '🍽️ Restaurant-Verwaltung' : '👤 Kundenbereich'}
+                    </UserType>
+                    <UserRole>
+                        {user.email}
+                        {isKritiker && <RoleBadge>Kritiker</RoleBadge>}
+                    </UserRole>
+                </UserInfo>
+            )}
 
-            <ViewLabel>
-                {isAdminView ? '🔧 Verwaltungsansicht' : '👥 Kundenansicht'}
-            </ViewLabel>
+            <NavMenu>
+                {/* Restaurant Navigation */}
+                {isRestaurant && (
+                    <>
+                        <NavItem to="/">Dashboard</NavItem>
+                        <NavItem to="/restaurants">Meine Restaurants</NavItem>
+                        <NavItem to="/neuesRestaurant">Neues Restaurant</NavItem>
+                    </>
+                )}
 
-            <NavList>
-                {currentNavItems.map((item) => (
-                    <NavItem key={item.path}>
-                        <NavLink
-                            to={item.path}
-                            className={location.pathname === item.path ||
-                            (item.path !== '/' && location.pathname.includes(item.path))
-                                ? 'active' : ''}
-                        >
-                            {item.icon} {item.label}
-                        </NavLink>
-                    </NavItem>
-                ))}
-            </NavList>
+                {/* Kunden Navigation */}
+                {isKunde && (
+                    <>
+                        <NavItem to="/kunde">Startseite</NavItem>
+                        <NavItem to="/kunde/restaurants">Restaurants</NavItem>
+                        <NavItem to="/kunde/bestellungen">Meine Bestellungen</NavItem>
+                    </>
+                )}
+
+                {/* Shared Navigation */}
+                <NavItem to="/beispiel">Beispiel</NavItem>
+            </NavMenu>
+
+            <LogoutButton onClick={handleLogout}>
+                Ausloggen
+            </LogoutButton>
         </SidebarContainer>
     );
 }

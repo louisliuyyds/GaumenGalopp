@@ -1,5 +1,5 @@
 from database import Base
-from sqlalchemy import Column, Integer, SmallInteger, String, Date, ForeignKey, DateTime
+from sqlalchemy import Column, Integer, Date, ForeignKey, Text
 from sqlalchemy.orm import relationship
 
 class Bewertung(Base):
@@ -8,7 +8,7 @@ class Bewertung(Base):
     kundenid = Column(Integer, ForeignKey('kunde.kundenid'), nullable=False)
     gerichtid = Column(Integer, ForeignKey('gericht.gerichtid'), nullable=False)
     rating = Column(Integer)
-    kommentar = Column(String(500))
+    kommentar = Column(Text)
     erstelltam = Column(Date)
 
     gericht = relationship("Gericht", back_populates="bewertung")

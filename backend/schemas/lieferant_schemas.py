@@ -3,9 +3,9 @@ from typing import Optional
 
 # (POST)
 class LieferantCreate(BaseModel):
-    vorname: Optional[str] = None
-    nachname: Optional[str] = None
-    telephone: Optional[str] = None
+    vorname: str
+    nachname: str
+    telephone: str
 
 #  (PUT/PATCH)
 class LieferantUpdate(BaseModel):
@@ -16,9 +16,9 @@ class LieferantUpdate(BaseModel):
 # (GET)
 class LieferantResponse(BaseModel):
     lieferantid: int
-    vorname: Optional[str] = None
-    nachname: Optional[str] = None
-    telephone: Optional[str] = None
+    vorname: str
+    nachname: str
+    telephone: str
 
     class Config:
         from_attributes = True
