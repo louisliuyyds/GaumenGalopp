@@ -161,8 +161,8 @@ function Sidebar() {
                 {isRestaurant && (
                     <>
                         <NavSection>
-                            <NavItem 
-                                to="/" 
+                            <NavItem
+                                to="/"
                                 className={isActive('/') && !isActive('/restaurants') ? 'active' : ''}
                             >
                                 Dashboard
@@ -171,20 +171,20 @@ function Sidebar() {
 
                         <SectionTitle>Restaurant Verwaltung</SectionTitle>
                         <NavSection>
-                            <NavItem 
-                                to="/restaurants" 
+                            <NavItem
+                                to="/restaurants"
                                 className={isActive('/restaurants') && !isActive('/restaurants/profil') ? 'active' : ''}
                             >
                                 Meine Restaurants
                             </NavItem>
-                            <NavItem 
-                                to="/restaurants/profil" 
+                            <NavItem
+                                to="/restaurants/profil"
                                 className={isActive('/restaurants/profil') ? 'active' : ''}
                             >
                                 Restaurant-Profil
                             </NavItem>
-                            <NavItem 
-                                to="/neuesRestaurant" 
+                            <NavItem
+                                to="/neuesRestaurant"
                                 className={isActive('/neuesRestaurant') ? 'active' : ''}
                             >
                                 Neues Restaurant
@@ -193,8 +193,8 @@ function Sidebar() {
 
                         <SectionTitle>Bestellungen</SectionTitle>
                         <NavSection>
-                            <NavItem 
-                                to="/bestellhistorie" 
+                            <NavItem
+                                to="/bestellhistorie"
                                 className={isActive('/bestellhistorie') ? 'active' : ''}
                             >
                                 Bestellhistorie
@@ -207,8 +207,8 @@ function Sidebar() {
                 {isKunde && (
                     <>
                         <NavSection>
-                            <NavItem 
-                                to="/kunde" 
+                            <NavItem
+                                to="/kunde"
                                 className={location.pathname === '/kunde' ? 'active' : ''}
                             >
                                 Startseite
@@ -217,14 +217,14 @@ function Sidebar() {
 
                         <SectionTitle>Bestellen</SectionTitle>
                         <NavSection>
-                            <NavItem 
-                                to="/kunde/restaurants" 
+                            <NavItem
+                                to="/kunde/restaurants"
                                 className={isActive('/kunde/restaurants') ? 'active' : ''}
                             >
                                 Restaurants
                             </NavItem>
-                            <NavItem 
-                                to="/kunde/warenkorb" 
+                            <NavItem
+                                to="/kunde/warenkorb"
                                 className={isActive('/kunde/warenkorb') ? 'active' : ''}
                             >
                                 Warenkorb
@@ -233,20 +233,14 @@ function Sidebar() {
 
                         <SectionTitle>Mein Konto</SectionTitle>
                         <NavSection>
-                            <NavItem 
-                                to="/kunde/bestellungen" 
-                                className={isActive('/kunde/bestellungen') ? 'active' : ''}
-                            >
-                                Meine Bestellungen
-                            </NavItem>
-                            <NavItem 
-                                to="/bestellhistorie" 
-                                className={isActive('/bestellhistorie') ? 'active' : ''}
+                            <NavItem
+                                to="/kunde/bestellhistorie"
+                                className={isActive('/kunde/bestellhistorie') ? 'active' : ''}
                             >
                                 Bestellhistorie
                             </NavItem>
-                            <NavItem 
-                                to="/kunde/profil" 
+                            <NavItem
+                                to="/kunde/profil"
                                 className={isActive('/kunde/profil') ? 'active' : ''}
                             >
                                 Mein Profil

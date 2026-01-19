@@ -1,8 +1,10 @@
-import React, { useState } from 'react';
+import React, {useEffect, useState} from 'react';
 import styled from 'styled-components';
 import colors from '../theme/colors';
 import kundeService from '../services/kundeService';
 import kritikerService from '../services/kritikerService';
+import { useAuth } from '../context/AuthContext';
+
 
 const Container = styled.div`
     padding: 20px;
@@ -205,6 +207,7 @@ const mapStateToApi = (state) => ({
 });
 
 const KundeProfil = () => {
+    const { user } = useAuth();
     const [profile, setProfile] = useState(emptyProfile);
     const [kritikerProfile, setKritikerProfile] = useState(null);
     const [kundenIdInput, setKundenIdInput] = useState('');
@@ -212,6 +215,12 @@ const KundeProfil = () => {
     const [loading, setLoading] = useState(false);
     const [saving, setSaving] = useState(false);
     const [status, setStatus] = useState(null);
+
+    useEffect(() => {
+        if (user?.user_id) {
+            loadProfile(user.user_id);
+        }
+    }, [user]);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -319,29 +328,6 @@ const KundeProfil = () => {
         <Container>
             <Title>Mein Profil</Title>
             <Subtitle>Da es noch keine Anmeldung gibt, kannst du hier die gewünschte Kunden-ID eingeben, um ein Profil zu laden und zu bearbeiten.</Subtitle>
-
-            <Toolbar>
-                <ToolbarField>
-                    <Label htmlFor="kundenid-input">Kunden-ID auswählen</Label>
-                    <Input
-                        id="kundenid-input"
-                        name="kundenidInput"
-                        value={kundenIdInput}
-                        onChange={(e) => setKundenIdInput(e.target.value)}
-                        placeholder="z. B. 1"
-                        disabled={loading}
-                    />
-                    <Button
-                        type="button"
-                        variant="accent"
-                        onClick={() => loadProfile()}
-                        disabled={loading}
-                        fullWidth
-                    >
-                        {loading ? 'Lädt...' : 'Profil laden'}
-                    </Button>
-                </ToolbarField>
-            </Toolbar>
 
             {status && <StatusBanner variant={status.type}>{status.text}</StatusBanner>}
             

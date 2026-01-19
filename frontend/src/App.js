@@ -39,7 +39,7 @@ function App() {
         <AuthProvider>
             <Router>
                 <Routes>
-                    {/* Öffentliche Routes - Login & Register */}
+                    {/* Öffentliche Routes */}
                     <Route path="/login" element={<Login />} />
                     <Route path="/register" element={<Register />} />
 
@@ -55,7 +55,7 @@ function App() {
                                             {/* Dashboard - für alle */}
                                             <Route path="/" element={<Dashboard />} />
 
-                                            {/* Restaurant Admin Routes - nur für Restaurants */}
+                                            {/* Restaurant Admin Routes - NUR für Restaurants */}
                                             <Route
                                                 path="/neuesRestaurant"
                                                 element={
@@ -64,8 +64,6 @@ function App() {
                                                     </ProtectedRoute>
                                                 }
                                             />
-
-                                            {/* Restaurant Profil - nur für Restaurants */}
                                             <Route
                                                 path="/restaurants/profil"
                                                 element={
@@ -74,13 +72,22 @@ function App() {
                                                     </ProtectedRoute>
                                                 }
                                             />
-
-                                            {/* Restaurant Routes - für alle */}
-                                            <Route path="/restaurants" element={<Restaurants />} />
-                                            <Route path="/restaurants/:id" element={<RestaurantDetail />} />
-                                            <Route path="/restaurants/:restaurantId/gericht/:gerichtId" element={<GerichtDetail />} />
-
-                                            {/* Edit Routes - nur für Restaurants */}
+                                            <Route
+                                                path="/kunde/restaurants/:id"
+                                                element={
+                                                    <ProtectedRoute requiredType="kunde">
+                                                        <RestaurantDetail />
+                                                    </ProtectedRoute>
+                                                }
+                                            />
+                                            <Route
+                                                path="/kunde/restaurants/:restaurantId/gericht/:gerichtId"
+                                                element={
+                                                    <ProtectedRoute requiredType="kunde">
+                                                        <GerichtDetail />
+                                                    </ProtectedRoute>
+                                                }
+                                            />
                                             <Route
                                                 path="/restaurants/:id/edit"
                                                 element={
@@ -90,7 +97,7 @@ function App() {
                                                 }
                                             />
                                             <Route
-                                                path="/restaurants/:id/edit/opening"
+                                                path="/restaurants/:id/edit/hours"
                                                 element={
                                                     <ProtectedRoute requiredType="restaurant">
                                                         <EditOpeningHours />
@@ -106,7 +113,12 @@ function App() {
                                                 }
                                             />
 
-                                            {/* Kunden Routes - nur für Kunden */}
+                                            {/* Restaurant Ansichten - für alle */}
+                                            <Route path="/restaurants" element={<Restaurants />} />
+                                            <Route path="/restaurants/:id" element={<RestaurantDetail />} />
+                                            <Route path="/restaurants/:restaurantId/gericht/:gerichtId" element={<GerichtDetail />} />
+
+                                            {/* Kunden Routes - NUR für Kunden */}
                                             <Route
                                                 path="/kunde"
                                                 element={
@@ -140,18 +152,15 @@ function App() {
                                                 }
                                             />
                                             <Route
-                                                path="/kunde/bestellungen"
+                                                path="/kunde/bestellhistorie"
                                                 element={
                                                     <ProtectedRoute requiredType="kunde">
                                                         <Bestellhistorie />
                                                     </ProtectedRoute>
                                                 }
                                             />
-                                            
-                                            {/* Bestellhistorie - für alle (Restaurant kann auch Bestellungen sehen) */}
-                                            <Route path="/bestellhistorie" element={<Bestellhistorie />} />
 
-                                            {/* Fallback - redirect to home */}
+                                            {/* Fallback */}
                                             <Route path="*" element={<Navigate to="/" replace />} />
                                         </Routes>
                                     </ContentArea>
