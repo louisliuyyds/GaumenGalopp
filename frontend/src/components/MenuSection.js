@@ -2,6 +2,7 @@ import React from 'react';
 import styled from 'styled-components';
 import colors from '../theme/colors';
 import { warenkorbService } from "../services/warenkorbService";
+import { useAuth } from '../context/AuthContext';
 
 // ✅ FIXED: styled.di → styled.div, styled.h → styled.h2, styled.butto → styled.button
 const Section = styled.div`
@@ -122,7 +123,9 @@ const MenuHeader = styled.h2`
 `;
 
 function MenuSection({ restaurant }) {
+    const { user } = useAuth(); // Hole den authentifizierten User
     console.log('🍽 MenuSection received restaurant:', restaurant);
+    console.log('👤 Current user:', user);
 
     // Sammle ALLE Gerichte aus ALLEN Menüs
     const allDishes = [];
@@ -198,8 +201,13 @@ function MenuSection({ restaurant }) {
 
     // Warenkorb-Handler (wie in GerichtDetail.js)
     const handleAddToCart = async (gericht) => {
+        if (!user || !user.user_id) {
+            alert('Bitte melden Sie sich an, um Artikel in den Warenkorb zu legen.');
+            return;
+        }
+
         if (window.confirm('Artikel in den Warenkorb hinzufügen?')) {
-            const kundenId = 20; // TODO: Aus Auth-Context holen
+            const kundenId = user.user_id; // ✅ Verwende die echte Kunden-ID aus dem Auth-Context
             try {
                 const itemData = {
                     restaurantid: parseInt(restaurant.restaurantid),
@@ -210,6 +218,7 @@ function MenuSection({ restaurant }) {
                 };
                 
                 console.log('Sending to cart:', itemData);
+                console.log('KundenID:', kundenId);
                 
                 await warenkorbService.addItem(kundenId, itemData);
                 alert('Artikel wurde dem Warenkorb hinzugefügt!');

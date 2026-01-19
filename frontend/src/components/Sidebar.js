@@ -1,10 +1,8 @@
 import React from 'react';
 import styled from 'styled-components';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import colors from '../theme/colors';
-import { useState } from 'react';
-import { useLocation } from 'react-router-dom';
 
 const SidebarContainer = styled.div`
     width: 220px;
@@ -69,6 +67,20 @@ const NavMenu = styled.nav`
     overflow-y: auto;
 `;
 
+const NavSection = styled.div`
+    margin-bottom: 20px;
+`;
+
+const SectionTitle = styled.div`
+    padding: 8px 20px;
+    font-size: 0.75em;
+    color: ${colors.text.light};
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 700;
+    margin-top: 10px;
+`;
+
 const NavItem = styled(Link)`
     display: block;
     padding: 12px 20px;
@@ -113,35 +125,20 @@ const LogoutButton = styled.button`
 function Sidebar() {
     const { user, logout, isRestaurant, isKunde, isKritiker } = useAuth();
     const navigate = useNavigate();
+    const location = useLocation();
 
     const handleLogout = () => {
         logout();
         navigate('/login');
     };
-    const location = useLocation();
-    const [isAdminView, setIsAdminView] = useState(true); // true = Verwaltung, false = Kunde
 
-    // Navigation für Verwaltungsansicht
-    const adminNavItems = [
-        { path: '/', label: 'Dashboard' },
-        { path: '/restaurants', label: 'Restaurants' },
-        { path: '/restaurants/profil', label: 'Restaurant-Profil' },
-        { path: '/neuesRestaurant', label: 'Neues Restaurant' },
-        { path: '/beispiel', label: 'Beispiel' },
-    ];
-
-    // Navigation für Kundenansicht
-    const customerNavItems = [
-        { path: '/kunde', label: 'Home' },
-        { path: '/kunde/bestellungen', label: 'Meine Bestellungen' },
-        { path: '/kunde/restaurants', label: 'Restaurants'},
-        { path: '/kunde/warenkorb', label: 'Warenkorb' },
-        { path: '/bestellhistorie', label: 'Bestellhistorie' },
-        { path: '/kunde/favoriten', label: 'Favoriten' },
-        { path: '/kunde/profil', label: 'Profil' },
-    ];
-
-    const currentNavItems = isAdminView ? adminNavItems : customerNavItems;
+    // Prüft ob der aktuelle Pfad aktiv ist
+    const isActive = (path) => {
+        if (path === '/') {
+            return location.pathname === '/';
+        }
+        return location.pathname.startsWith(path);
+    };
 
     return (
         <SidebarContainer>
@@ -150,11 +147,11 @@ function Sidebar() {
             {user && (
                 <UserInfo>
                     <UserType>
-                        {isRestaurant ? '🍽️ Restaurant-Verwaltung' : '👤 Kundenbereich'}
+                        {isRestaurant ? 'Restaurant-Verwaltung' : 'Kundenbereich'}
                     </UserType>
                     <UserRole>
                         {user.email}
-                        {isKritiker && <RoleBadge>Kritiker</RoleBadge>}
+                        {isKritiker && <RoleBadge type={user.user_type}>Kritiker</RoleBadge>}
                     </UserRole>
                 </UserInfo>
             )}
@@ -163,23 +160,100 @@ function Sidebar() {
                 {/* Restaurant Navigation */}
                 {isRestaurant && (
                     <>
-                        <NavItem to="/">Dashboard</NavItem>
-                        <NavItem to="/restaurants">Meine Restaurants</NavItem>
-                        <NavItem to="/neuesRestaurant">Neues Restaurant</NavItem>
+                        <NavSection>
+                            <NavItem 
+                                to="/" 
+                                className={isActive('/') && !isActive('/restaurants') ? 'active' : ''}
+                            >
+                                Dashboard
+                            </NavItem>
+                        </NavSection>
+
+                        <SectionTitle>Restaurant Verwaltung</SectionTitle>
+                        <NavSection>
+                            <NavItem 
+                                to="/restaurants" 
+                                className={isActive('/restaurants') && !isActive('/restaurants/profil') ? 'active' : ''}
+                            >
+                                Meine Restaurants
+                            </NavItem>
+                            <NavItem 
+                                to="/restaurants/profil" 
+                                className={isActive('/restaurants/profil') ? 'active' : ''}
+                            >
+                                Restaurant-Profil
+                            </NavItem>
+                            <NavItem 
+                                to="/neuesRestaurant" 
+                                className={isActive('/neuesRestaurant') ? 'active' : ''}
+                            >
+                                Neues Restaurant
+                            </NavItem>
+                        </NavSection>
+
+                        <SectionTitle>Bestellungen</SectionTitle>
+                        <NavSection>
+                            <NavItem 
+                                to="/bestellhistorie" 
+                                className={isActive('/bestellhistorie') ? 'active' : ''}
+                            >
+                                Bestellhistorie
+                            </NavItem>
+                        </NavSection>
                     </>
                 )}
 
                 {/* Kunden Navigation */}
                 {isKunde && (
                     <>
-                        <NavItem to="/kunde">Startseite</NavItem>
-                        <NavItem to="/kunde/restaurants">Restaurants</NavItem>
-                        <NavItem to="/kunde/bestellungen">Meine Bestellungen</NavItem>
+                        <NavSection>
+                            <NavItem 
+                                to="/kunde" 
+                                className={location.pathname === '/kunde' ? 'active' : ''}
+                            >
+                                Startseite
+                            </NavItem>
+                        </NavSection>
+
+                        <SectionTitle>Bestellen</SectionTitle>
+                        <NavSection>
+                            <NavItem 
+                                to="/kunde/restaurants" 
+                                className={isActive('/kunde/restaurants') ? 'active' : ''}
+                            >
+                                Restaurants
+                            </NavItem>
+                            <NavItem 
+                                to="/kunde/warenkorb" 
+                                className={isActive('/kunde/warenkorb') ? 'active' : ''}
+                            >
+                                Warenkorb
+                            </NavItem>
+                        </NavSection>
+
+                        <SectionTitle>Mein Konto</SectionTitle>
+                        <NavSection>
+                            <NavItem 
+                                to="/kunde/bestellungen" 
+                                className={isActive('/kunde/bestellungen') ? 'active' : ''}
+                            >
+                                Meine Bestellungen
+                            </NavItem>
+                            <NavItem 
+                                to="/bestellhistorie" 
+                                className={isActive('/bestellhistorie') ? 'active' : ''}
+                            >
+                                Bestellhistorie
+                            </NavItem>
+                            <NavItem 
+                                to="/kunde/profil" 
+                                className={isActive('/kunde/profil') ? 'active' : ''}
+                            >
+                                Mein Profil
+                            </NavItem>
+                        </NavSection>
                     </>
                 )}
-
-                {/* Shared Navigation */}
-                <NavItem to="/beispiel">Beispiel</NavItem>
             </NavMenu>
 
             <LogoutButton onClick={handleLogout}>
