@@ -1,11 +1,17 @@
+import self
 from sqlalchemy.orm import Session, joinedload
 from typing import List, Optional
+
+from models import kunde
 from models.kunde import Kunde
+from services.adresse_service import AdresseService
+
 
 
 class KundeService:
     def __init__(self, db: Session):
         self.db = db
+        self.adresse_service = AdresseService(db)
 
 # wenn wir eine Detailed Ansicht von den Kunden haben im Frontend (z.B. im Profil)
 # wäre es sinnvoll hier einen JoinedLoad zu machen

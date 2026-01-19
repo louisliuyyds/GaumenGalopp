@@ -1,4 +1,3 @@
-# controllers/oeffnungszeit_detail_controller.py
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from typing import List
@@ -31,6 +30,13 @@ def get_oeffnungszeit_detail(detailid: int, db: Session = Depends(get_db)):
         )
     
     return detail
+
+# GET /api/oeffnungszeit-details/vorlage/{oeffnungszeit_id} - Get details for template
+@router.get("/vorlage/{oeffnungszeitid}", response_model=List[OeffnungszeitDetailResponse])
+def get_details_for_vorlage(oeffnungszeitid: int, db: Session = Depends(get_db)):
+    service = OeffnungszeitDetailService(db)
+    details = service.get_by_vorlage_id(oeffnungszeitid)
+    return details
 
 # POST /api/oeffnungszeit-details - Create new oeffnungszeit_detail
 @router.post("/", response_model=OeffnungszeitDetailResponse, status_code=status.HTTP_201_CREATED)

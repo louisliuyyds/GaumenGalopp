@@ -8,13 +8,11 @@ class RestaurantOeffnungszeitCreate(BaseModel):
     oeffnungszeitid: int
     gueltig_von: date
     gueltig_bis: Optional[date] = None
-    ist_aktiv: Optional[bool] = True
 
 
 # What data comes IN when updating
 class RestaurantOeffnungszeitUpdate(BaseModel):
     gueltig_bis: Optional[date] = None
-    ist_aktiv: Optional[bool] = None
 
 
 # What data goes OUT to the frontend
@@ -23,7 +21,6 @@ class RestaurantOeffnungszeitResponse(BaseModel):
     oeffnungszeitid: int
     gueltig_von: date
     gueltig_bis: Optional[date]
-    ist_aktiv: bool
     
     class Config:
         from_attributes = True

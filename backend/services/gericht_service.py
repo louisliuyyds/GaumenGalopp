@@ -7,13 +7,34 @@ class GerichtService:
         self.db = db
 
     def get_all(self) -> list[type[Gericht]]:
-        return self.db.query(Gericht).all()
+        return (
+            self.db.query(Gericht)
+            .filter(Gericht.ist_aktiv.is_(True))
+            .all()
+        )
 
     def get_by_id(self, gerichtid: int) -> Optional[Gericht]:
-        return self.db.query(Gericht).filter(Gericht.gerichtid == gerichtid).first()
+        return (
+            self.db.query(Gericht)
+            .filter(
+                Gericht.gerichtid == gerichtid,
+                Gericht.ist_aktiv.is_(True)
+            )
+            .first()
+        )
 
-    def get_by_id_list(self, id_list: list[type[int]]) -> list[type[Gericht]]:
-        return self.db.query(Gericht).filter(Gericht.gerichtid.in_(id_list)).all()
+    def get_by_id_list(self, id_list: list[int]) -> list[type[Gericht]]:
+        if not id_list:
+            return []
+
+        return (
+            self.db.query(Gericht)
+            .filter(
+                Gericht.gerichtid.in_(id_list),
+                Gericht.ist_aktiv.is_(True)
+            )
+            .all()
+        )
 
     def create(self, gericht_data: dict) -> Gericht:
         new_gericht = Gericht(**gericht_data)
@@ -35,11 +56,15 @@ class GerichtService:
         self.db.refresh(gericht)
         return gericht
 
-    def delete(self, gerichtid: int) -> Optional[Gericht]:
+    def deactivate(self, gerichtid: int) -> Optional[Gericht]:
         gericht = self.get_by_id(gerichtid)
         if not gericht:
             return None
-        self.db.delete(gericht)
+
+        if not gericht.ist_aktiv:
+            return gericht  # bereits deaktiviert
+
+        gericht.ist_aktiv = False
         self.db.commit()
         self.db.refresh(gericht)
         return gericht

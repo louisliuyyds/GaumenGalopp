@@ -1,4 +1,3 @@
-// api/apiClient.js
 import axios from 'axios';
 
 // Basis-URL deines Backends - anpassen falls nötig
@@ -6,43 +5,43 @@ const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
 
 // Axios-Instanz erstellen
 const apiClient = axios.create({
-  baseURL: API_BASE_URL,
-  headers: {
-    'Content-Type': 'application/json',
-  },
-  timeout: 10000, // 10 Sekunden Timeout
+    baseURL: API_BASE_URL,
+    headers: {
+        'Content-Type': 'application/json',
+    },
+    timeout: 10000, // 10 Sekunden Timeout
 });
 
 // Request Interceptor - wird vor jedem Request ausgeführt
 apiClient.interceptors.request.use(
-  (config) => {
-    // Hier könntest du z.B. einen Auth-Token hinzufügen
-    const token = localStorage.getItem('authToken');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+    (config) => {
+        // Hier könntest du z.B. einen Auth-Token hinzufügen
+        const token = localStorage.getItem('authToken');
+        if (token) {
+            config.headers.Authorization = `Bearer ${token}`;
+        }
+
+        // Request-Logging für Debugging
+        console.log(`🚀 ${config.method.toUpperCase()} ${config.url}`);
+
+        return config;
+    },
+    (error) => {
+        console.error('❌ Request Error:', error);
+        return Promise.reject(error);
     }
-    
-    // Request-Logging für Debugging
-    console.log(`🚀 ${config.method.toUpperCase()} ${config.url}`);
-    
-    return config;
-  },
-  (error) => {
-    console.error('❌ Request Error:', error);
-    return Promise.reject(error);
-  }
 );
 
 // Response Interceptor - wird nach jedem Response ausgeführt
 apiClient.interceptors.response.use(
   (response) => {
     // Erfolgreiche Response
-    console.log(`✅ ${response.config.method.toUpperCase()} ${response.config.url} - Status: ${response.status}`);
+    console.log(` ${response.config.method.toUpperCase()} ${response.config.url} - Status: ${response.status}`);
     return response.data;
   },
   (error) => {
     // Fehlerbehandlung
-    console.error('❌ Response Error:', error);
+    console.error(' Response Error:', error);
     
     if (error.response) {
       // Server hat mit Fehlercode geantwortet
@@ -85,7 +84,6 @@ apiClient.interceptors.response.use(
       console.error('Request-Fehler:', error.message);
       return Promise.reject(error);
     }
-  }
 );
 
 export default apiClient;

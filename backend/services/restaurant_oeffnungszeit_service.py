@@ -1,8 +1,9 @@
 from sqlalchemy.orm import Session, joinedload
-
 from models import RestaurantOeffnungszeit, OeffnungszeitVorlage, OeffnungszeitDetail
-from typing import Optional
+from typing import List, Optional, AnyOptional
 from datetime import date
+from sqlalchemy.exc import IntegrityError
+
 
 
 class RestaurantOeffnungszeitService:
@@ -24,33 +25,42 @@ class RestaurantOeffnungszeitService:
         return self.db.query(RestaurantOeffnungszeit).filter(
             RestaurantOeffnungszeit.restaurantid == restaurant_id
         ).all()
-    
-    def get_active_by_restaurant_id(self, restaurant_id: int) -> list[type[RestaurantOeffnungszeit]]:
-        """Get active opening hours for a restaurant"""
+
+    def get_active_by_restaurant_id(self, restaurant_id: int):
+        """Hole aktive Zuordnungen (zeitbasiert)"""
+        today = date.today()
         return self.db.query(RestaurantOeffnungszeit).filter(
             RestaurantOeffnungszeit.restaurantid == restaurant_id,
-            RestaurantOeffnungszeit.ist_aktiv == True
+            RestaurantOeffnungszeit.gueltig_von <= today,
+            (RestaurantOeffnungszeit.gueltig_bis.is_(None) |
+             (RestaurantOeffnungszeit.gueltig_bis >= today))
         ).all()
-    
-    def get_current_for_restaurant(self, restaurant_id: int, current_date: date = None) -> Optional[RestaurantOeffnungszeit]:
-        """Get currently valid opening hours for a restaurant"""
-        if current_date is None:
-            current_date = date.today()
-        
+
+    def get_current_for_restaurant(self, restaurant_id: int):
+        """Hole aktuell gültige Zuordnung"""
+        today = date.today()
         return self.db.query(RestaurantOeffnungszeit).filter(
             RestaurantOeffnungszeit.restaurantid == restaurant_id,
-            RestaurantOeffnungszeit.ist_aktiv == True,
-            RestaurantOeffnungszeit.gueltig_von <= current_date,
-            (RestaurantOeffnungszeit.gueltig_bis >= current_date) | 
-            (RestaurantOeffnungszeit.gueltig_bis == None)
+            RestaurantOeffnungszeit.gueltig_von <= today,
+            (RestaurantOeffnungszeit.gueltig_bis.is_(None) |
+             (RestaurantOeffnungszeit.gueltig_bis >= today))
         ).first()
-    
-    def create(self, assignment_data: dict) -> RestaurantOeffnungszeit:
-        assignment = RestaurantOeffnungszeit(**assignment_data)
-        self.db.add(assignment)
-        self.db.commit()
-        self.db.refresh(assignment)
-        return assignment
+
+    def create(self, assignment_data: dict):
+        try:
+            new_assignment = RestaurantOeffnungszeit(**assignment_data)
+            self.db.add(new_assignment)
+            self.db.commit()
+            self.db.refresh(new_assignment)
+            return new_assignment
+        except IntegrityError:
+            self.db.rollback()
+            # Existiert bereits - hole den vorhandenen Eintrag
+            return self.db.query(RestaurantOeffnungszeit).filter(
+                RestaurantOeffnungszeit.restaurantid == assignment_data['restaurantid'],
+                RestaurantOeffnungszeit.oeffnungszeitid == assignment_data['oeffnungszeitid'],
+                RestaurantOeffnungszeit.gueltig_von == assignment_data['gueltig_von']
+            ).first()
     
     def update(self, restaurant_id: int, oeffnungszeit_id: int, gueltig_von: date, 
                update_data: dict) -> Optional[RestaurantOeffnungszeit]:

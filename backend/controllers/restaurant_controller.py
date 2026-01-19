@@ -28,7 +28,6 @@ def get_all_restaurants(db: Session = Depends(get_db)):
     service = RestaurantService(db)
     restaurants = service.get_all()
 
-
     return [
         {
             "restaurantid": r.restaurantid,
@@ -37,6 +36,7 @@ def get_all_restaurants(db: Session = Depends(get_db)):
             "adresseid": r.adresseid,
             "telefon": r.telefon,
             "kuechenchef": r.kuechenchef,
+            "email": r.email,
             # Adresse
             "adresse": {
                 "adresseid": r.adresse.adresseid,
@@ -81,6 +81,7 @@ def get_restaurant(
         "adresseid": restaurant.adresseid,
         "telefon": restaurant.telefon,
         "kuechenchef": restaurant.kuechenchef,
+        "email": restaurant.email,
         # Adresse
         "adresse": {
             "adresseid": restaurant.adresse.adresseid,
@@ -122,7 +123,10 @@ def get_restaurant(
                                 "istaktiv": preis.istaktiv
                             } for preis in (gericht.preis if hasattr(gericht, 'preis') else [])
                         ]
-                    } for gericht in (menu.gericht if hasattr(menu, 'gericht') else [])
+                    } for gericht in (
+                        [g for g in menu.gericht if getattr(g, "ist_aktiv", True)]
+                        if hasattr(menu, "gericht") and menu.gericht else []
+                    )
                 ]
             } for menu in (restaurant.menue if hasattr(restaurant, 'menue') else [])
         ]
