@@ -6,21 +6,19 @@ import Sidebar from './components/Sidebar';
 import ProtectedRoute from './components/ProtectedRoute';
 import Login from './pages/Login';
 import Register from './pages/Register';
-import Home from './pages/Dashboard';
 import Dashboard from './pages/Dashboard';
-import NeuesRestaurant from "./pages/Restaurant"
+import Restaurants from "./pages/Restaurant";
 import RestaurantDetail from "./pages/RestaurantDetail";
 import GerichtDetail from "./pages/GerichtDetail";
 import EditRestaurantInfos from "./pages/EditRestaurantInfos";
-import colors from './theme/colors';
-import Restaurants from "./pages/Restaurant";
+import EditOpeningHours from "./pages/EditOpeningHours";
+import EditMenu from "./pages/EditMenu";
 import KundeHome from './pages/KundeHome';
 import Warenkorb from "./pages/Warenkorb";
 import KundeProfil from './pages/KundeProfil';
 import RestaurantProfil from './pages/RestaurantProfil';
 import Bestellhistorie from "./pages/Bestellhistorie";
-import EditOpeningHours from "./pages/EditOpeningHours";
-import EditMenu from "./pages/EditMenu";
+import colors from './theme/colors';
 
 const AppContainer = styled.div`
     display: flex;
@@ -54,7 +52,7 @@ function App() {
                                     <Sidebar />
                                     <ContentArea>
                                         <Routes>
-                                            {/* Dashboard */}
+                                            {/* Dashboard - für alle */}
                                             <Route path="/" element={<Dashboard />} />
 
                                             {/* Restaurant Admin Routes - nur für Restaurants */}
@@ -62,7 +60,17 @@ function App() {
                                                 path="/neuesRestaurant"
                                                 element={
                                                     <ProtectedRoute requiredType="restaurant">
-                                                        <NeuesRestaurant />
+                                                        <Restaurants />
+                                                    </ProtectedRoute>
+                                                }
+                                            />
+
+                                            {/* Restaurant Profil - nur für Restaurants */}
+                                            <Route
+                                                path="/restaurants/profil"
+                                                element={
+                                                    <ProtectedRoute requiredType="restaurant">
+                                                        <RestaurantProfil />
                                                     </ProtectedRoute>
                                                 }
                                             />
@@ -81,10 +89,22 @@ function App() {
                                                     </ProtectedRoute>
                                                 }
                                             />
-
-                                            <Route path="/restaurants/:id/edit/opening" element={<EditOpeningHours />} />
-                                            <Route path="/restaurants/:id/edit/menu" element={<EditMenu />} />
-                                            <Route path="/restaurants/:id/edit" element={<EditRestaurantInfos />} />
+                                            <Route
+                                                path="/restaurants/:id/edit/opening"
+                                                element={
+                                                    <ProtectedRoute requiredType="restaurant">
+                                                        <EditOpeningHours />
+                                                    </ProtectedRoute>
+                                                }
+                                            />
+                                            <Route
+                                                path="/restaurants/:id/edit/menu"
+                                                element={
+                                                    <ProtectedRoute requiredType="restaurant">
+                                                        <EditMenu />
+                                                    </ProtectedRoute>
+                                                }
+                                            />
 
                                             {/* Kunden Routes - nur für Kunden */}
                                             <Route
@@ -103,6 +123,33 @@ function App() {
                                                     </ProtectedRoute>
                                                 }
                                             />
+                                            <Route
+                                                path="/kunde/warenkorb"
+                                                element={
+                                                    <ProtectedRoute requiredType="kunde">
+                                                        <Warenkorb />
+                                                    </ProtectedRoute>
+                                                }
+                                            />
+                                            <Route
+                                                path="/kunde/profil"
+                                                element={
+                                                    <ProtectedRoute requiredType="kunde">
+                                                        <KundeProfil />
+                                                    </ProtectedRoute>
+                                                }
+                                            />
+                                            <Route
+                                                path="/kunde/bestellungen"
+                                                element={
+                                                    <ProtectedRoute requiredType="kunde">
+                                                        <Bestellhistorie />
+                                                    </ProtectedRoute>
+                                                }
+                                            />
+                                            
+                                            {/* Bestellhistorie - für alle (Restaurant kann auch Bestellungen sehen) */}
+                                            <Route path="/bestellhistorie" element={<Bestellhistorie />} />
 
                                             {/* Fallback - redirect to home */}
                                             <Route path="*" element={<Navigate to="/" replace />} />
