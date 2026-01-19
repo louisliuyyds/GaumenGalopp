@@ -54,35 +54,16 @@ class KundeService:
         if not kunde:
             return None
 
-        # Trenne Adress- von Kunde-Feldern
-        adress_fields = ['straße', 'hausnummer', 'postleitzahl', 'ort', 'land']
-        adress_data = {k: v for k, v in update_data.items() if k in adress_fields}
-        kunde_data = {k: v for k, v in update_data.items() if k not in adress_fields}
+        adresse_data = update_data.pop("adresse", None)
 
-        # Prüfe was geschickt wurde
-        has_adress_id = 'adresseid' in kunde_data
-        has_adress_data = bool(adress_data)
-
-        if has_adress_id and has_adress_data:
-            raise ValueError("Sende entweder adresseid ODER Adress-Daten!")
-
-        elif has_adress_data and kunde.adresseid:
-            # Smart Adress-Update
-            updated_adresse = self.adresse_service.update(
-                kunde.adresseid,
-                adress_data
-            )
-            kunde.adresseid = updated_adresse.adresseid
-
-        elif has_adress_id:
-            # Direkt setzen
-            kunde.adresseid = kunde_data['adresseid']
-            kunde_data.pop('adresseid')
-
-        # Kunde-Update
-        for key, value in kunde_data.items():
-            if value is not None and hasattr(kunde, key):
+        for key, value in update_data.items():
+            if value is not None:
                 setattr(kunde, key, value)
+
+        if adresse_data and kunde.adresse:
+            for key, value in adresse_data.items():
+                if value is not None:
+                    setattr(kunde.adresse, key, value)
 
         self.db.commit()
         self.db.refresh(kunde)

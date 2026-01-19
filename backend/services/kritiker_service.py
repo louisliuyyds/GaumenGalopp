@@ -13,6 +13,9 @@ class KritikerService:
     
     def get_by_id(self, kritiker_id: int) -> Optional[Kritiker]:
         return self.db.query(Kritiker).filter(Kritiker.kritikerid == kritiker_id).first()
+
+    def get_by_kunden_id(self, kunden_id: int) -> Optional[Kritiker]:
+        return self.db.query(Kritiker).filter(Kritiker.kundenid == kunden_id).first()
     
     def create(self, kritiker_data: dict) -> Kritiker:
         kritiker = Kritiker(**kritiker_data)

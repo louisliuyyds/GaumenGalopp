@@ -9,7 +9,10 @@ import GerichtDetail from "./pages/GerichtDetail";
 import EditRestaurantInfos from "./pages/EditRestaurantInfos";
 import colors from './theme/colors';
 import Restaurants from "./pages/Restaurant";
+import KundeHome from './pages/KundeHome';
 import Warenkorb from "./pages/Warenkorb";
+import KundeProfil from './pages/KundeProfil';
+import RestaurantProfil from './pages/RestaurantProfil';
 import Bestellhistorie from "./pages/Bestellhistorie";
 import EditOpeningHours from "./pages/EditOpeningHours";
 import EditMenu from "./pages/EditMenu";
@@ -35,26 +38,19 @@ function App() {
                 <Sidebar />
                 <ContentArea>
                     <Routes>
-                        {/* Dashboard */}
                         <Route path="/" element={<Dashboard />} />
-
-                        {/* Admin/Verwaltung Restaurant Routes */}
                         <Route path="/neuesRestaurant" element={<NeuesRestaurant />} />
                         <Route path="/restaurants" element={<Restaurants />} />
                         <Route path="/restaurants/:id" element={<RestaurantDetail />} />
                         <Route path="/restaurants/:id/edit" element={<EditRestaurantInfos />} />
+                        <Route path="/restaurants/profil" element={<RestaurantProfil />} />
                         <Route path="/restaurants/:restaurantId/gericht/:gerichtId" element={<GerichtDetail />} />
-
-                        {/* Edit Pages */}
-
                         <Route path="/restaurants/:id/edit/opening" element={<EditOpeningHours />} />
                         <Route path="/restaurants/:id/edit/menu" element={<EditMenu />} />
                         <Route path="/restaurants/:id/edit" element={<EditRestaurantInfos />} />
-
-
-
                         <Route path="/kunde/restaurants/:id" element={<RestaurantDetail />} />
-
+                        <Route path="/kunde/bestellungen" element={<Bestellhistorie />} />
+                        <Route path="/kunde/profil" element={<KundeProfil />} />
                         <Route path="/kunde/restaurants" element={<Restaurants />} />
                         <Route path="/kunde/warenkorb" element={<Warenkorb />} />
                         <Route path="/bestellhistorie" element={<Bestellhistorie />} />

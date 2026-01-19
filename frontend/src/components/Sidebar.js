@@ -118,6 +118,7 @@ function Sidebar() {
     const adminNavItems = [
         { path: '/', label: 'Dashboard' },
         { path: '/restaurants', label: 'Restaurants' },
+        { path: '/restaurants/profil', label: 'Restaurant-Profil' },
         { path: '/neuesRestaurant', label: 'Neues Restaurant' },
         { path: '/beispiel', label: 'Beispiel' },
     ];

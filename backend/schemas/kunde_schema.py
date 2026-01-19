@@ -1,6 +1,18 @@
-from pydantic import BaseModel, EmailStr
-from typing import Optional
 from datetime import date
+from typing import Optional
+
+from pydantic import BaseModel
+
+
+class AdresseProfileData(BaseModel):
+    straße: Optional[str] = None
+    land: Optional[str] = None
+    ort: Optional[str] = None
+    hausnummer: Optional[str] = None
+    postleitzahl: Optional[str] = None
+
+    class Config:
+        from_attributes = True
 
 class KundeCreate(BaseModel):
     vorname: str
@@ -8,17 +20,19 @@ class KundeCreate(BaseModel):
     adressid: int
     geburtsdatum: Optional[date] = None
     telefonnummer: Optional[str] = None
-    email: Optional[EmailStr] = None
+    email: Optional[str] = None
     namenskuerzel: Optional[str] = None
 
 class KundeUpdate(BaseModel):
     # Kunde
     vorname: Optional[str] = None
     nachname: Optional[str] = None
-    email: Optional[EmailStr] = None
-    telefonnummer: Optional[str] = None
+    adressid: Optional[int] = None
     geburtsdatum: Optional[date] = None
+    telefonnummer: Optional[str] = None
+    email: Optional[str] = None
     namenskuerzel: Optional[str] = None
+    adresse: Optional[AdresseProfileData] = None
 
     # Adresse
     adresseid: Optional[int] = None  # Option A
@@ -37,10 +51,34 @@ class KundeResponse(BaseModel):
     telefonnummer: Optional[str] = None
     email: Optional[str] = None
     namenskuerzel: Optional[str] = None
+    adresse: Optional[AdresseProfileData] = None
 
     class Config:
         from_attributes = True
 
+
+class KundeProfileResponse(BaseModel):
+    kundenid: int
+    vorname: str
+    nachname: str
+    geburtsdatum: Optional[date] = None
+    telefonnummer: Optional[str] = None
+    email: Optional[str] = None
+    namenskuerzel: Optional[str] = None
+    adresse: Optional[AdresseProfileData] = None
+
+    class Config:
+        from_attributes = True
+
+
+class KundeProfileUpdate(BaseModel):
+    vorname: Optional[str] = None
+    nachname: Optional[str] = None
+    geburtsdatum: Optional[date] = None
+    telefonnummer: Optional[str] = None
+    email: Optional[str] = None
+    namenskuerzel: Optional[str] = None
+    adresse: Optional[AdresseProfileData] = None
 class KundeKuerzelResponse(BaseModel):
     namenskuerzel: Optional[str] = None
 

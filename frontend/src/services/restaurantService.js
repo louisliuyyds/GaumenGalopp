@@ -20,19 +20,35 @@ const restaurantService = {
   },
 
   /**
-   * Neues Restaurant erstellen
-   * POST /api/restaurants
+   * Restaurantprofil (inkl. Adresse) laden
+   * GET /api/restaurants/{id}/profil
    */
-  create: async (restaurantData) => {
-    return await apiClient.post('/api/restaurants', restaurantData);
+  getProfile: async (restaurantId) => {
+    return await apiClient.get(`/api/restaurants/${restaurantId}/profil`);
   },
 
   /**
-   * Restaurant aktualisieren
-   * PUT /api/restaurants/{id}
+   * Restaurantprofil (inkl. Adresse) aktualisieren
+   * PUT /api/restaurants/{id}/profil
    */
-  update: async (restaurantId, restaurantData) => {
-    return await apiClient.put(`/api/restaurants/${restaurantId}`, restaurantData);
+  updateProfile: async (restaurantId, profileData) => {
+    return await apiClient.put(`/api/restaurants/${restaurantId}/profil`, profileData);
+  },
+
+  /**
+   * Öffnungszeiten-Profil eines Restaurants laden
+   * GET /api/restaurants/{id}/oeffnungszeiten
+   */
+  getOpeningProfile: async (restaurantId) => {
+    return await apiClient.get(`/api/restaurants/${restaurantId}/oeffnungszeiten`);
+  },
+
+  /**
+   * Öffnungszeiten-Profil eines Restaurants aktualisieren
+   * PUT /api/restaurants/{id}/oeffnungszeiten
+   */
+  updateOpeningProfile: async (restaurantId, openingData) => {
+    return await apiClient.put(`/api/restaurants/${restaurantId}/oeffnungszeiten`, openingData);
   },
 
   /**

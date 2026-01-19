@@ -34,50 +34,55 @@ apiClient.interceptors.request.use(
 
 // Response Interceptor - wird nach jedem Response ausgeführt
 apiClient.interceptors.response.use(
-    (response) => {
-        // Erfolgreiche Response
-        console.log(`✅ ${response.config.method.toUpperCase()} ${response.config.url} - Status: ${response.status}`);
-        return response.data;
-    },
-    (error) => {
-        // Fehlerbehandlung
-        console.error('❌ Response Error:', error);
-
-        if (error.response) {
-            // Server hat mit Fehlercode geantwortet
-            const { status, data } = error.response;
-
-            switch (status) {
-                case 401:
-                    console.error('Nicht autorisiert - bitte einloggen');
-                    break;
-                case 403:
-                    console.error('Zugriff verweigert');
-                    break;
-                case 404:
-                    console.error('Ressource nicht gefunden');
-                    break;
-                case 422:
-                    console.error('Validierungsfehler:', data.detail);
-                    break;
-                case 500:
-                    console.error('Serverfehler');
-                    break;
-                default:
-                    console.error(`Fehler ${status}:`, data);
-            }
-
-            // Originalen Error durchreichen, damit error.response verfügbar bleibt
-            return Promise.reject(error);
-        } else if (error.request) {
-            // Request wurde gesendet, aber keine Antwort erhalten
-            console.error('Keine Antwort vom Server erhalten');
-            return Promise.reject(new Error('Server ist nicht erreichbar'));
-        } else {
-            // Fehler beim Erstellen des Requests
-            console.error('Request-Fehler:', error.message);
-            return Promise.reject(error);
-        }
+  (response) => {
+    // Erfolgreiche Response
+    console.log(` ${response.config.method.toUpperCase()} ${response.config.url} - Status: ${response.status}`);
+    return response.data;
+  },
+  (error) => {
+    // Fehlerbehandlung
+    console.error(' Response Error:', error);
+    
+    if (error.response) {
+      // Server hat mit Fehlercode geantwortet
+      const { status, data } = error.response;
+      
+      switch (status) {
+        case 401:
+          console.error('Nicht autorisiert - bitte einloggen');
+          // Optional: Redirect zu Login-Seite
+          // window.location.href = '/login';
+          break;
+        case 403:
+          console.error('Zugriff verweigert');
+          break;
+        case 404:
+          console.error('Ressource nicht gefunden');
+          break;
+        case 422:
+          console.error('Validierungsfehler:', data.detail);
+          break;
+        case 500:
+          console.error('Serverfehler');
+          break;
+        default:
+          console.error(`Fehler ${status}:`, data);
+      }
+      
+      // Benutzerfreundliche Fehlermeldung
+      const errorMessage = data?.detail || data?.message || 'Ein Fehler ist aufgetreten';
+      const normalizedError = new Error(errorMessage);
+      normalizedError.status = status;
+      normalizedError.details = data;
+      return Promise.reject(normalizedError);
+    } else if (error.request) {
+      // Request wurde gesendet, aber keine Antwort erhalten
+      console.error('Keine Antwort vom Server erhalten');
+      return Promise.reject(new Error('Server ist nicht erreichbar'));
+    } else {
+      // Fehler beim Erstellen des Requests
+      console.error('Request-Fehler:', error.message);
+      return Promise.reject(error);
     }
 );
 
