@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom';
 import colors from '../theme/colors';
+import kochstilService from '../services/kochstilService';
+import restaurantService from '../services/restaurantService';
 
 const Container = styled.div`
     max-width: 1400px;
@@ -297,67 +299,47 @@ const PromoButton = styled.button`
     }
 `;
 
-// Mock-Daten
-const categories = [
-    { name: 'Italienisch', icon: '🍕', count: 42 },
-    { name: 'Japanisch', icon: '🍣', count: 28 },
-    { name: 'Amerikanisch', icon: '🍔', count: 35 },
-    { name: 'Französisch', icon: '🥐', count: 18 },
-    { name: 'Chinesisch', icon: '🥡', count: 31 },
-    { name: 'Indisch', icon: '🍛', count: 22 },
-];
-
-const featuredRestaurants = [
-    {
-        id: 1,
-        name: 'Bella Italia',
-        cuisine: 'Italienisch',
-        rating: 4.8,
-        deliveryTime: '25-35 Min',
-        distance: '2.3 km',
-        icon: '🍕',
-        gradient: colors.gradients.luxury,
-        isFavorite: true
-    },
-    {
-        id: 2,
-        name: 'Sushi Heaven',
-        cuisine: 'Japanisch',
-        rating: 4.9,
-        deliveryTime: '30-40 Min',
-        distance: '3.1 km',
-        icon: '🍣',
-        gradient: colors.gradients.luxury,
-        isFavorite: false
-    },
-    {
-        id: 3,
-        name: 'Burger Palace',
-        cuisine: 'Amerikanisch',
-        rating: 4.6,
-        deliveryTime: '20-30 Min',
-        distance: '1.8 km',
-        icon: '🍔',
-        gradient: colors.gradients.luxury,
-        isFavorite: false
-    },
-    {
-        id: 4,
-        name: 'Le Bistro',
-        cuisine: 'Französisch',
-        rating: 4.7,
-        deliveryTime: '35-45 Min',
-        distance: '4.2 km',
-        icon: '🥐',
-        gradient: colors.gradients.luxury,
-        isFavorite: true
-    },
-];
-
 function KundeHome() {
     const navigate = useNavigate();
     const [searchQuery, setSearchQuery] = useState('');
     const [favorites, setFavorites] = useState([1, 4]);
+    const [topCategories, setTopCategories] = useState([]);
+
+    useEffect(() => {
+        const loadTopCategories = async () => {
+            try {
+                // Lade alle Kochstile und Restaurants
+                const [kochstileRes, restaurantsRes] = await Promise.all([
+                    kochstilService.getAll(),
+                    restaurantService.getAll()
+                ]);
+
+                const kochstile = kochstileRes.data;
+                const restaurants = restaurantsRes.data;
+
+                // Zähle Restaurants pro Kategorie
+                const counts = kochstile.map(k => ({
+                    ...k,
+                    count: restaurants.filter(r =>
+                        r.kochstile?.some(rk => rk.stilid === k.stilid)
+                    ).length
+                }));
+
+                // Sortiere nach Anzahl, nimm Top 6
+                const top6 = counts
+                    .filter(k => k.count > 0) // Nur mit Restaurants
+                    .sort((a, b) => b.count - a.count)
+                    .slice(0, 6);
+
+                setTopCategories(top6);
+            } catch (error) {
+                console.error('Fehler beim Laden:', error);
+            }
+        };
+
+        loadTopCategories();
+    }, []);
+
 
     const handleSearch = () => {
         if (searchQuery.trim()) {
@@ -400,13 +382,12 @@ function KundeHome() {
             <CategorySection>
                 <SectionTitle> Küchen entdecken</SectionTitle>
                 <CategoriesGrid>
-                    {categories.map((category, index) => (
-                        <CategoryCard 
-                            key={index}
-                            onClick={() => handleCategoryClick(category.name)}
+                    {topCategories.map(category => (
+                        <CategoryCard
+                            key={category.stilid}
+                            onClick={() => navigate(`/kunde/restaurants?cuisine=${category.kochstil}`)}
                         >
-                            <CategoryIcon>{category.icon}</CategoryIcon>
-                            <CategoryName>{category.name}</CategoryName>
+                            <CategoryName>{category.kochstil}</CategoryName>
                             <CategoryCount>{category.count} Restaurants</CategoryCount>
                         </CategoryCard>
                     ))}
