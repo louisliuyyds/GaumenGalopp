@@ -278,7 +278,7 @@ function EditRestaurantInfos() {
             }
         };
 
-        fetchData();
+        fetchRestaurantData();
     }, [id]);
 
     // Ein Handler für ALLE Felder

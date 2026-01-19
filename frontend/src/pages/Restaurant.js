@@ -75,6 +75,10 @@ const Rating = styled.div`
     font-weight: 600;
 `;
 
+const FilterSection = styled.div`
+
+`
+
 function Restaurants() {
     const [restaurants, setRestaurants] = useState([]);
     const [loading, setLoading] = useState(true);

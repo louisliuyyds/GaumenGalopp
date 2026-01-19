@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect} from 'react';
 import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom';
 import colors from '../theme/colors';
@@ -304,6 +304,8 @@ function KundeHome() {
     const [searchQuery, setSearchQuery] = useState('');
     const [favorites, setFavorites] = useState([1, 4]);
     const [topCategories, setTopCategories] = useState([]);
+    const [featuredRestaurants, setFeaturedRestaurants] = useState([]);
+
 
     useEffect(() => {
         const loadTopCategories = async () => {
@@ -332,6 +334,10 @@ function KundeHome() {
                     .slice(0, 6);
 
                 setTopCategories(top6);
+
+                const featured = restaurants.slice(0, 4);
+                setFeaturedRestaurants(featured);
+
             } catch (error) {
                 console.error('Fehler beim Laden:', error);
             }
@@ -395,33 +401,31 @@ function KundeHome() {
             </CategorySection>
 
             <FeaturedSection>
-                <SectionTitle> Beliebte Restaurants</SectionTitle>
+                <SectionTitle>Beliebte Restaurants</SectionTitle>
                 <RestaurantsGrid>
                     {featuredRestaurants.map((restaurant) => (
                         <RestaurantCard
-                            key={restaurant.id}
-                            onClick={() => navigate(`/kunde/restaurants/${restaurant.id}`)}
+                            key={restaurant.restaurantid}
+                            onClick={() => navigate(`/kunde/restaurants/${restaurant.restaurantid}`)}
                         >
-                            <RestaurantImage $gradient={restaurant.gradient}>
-                                <span>{restaurant.icon}</span>
+                            <RestaurantImage $gradient={colors.gradients.luxury}>
+                                <span>🍽️</span> {/* Oder Icon basierend auf Kochstil */}
                             </RestaurantImage>
                             <RestaurantContent>
                                 <RestaurantHeader>
                                     <div>
                                         <RestaurantName>{restaurant.name}</RestaurantName>
-                                        <CuisineTag>{restaurant.cuisine}</CuisineTag>
+                                        {restaurant.kochstile && restaurant.kochstile.length > 0 && (
+                                            <CuisineTag>{restaurant.kochstile[0].kochstil}</CuisineTag>
+                                        )}
                                     </div>
                                 </RestaurantHeader>
                                 <RestaurantInfo>
-                                    📍 {restaurant.distance}
+                                    📍 {restaurant.adresse?.ort || 'Unbekannt'}
                                 </RestaurantInfo>
                                 <RestaurantFooter>
-                                    <Rating>
-                                        ⭐ {restaurant.rating}
-                                    </Rating>
-                                    <DeliveryTime>
-                                        🕐 {restaurant.deliveryTime}
-                                    </DeliveryTime>
+                                    <Rating>⭐ 4.5</Rating> {/* Später aus DB */}
+                                    <DeliveryTime>🕐 30-40 Min</DeliveryTime>
                                 </RestaurantFooter>
                             </RestaurantContent>
                         </RestaurantCard>
