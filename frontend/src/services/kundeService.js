@@ -26,7 +26,7 @@ const kundeService = {
   },
 
     getKuerzelById: async (kundenId) => {
-    return await apiClient.get(`/api/kunden/getKuerzelById/${kundenId}`);
+    return await apiClient.get(`/api/kunde/getKuerzelById/${kundenId}`);
   },
 
   /**
