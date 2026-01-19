@@ -1,392 +1,452 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom';
 import colors from '../theme/colors';
-import restaurantService from '../services/restaurantService';
-import bestellungService from '../services/bestellungService';
-
-
 
 const Container = styled.div`
     max-width: 1400px;
     margin: 0 auto;
-    padding: 30px 20px;
-    background: ${colors.background.main};
-    min-height: 100vh;
-    font-family: 'Inter', -apple-system, sans-serif;
 `;
 
 const HeroSection = styled.div`
-    background: ${colors.gradients.luxury || 'linear-gradient(135deg, #1a1a1a 0%, #3a3a3a 100%)'};
-    border-radius: 24px;
-    padding: 80px 40px;
-    margin-bottom: 50px;
+    background: ${colors.gradients.luxury};
+    border-radius: 20px;
+    padding: 60px 40px;
+    margin-bottom: 40px;
     text-align: center;
-    box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+    box-shadow: ${colors.shadows.large};
     position: relative;
     overflow: hidden;
-
-    &::after {
-        content: "";
-        position: absolute;
-        top: 0; left: 0; right: 0; bottom: 0;
-        background: url('https://www.transparenttextures.com/patterns/cubes.png');
-        opacity: 0.05;
-    }
 `;
 
 const HeroTitle = styled.h1`
-    color: white;
-    font-size: 3.5rem;
+    color: ${colors.text.primary};
+    font-size: 3em;
     margin-bottom: 15px;
-    font-weight: 800;
-    letter-spacing: -1px;
-    position: relative;
-    z-index: 1;
+    font-weight: 700;
 `;
 
 const HeroSubtitle = styled.p`
-    color: rgba(255, 255, 255, 0.9);
-    font-size: 1.25rem;
-    margin-bottom: 40px;
-    max-width: 600px;
-    margin-left: auto;
-    margin-right: auto;
-    position: relative;
-    z-index: 1;
+    color: ${colors.text.secondary};
+    font-size: 1.3em;
+    margin-bottom: 30px;
+    line-height: 1.6;
 `;
 
-const SearchWrapper = styled.div`
-    position: relative;
-    max-width: 650px;
+const SearchBar = styled.div`
+    max-width: 600px;
     margin: 0 auto;
-    z-index: 1;
+    position: relative;
 `;
 
 const SearchInput = styled.input`
     width: 100%;
-    padding: 20px 30px;
-    border: none;
-    border-radius: 100px;
-    font-size: 1.1rem;
-    background: white;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    padding: 18px 24px;
+    padding-right: 120px;
+    border: 3px solid ${colors.border.medium};
+    border-radius: 50px;
+    font-size: 1.1em;
     transition: all 0.3s ease;
+    background: ${colors.background.card};
+    color: ${colors.text.primary};
+    box-shadow: ${colors.shadows.medium};
 
     &:focus {
         outline: none;
-        box-shadow: 0 10px 30px rgba(255, 107, 53, 0.3);
-        transform: translateY(-2px);
+        border-color: ${colors.accent.orange};
+        box-shadow: ${colors.shadows.gold};
     }
+
+    &::placeholder {
+        color: ${colors.text.muted};
+    }
+`;
+
+const SearchButton = styled.button`
+    position: absolute;
+    right: 5px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: ${colors.gradients.accent};
+    color: ${colors.text.white};
+    border: none;
+    padding: 12px 28px;
+    border-radius: 50px;
+    cursor: pointer;
+    font-size: 1em;
+    font-weight: 600;
+    transition: all 0.3s ease;
+
+    &:hover {
+        transform: translateY(-50%) scale(1.05);
+        box-shadow: ${colors.shadows.accentHover};
+    }
+`;
+
+const CategorySection = styled.div`
+    margin-bottom: 50px;
 `;
 
 const SectionTitle = styled.h2`
     color: ${colors.text.primary};
-    font-size: 2rem;
-    margin: 40px 0 25px 0;
+    font-size: 2em;
+    margin-bottom: 25px;
     font-weight: 700;
     display: flex;
     align-items: center;
-    gap: 15px;
-`;
-
-const CategoryBar = styled.div`
-    display: flex;
     gap: 12px;
-    margin-bottom: 35px;
-    overflow-x: auto;
-    padding: 5px 5px 15px 5px;
-    scrollbar-width: none;
-    &::-webkit-scrollbar { display: none; }
 `;
 
-const CategoryButton = styled.button`
-    padding: 12px 24px;
-    border-radius: 100px;
-    border: 1px solid ${props => props.$active ? 'transparent' : colors.border.light};
-    background: ${props => props.$active ? colors.gradients.accent : 'white'};
-    color: ${props => props.$active ? 'white' : colors.text.primary};
+const CategoriesGrid = styled.div`
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 20px;
+    margin-bottom: 40px;
+`;
+
+const CategoryCard = styled.div`
+    background: ${colors.background.card};
+    border-radius: 16px;
+    padding: 30px 20px;
+    text-align: center;
     cursor: pointer;
-    font-weight: 600;
-    box-shadow: ${props => props.$active ? '0 4px 15px rgba(255, 107, 53, 0.3)' : '0 2px 5px rgba(0,0,0,0.05)'};
-    white-space: nowrap;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: all 0.3s ease;
+    border: 2px solid ${colors.border.light};
+    box-shadow: ${colors.shadows.small};
 
     &:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 6px 20px rgba(0,0,0,0.1);
-        border-color: ${props => !props.$active && colors.accent.orange};
+        transform: translateY(-8px);
+        box-shadow: ${colors.shadows.large};
+        border-color: ${colors.accent.orange};
+        background: ${colors.gradients.card};
     }
 `;
 
-const RestaurantGrid = styled.div`
+const CategoryIcon = styled.div`
+    font-size: 3em;
+    margin-bottom: 15px;
+`;
+
+const CategoryName = styled.div`
+    color: ${colors.text.primary};
+    font-size: 1.1em;
+    font-weight: 600;
+`;
+
+const CategoryCount = styled.div`
+    color: ${colors.text.light};
+    font-size: 0.9em;
+    margin-top: 5px;
+`;
+
+const FeaturedSection = styled.div`
+    margin-bottom: 50px;
+`;
+
+const RestaurantsGrid = styled.div`
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
-    gap: 35px;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 25px;
 `;
 
 const RestaurantCard = styled.div`
-    background: white;
-    border-radius: 24px;
+    background: ${colors.background.card};
+    border-radius: 16px;
     overflow: hidden;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.05);
-    border: 1px solid ${colors.border.light};
     cursor: pointer;
-    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    position: relative;
+    transition: all 0.3s ease;
+    border: 2px solid ${colors.border.light};
+    box-shadow: ${colors.shadows.small};
 
     &:hover {
-        transform: translateY(-12px);
-        box-shadow: 0 20px 40px rgba(0,0,0,0.12);
+        transform: translateY(-8px);
+        box-shadow: ${colors.shadows.large};
+        border-color: ${colors.accent.orange};
     }
 `;
 
-const CardImage = styled.div`
-    height: 180px;
-    background: ${colors.gradients.primary || 'linear-gradient(45deg, #f3f4f6, #e5e7eb)'};
+const RestaurantImage = styled.div`
+    height: 200px;
+    background: ${props => props.$gradient || colors.gradients.primary};
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 4rem;
+    font-size: 4em;
     position: relative;
-
-    &::after {
-        content: "⭐ 4.8";
-        position: absolute;
-        top: 15px;
-        right: 15px;
-        background: white;
-        padding: 5px 12px;
-        border-radius: 100px;
-        font-size: 0.8rem;
-        font-weight: 700;
-        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-    }
 `;
 
-const CardContent = styled.div`
-    padding: 24px;
-
-    .klass {
-        color: ${colors.accent.orange};
-        font-weight: 700;
-        font-size: 0.7rem;
-        text-transform: uppercase;
-        letter-spacing: 1.5px;
-        margin-bottom: 8px;
-    }
-
-    h3 {
-        margin: 0 0 12px 0;
-        font-size: 1.5rem;
-        color: ${colors.text.primary};
-        font-weight: 700;
-    }
-`;
-
-const InfoRow = styled.div`
+const FavoriteButton = styled.button`
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: ${colors.background.card};
+    border: none;
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 1.3em;
     display: flex;
     align-items: center;
-    gap: 15px;
+    justify-content: center;
+    transition: all 0.3s ease;
+    box-shadow: ${colors.shadows.small};
+
+    &:hover {
+        transform: scale(1.1);
+        box-shadow: ${colors.shadows.medium};
+    }
+`;
+
+const RestaurantContent = styled.div`
+    padding: 25px;
+`;
+
+const RestaurantHeader = styled.div`
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 12px;
+`;
+
+const RestaurantName = styled.h3`
+    color: ${colors.text.primary};
+    font-size: 1.4em;
+    font-weight: 700;
+    margin-bottom: 5px;
+`;
+
+const CuisineTag = styled.span`
+    background: ${colors.accent.orange};
+    color: ${colors.text.white};
+    padding: 5px 12px;
+    border-radius: 15px;
+    font-size: 0.8em;
+    font-weight: 600;
+`;
+
+const RestaurantInfo = styled.div`
+    color: ${colors.text.secondary};
+    font-size: 0.95em;
+    margin: 8px 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+`;
+
+const RestaurantFooter = styled.div`
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     margin-top: 15px;
     padding-top: 15px;
-    border-top: 1px solid #f0f0f0;
-    color: ${colors.text.light};
-    font-size: 0.85rem;
+    border-top: 2px solid ${colors.border.light};
 `;
 
-const KochstilBadge = styled.span`
-    background: #fff5f2;
+const Rating = styled.div`
+    display: flex;
+    align-items: center;
+    gap: 6px;
     color: ${colors.accent.orange};
-    padding: 6px 12px;
-    border-radius: 8px;
-    font-size: 0.75rem;
-    font-weight: 600;
-    display: inline-block;
-    margin-right: 8px;
-    margin-bottom: 8px;
-    border: 1px solid rgba(255, 107, 53, 0.1);
+    font-weight: 700;
+    font-size: 1.1em;
 `;
 
-// --- HAUPTKOMPONENTE
+const DeliveryTime = styled.div`
+    color: ${colors.text.light};
+    font-size: 0.9em;
+    font-weight: 600;
+`;
+
+const PromoSection = styled.div`
+    background: ${colors.gradients.accent};
+    border-radius: 16px;
+    padding: 40px;
+    margin-bottom: 40px;
+    text-align: center;
+    color: ${colors.text.white};
+    box-shadow: ${colors.shadows.gold};
+`;
+
+const PromoTitle = styled.h2`
+    font-size: 2em;
+    margin-bottom: 15px;
+    font-weight: 700;
+`;
+
+const PromoText = styled.p`
+    font-size: 1.2em;
+    margin-bottom: 20px;
+`;
+
+const PromoButton = styled.button`
+    background: ${colors.text.white};
+    color: ${colors.accent.orange};
+    border: none;
+    padding: 14px 32px;
+    border-radius: 25px;
+    cursor: pointer;
+    font-size: 1.1em;
+    font-weight: 700;
+    transition: all 0.3s ease;
+    box-shadow: ${colors.shadows.medium};
+
+    &:hover {
+        transform: translateY(-3px);
+        box-shadow: ${colors.shadows.large};
+    }
+`;
+
+// Mock-Daten
+const categories = [
+    { name: 'Italienisch', icon: '🍕', count: 42 },
+    { name: 'Japanisch', icon: '🍣', count: 28 },
+    { name: 'Amerikanisch', icon: '🍔', count: 35 },
+    { name: 'Französisch', icon: '🥐', count: 18 },
+    { name: 'Chinesisch', icon: '🥡', count: 31 },
+    { name: 'Indisch', icon: '🍛', count: 22 },
+];
+
+const featuredRestaurants = [
+    {
+        id: 1,
+        name: 'Bella Italia',
+        cuisine: 'Italienisch',
+        rating: 4.8,
+        deliveryTime: '25-35 Min',
+        distance: '2.3 km',
+        icon: '🍕',
+        gradient: colors.gradients.luxury,
+        isFavorite: true
+    },
+    {
+        id: 2,
+        name: 'Sushi Heaven',
+        cuisine: 'Japanisch',
+        rating: 4.9,
+        deliveryTime: '30-40 Min',
+        distance: '3.1 km',
+        icon: '🍣',
+        gradient: colors.gradients.luxury,
+        isFavorite: false
+    },
+    {
+        id: 3,
+        name: 'Burger Palace',
+        cuisine: 'Amerikanisch',
+        rating: 4.6,
+        deliveryTime: '20-30 Min',
+        distance: '1.8 km',
+        icon: '🍔',
+        gradient: colors.gradients.luxury,
+        isFavorite: false
+    },
+    {
+        id: 4,
+        name: 'Le Bistro',
+        cuisine: 'Französisch',
+        rating: 4.7,
+        deliveryTime: '35-45 Min',
+        distance: '4.2 km',
+        icon: '🥐',
+        gradient: colors.gradients.luxury,
+        isFavorite: true
+    },
+];
 
 function KundeHome() {
     const navigate = useNavigate();
-    const [restaurants, setRestaurants] = useState([]);
-    const [recentOrders, setRecentOrders] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [filter, setFilter] = useState('Alle');
     const [searchQuery, setSearchQuery] = useState('');
+    const [favorites, setFavorites] = useState([1, 4]);
 
-    const TEST_KUNDEN_ID = 20;
-
-    const getDeliveryTime = (restaurantId) => {
-        const seed = restaurantId * 7;
-        const min = 15 + (seed % 20);
-        return `${min}-${min + 10} Min`;
+    const handleSearch = () => {
+        if (searchQuery.trim()) {
+            navigate(`/kunde/restaurants?search=${searchQuery}`);
+        }
     };
 
-    useEffect(() => {
-        const loadDashboardData = async () => {
-            setLoading(true);
-            try {
-                const [resData, orderData] = await Promise.all([
-                    restaurantService.getAll(),
-                    bestellungService.getByKunde(TEST_KUNDEN_ID)
-                ]);
-                setRestaurants(resData || []);
-                setRecentOrders(Array.isArray(orderData) ? orderData.slice(0, 4) : []);
-            } catch (err) {
-                console.error("Datenladefehler:", err);
-            } finally {
-                setLoading(false);
-            }
-        };
-        loadDashboardData();
-    }, []);
+    const handleCategoryClick = (category) => {
+        navigate(`/kunde/restaurants?cuisine=${category}`);
+    };
 
-    const categories = ['Alle', ...new Set(restaurants.map(r => r.klassifizierung).filter(Boolean))];
-    categories.sort((a, b) => {
-        if (a === 'Alle') return -1;
-        if (b === 'Alle') return 1;
-        return (parseInt(a.match(/\d+/) || 0)) - (parseInt(b.match(/\d+/) || 0));
-    });
-
-    const filteredRestaurants = restaurants.filter(res => {
-        const matchesCategory = filter === 'Alle' || res.klassifizierung === filter;
-        const searchLower = searchQuery.toLowerCase();
-        const matchesName = res.name.toLowerCase().includes(searchLower);
-        const matchesKochstil = res.kochstile?.some(stil => stil.kochstil.toLowerCase().includes(searchLower));
-        return matchesCategory && (searchQuery === '' || matchesName || matchesKochstil);
-    });
-
-    if (loading) return (
-        <Container style={{display: 'flex', justifyContent: 'center', alignItems: 'center'}}>
-            <div style={{textAlign: 'center'}}>
-                <span style={{fontSize: '3rem'}}>🍽️</span>
-                <p style={{marginTop: '20px', fontWeight: '600', color: colors.text.light}}>GaumenGalopp wird vorbereitet...</p>
-            </div>
-        </Container>
-    );
+    const toggleFavorite = (restaurantId, e) => {
+        e.stopPropagation();
+        setFavorites(prev => 
+            prev.includes(restaurantId) 
+                ? prev.filter(id => id !== restaurantId)
+                : [...prev, restaurantId]
+        );
+    };
 
     return (
         <Container>
             <HeroSection>
-                <HeroTitle>Hungrig auf Exzellenz?</HeroTitle>
-                <HeroSubtitle>Entdecke die besten Restaurants in deiner Umgebung und lass es dir blitzschnell liefern.</HeroSubtitle>
-                <SearchWrapper>
+                <HeroTitle> Willkommen bei GaumenGalopp</HeroTitle>
+                <HeroSubtitle>
+                    Entdecke die besten Restaurants in deiner Nähe und bestelle dein Lieblingsessen
+                </HeroSubtitle>
+                <SearchBar>
                     <SearchInput
-                        placeholder="Nach Restaurant oder Küche suchen..."
+                        type="text"
+                        placeholder="Restaurant, Küche oder Gericht suchen..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
+                        onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
                     />
-                </SearchWrapper>
+                    <SearchButton onClick={handleSearch}>🔍 Suchen</SearchButton>
+                </SearchBar>
             </HeroSection>
 
-            <SectionTitle>
-                Küchen entdecken
-                {searchQuery && (
-                    <span style={{ fontSize: '0.9rem', color: colors.accent.orange, fontWeight: '500', marginLeft: 'auto' }}>
-                        {filteredRestaurants.length} Treffer
-                    </span>
-                )}
-            </SectionTitle>
+            <CategorySection>
+                <SectionTitle> Küchen entdecken</SectionTitle>
+                <CategoriesGrid>
+                    {categories.map((category, index) => (
+                        <CategoryCard 
+                            key={index}
+                            onClick={() => handleCategoryClick(category.name)}
+                        >
+                            <CategoryIcon>{category.icon}</CategoryIcon>
+                            <CategoryName>{category.name}</CategoryName>
+                            <CategoryCount>{category.count} Restaurants</CategoryCount>
+                        </CategoryCard>
+                    ))}
+                </CategoriesGrid>
+            </CategorySection>
 
-            <CategoryBar>
-                {categories.map(cat => (
-                    <CategoryButton
-                        key={cat}
-                        $active={filter === cat}
-                        onClick={() => setFilter(cat)}
-                    >
-                        {cat}
-                    </CategoryButton>
-                ))}
-            </CategoryBar>
-
-            <RestaurantGrid>
-                {filteredRestaurants.map(res => (
-                    <RestaurantCard
-                        key={res.restaurantid}
-                        onClick={() => navigate(`/kunde/restaurants/${res.restaurantid}`)}
-                    >
-                        <CardImage>
-                            {(() => {
-                                // 1. Wir sammeln alle Texte, die etwas über das Essen aussagen könnten
-                                // Wir prüfen die Klassifizierung (als String oder Objekt-Eigenschaft)
-                                const klassText = typeof res.klassifizierung === 'string'
-                                    ? res.klassifizierung
-                                    : (res.klassifizierung?.name || res.klassifizierung?.bezeichnung || "");
-
-                                // Wir nehmen die Kochstile dazu (z.B. "Italienisch", "Vegan")
-                                const stileText = res.kochstile?.map(s => s.kochstil).join(" ") || "";
-
-                                // Alles kombinieren und in Kleinschreibung umwandeln für die Suche
-                                const fullInfo = `${klassText} ${stileText}`.toLowerCase();
-
-                                // 2. Zuordnung der Icons basierend auf Stichworten
-                                if (fullInfo.includes('pizza') || fullInfo.includes('ital')) return '🍕';
-                                if (
-                                    fullInfo.includes('fast food') ||
-                                    fullInfo.includes('imbiss') ||
-                                    fullInfo.includes('pommes') ||
-                                    fullInfo.includes('fritten') ||
-                                    fullInfo.includes('snack') ||
-                                    fullInfo.includes('hotdog')
-                                ) return '🍟';
-                                if (fullInfo.includes('burger') || fullInfo.includes('steak') || fullInfo.includes('amerika')) return '🍔';
-                                if (fullInfo.includes('sushi') || fullInfo.includes('japan')) return '🍣';
-                                if (fullInfo.includes('vietnam') || fullInfo.includes('asia') || fullInfo.includes('nudel') || fullInfo.includes('thai')) return '🍜';
-                                if (fullInfo.includes('döner') || fullInfo.includes('türk') || fullInfo.includes('kebab') || fullInfo.includes('orient')) return '🥙';
-                                if (fullInfo.includes('indisch') || fullInfo.includes('curry')) return '🍛';
-                                if (fullInfo.includes('deutsch') || fullInfo.includes('schnitzel') || fullInfo.includes('hausmann')) return '🥩';
-                                if (fullInfo.includes('salat') || fullInfo.includes('vegan') || fullInfo.includes('vegetar')) return '🥗';
-                                if (fullInfo.includes('süß') || fullInfo.includes('eis') || fullInfo.includes('nachtisch') || fullInfo.includes('crepe')) return '🍦';
-                                if (fullInfo.includes('caf') || fullInfo.includes('kaffee') || fullInfo.includes('kuchen')) return '☕';
-
-                                // 3. Absolut sicherer Fallback (Ein Teller mit Besteck)
-                                return '🍽️';
-                            })()}
-                        </CardImage>
-                        <CardContent>
-                            <div className="klass">{res.klassifizierung || 'Gastronomie'}</div>
-                            <h3>{res.name}</h3>
-
-                            <div style={{ minHeight: '40px' }}>
-                                {res.kochstile?.map((stil, idx) => {
-                                    const isHighlighted = searchQuery && stil.kochstil.toLowerCase().includes(searchQuery.toLowerCase());
-                                    return (
-                                        <KochstilBadge
-                                            key={idx}
-                                            style={isHighlighted ? { background: colors.accent.orange, color: 'white' } : {}}
-                                        >
-                                            {stil.kochstil}
-                                        </KochstilBadge>
-                                    );
-                                })}
-                            </div>
-
-                            <div style={{ color: colors.text.light, fontSize: '0.85rem', marginTop: '10px' }}>
-                                📍 {res.adresse ? `${res.adresse.straße}, ${res.adresse.ort}` : 'Adresse unbekannt'}
-                            </div>
-
-                            <InfoRow>
-                                <span>🏎️ <strong>{getDeliveryTime(res.restaurantid)}</strong></span>
-                                <span>•</span>
-                                <span>💳 Kartenzahlung</span>
-                            </InfoRow>
-                        </CardContent>
-                    </RestaurantCard>
-                ))}
-            </RestaurantGrid>
-
-            {filteredRestaurants.length === 0 && (
-                <div style={{ textAlign: 'center', padding: '80px 0', opacity: 0.6 }}>
-                    <div style={{fontSize: '4rem', marginBottom: '20px'}}>🔍</div>
-                    <h3>Keine Ergebnisse gefunden</h3>
-                    <p>Versuche es mit einem anderen Suchbegriff oder Filter.</p>
-                </div>
-            )}
+            <FeaturedSection>
+                <SectionTitle> Beliebte Restaurants</SectionTitle>
+                <RestaurantsGrid>
+                    {featuredRestaurants.map((restaurant) => (
+                        <RestaurantCard
+                            key={restaurant.id}
+                            onClick={() => navigate(`/kunde/restaurants/${restaurant.id}`)}
+                        >
+                            <RestaurantImage $gradient={restaurant.gradient}>
+                                <span>{restaurant.icon}</span>
+                            </RestaurantImage>
+                            <RestaurantContent>
+                                <RestaurantHeader>
+                                    <div>
+                                        <RestaurantName>{restaurant.name}</RestaurantName>
+                                        <CuisineTag>{restaurant.cuisine}</CuisineTag>
+                                    </div>
+                                </RestaurantHeader>
+                                <RestaurantInfo>
+                                    📍 {restaurant.distance}
+                                </RestaurantInfo>
+                                <RestaurantFooter>
+                                    <Rating>
+                                        ⭐ {restaurant.rating}
+                                    </Rating>
+                                    <DeliveryTime>
+                                        🕐 {restaurant.deliveryTime}
+                                    </DeliveryTime>
+                                </RestaurantFooter>
+                            </RestaurantContent>
+                        </RestaurantCard>
+                    ))}
+                </RestaurantsGrid>
+            </FeaturedSection>
         </Container>
     );
 }

@@ -82,6 +82,10 @@ function App() {
                                                 }
                                             />
 
+                                            <Route path="/restaurants/:id/edit/opening" element={<EditOpeningHours />} />
+                                            <Route path="/restaurants/:id/edit/menu" element={<EditMenu />} />
+                                            <Route path="/restaurants/:id/edit" element={<EditRestaurantInfos />} />
+
                                             {/* Kunden Routes - nur für Kunden */}
                                             <Route
                                                 path="/kunde"
