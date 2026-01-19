@@ -1,4 +1,3 @@
-import self
 from sqlalchemy.orm import Session, joinedload
 from typing import List, Optional
 

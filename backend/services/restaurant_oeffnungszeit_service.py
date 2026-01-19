@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session, joinedload
 from models import RestaurantOeffnungszeit, OeffnungszeitVorlage, OeffnungszeitDetail
-from typing import List, Optional, AnyOptional
+from typing import List, Optional, Any
 from datetime import date
 from sqlalchemy.exc import IntegrityError
 
