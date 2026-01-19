@@ -1,10 +1,9 @@
-import React, {useEffect, useState} from 'react';
-import styled from 'styled-components';
-import { useNavigate } from 'react-router-dom';
-import colors from '../theme/colors';
-import {restaurantService} from "../services";
-import { useSearchParams } from 'react-router-dom';
-import kochstilService from '../services/kochstilService';
+import React, { useEffect, useMemo, useState } from "react";
+import styled from "styled-components";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import colors from "../theme/colors";
+import { restaurantService } from "../services";
+import kochstilService from "../services/kochstilService";
 
 const Container = styled.div`
     max-width: 1400px;
@@ -68,107 +67,131 @@ const RestaurantType = styled.span`
     font-weight: 600;
 `;
 
-const Rating = styled.div`
-    color: ${colors.accent.gold};
-    font-size: 1.2em;
-    margin-top: 12px;
-    font-weight: 600;
-`;
-
-const FilterSection = styled.div`
-
-`
+const FilterSection = styled.div``;
 
 function Restaurants() {
     const [restaurants, setRestaurants] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
-    const [searchParams, setSearchParams] = useSearchParams();
     const [allKochstile, setAllKochstile] = useState([]);
     const [selectedKochstil, setSelectedKochstil] = useState(null);
+
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+
+    const [searchParams, setSearchParams] = useSearchParams();
     const navigate = useNavigate();
 
-    useEffect(() => {
-        const load = async () => {
-            const response = await kochstilService.getAll();
-            setAllKochstile(response.data);
+    // Stabiler: tatsächlichen String als Trigger nutzen, nicht das SearchParams-Objekt
+    const cuisineParam = searchParams.get("cuisine");
 
-            // URL-Parameter auslesen
-            const cuisineParam = searchParams.get('cuisine');
-            if (cuisineParam) {
-                const match = response.data.find(
-                    k => k.kochstil.toLowerCase() === cuisineParam.toLowerCase()
-                );
-                if (match) setSelectedKochstil(match.stilid);
-            }
-        };
-        load();
-    }, [searchParams]);
-
-
-    // Navigation zur Edit-Seite mit der Restaurant-ID
     const handleEditRestaurant = (restaurantid) => {
         navigate(`/restaurants/${restaurantid}/edit`);
     };
 
-    //Al the functions that handle updating the Data
     const fetchRestaurants = async () => {
         try {
             setLoading(true);
             setError(null);
-            const data = await restaurantService.getAll();
+
+            const response = await restaurantService.getAll();
+            const data = Array.isArray(response?.data)
+                ? response.data
+                : Array.isArray(response)
+                    ? response
+                    : [];
+
             setRestaurants(data);
-            console.log('Restaurants geladen:', data);
+            console.log("Restaurants geladen:", data);
+            // Debug: hilft sofort zu sehen, ob kochstile wirklich drin sind
+            // console.log("Sample restaurant:", data?.[0]);
+            // console.log("Sample kochstile:", data?.[0]?.kochstile);
         } catch (err) {
-            console.error('Fehler beim Laden:', err);
-            setError('Fehler beim Laden der Restaurants. Bitte versuchen Sie es später erneut.');
+            console.error("Fehler beim Laden:", err);
+            setError("Fehler beim Laden der Restaurants.");
         } finally {
             setLoading(false);
         }
     };
 
-    // Lade Restaurants
+    // Restaurants beim Start laden
     useEffect(() => {
-        const loadRestaurants = async () => {
-            const response = await restaurantService.getAll();
-            setRestaurants(response.data);
-        };
-        loadRestaurants();
+        fetchRestaurants();
     }, []);
 
-    // Filter Restaurants
-    const filteredRestaurants = restaurants.filter(restaurant => {
-        if (!selectedKochstil) return true;
-        return restaurant.kochstile?.some(k => k.stilid === selectedKochstil);
-    });
+    // Kochstile laden + URL->stilid synchronisieren
+    useEffect(() => {
+        const loadKochstile = async () => {
+            try {
+                const response = await kochstilService.getAll();
+                const kochstile = Array.isArray(response?.data) ? response.data : [];
+                setAllKochstile(kochstile);
 
-// Filter-Auswahl
+                if (cuisineParam) {
+                    const match = kochstile.find(
+                        (k) =>
+                            (k.kochstil ?? "").toLowerCase() === cuisineParam.toLowerCase()
+                    );
+                    setSelectedKochstil(match ? Number(match.stilid) : null);
+                } else {
+                    setSelectedKochstil(null);
+                }
+            } catch (e) {
+                console.error("Fehler beim Laden der Kochstile:", e);
+                setAllKochstile([]);
+                setSelectedKochstil(null);
+            }
+        };
+
+        loadKochstile();
+    }, [cuisineParam]);
+
+    const filteredRestaurants = useMemo(() => {
+        const list = Array.isArray(restaurants) ? restaurants : [];
+
+        // Kein Filter aktiv -> alles anzeigen
+        if (selectedKochstil == null) return list;
+
+        // Robust: Number-Vergleich, damit String/Number egal ist
+        return list.filter((restaurant) =>
+            restaurant.kochstile?.some(
+                (k) => Number(k.stilid) === Number(selectedKochstil)
+            )
+        );
+    }, [restaurants, selectedKochstil]);
+
     const handleFilterChange = (stilId) => {
-        setSelectedKochstil(stilId);
-        if (stilId) {
-            const kochstil = allKochstile.find(k => k.stilid === stilId);
+        const normalizedId = stilId == null ? null : Number(stilId);
+        setSelectedKochstil(normalizedId);
+
+        if (normalizedId == null) {
+            setSearchParams({});
+            return;
+        }
+
+        const kochstil = allKochstile.find(
+            (k) => Number(k.stilid) === normalizedId
+        );
+
+        if (kochstil?.kochstil) {
             setSearchParams({ cuisine: kochstil.kochstil });
         } else {
             setSearchParams({});
         }
     };
 
-    // Restaurant löschen
+    // Optional: Delete-Handler bleibt, auch wenn du aktuell keinen Button nutzt
     const handleDelete = async (id, name) => {
         if (window.confirm(`Möchten Sie das Restaurant "${name}" wirklich löschen?`)) {
             try {
                 await restaurantService.delete(id);
-                console.log('Restaurant gelöscht:', id);
-                // Liste neu laden
+                console.log("Restaurant gelöscht:", id);
                 await fetchRestaurants();
             } catch (err) {
-                console.error('Fehler beim Löschen:', err);
-                alert('Fehler beim Löschen des Restaurants');
+                console.error("Fehler beim Löschen:", err);
+                alert("Fehler beim Löschen des Restaurants");
             }
         }
     };
 
-    // Anzeige während des Ladens
     if (loading) {
         return (
             <Container>
@@ -177,14 +200,11 @@ function Restaurants() {
         );
     }
 
-    // Fehleranzeige
     if (error) {
         return (
             <Container>
                 <div>{error}</div>
-                <button onClick={fetchRestaurants}>
-                    Erneut versuchen
-                </button>
+                <button onClick={fetchRestaurants}>Erneut versuchen</button>
             </Container>
         );
     }
@@ -192,29 +212,34 @@ function Restaurants() {
     return (
         <Container>
             <Header>Unsere Ultra High Quality Arschgeilen Restaurants</Header>
+
             <FilterSection>
                 <button
                     onClick={() => handleFilterChange(null)}
                     style={{
-                        backgroundColor: !selectedKochstil ? '#3498db' : '#ecf0f1',
-                        color: !selectedKochstil ? 'white' : '#333'
+                        backgroundColor: selectedKochstil == null ? "#3498db" : "#ecf0f1",
+                        color: selectedKochstil == null ? "white" : "#333",
                     }}
                 >
                     Alle ({restaurants.length})
                 </button>
 
-                {allKochstile.map(k => {
-                    const count = restaurants.filter(r =>
-                        r.kochstile?.some(rk => rk.stilid === k.stilid)
+                {(allKochstile ?? []).map((k) => {
+                    const count = (restaurants ?? []).filter((r) =>
+                        r.kochstile?.some((rk) => Number(rk.stilid) === Number(k.stilid))
                     ).length;
+
+                    const isActive =
+                        selectedKochstil != null &&
+                        Number(selectedKochstil) === Number(k.stilid);
 
                     return (
                         <button
                             key={k.stilid}
                             onClick={() => handleFilterChange(k.stilid)}
                             style={{
-                                backgroundColor: selectedKochstil === k.stilid ? '#3498db' : '#ecf0f1',
-                                color: selectedKochstil === k.stilid ? 'white' : '#333'
+                                backgroundColor: isActive ? "#3498db" : "#ecf0f1",
+                                color: isActive ? "white" : "#333",
                             }}
                         >
                             {k.kochstil} ({count})
@@ -222,8 +247,9 @@ function Restaurants() {
                     );
                 })}
             </FilterSection>
+
             <RestaurantGrid>
-                {restaurants.map((restaurant) => (
+                {filteredRestaurants.map((restaurant) => (
                     <RestaurantCard
                         key={restaurant.restaurantid}
                         onClick={() => handleEditRestaurant(restaurant.restaurantid)}
