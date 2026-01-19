@@ -3,6 +3,8 @@ import styled from 'styled-components';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import colors from '../theme/colors';
+import { useState } from 'react';
+import { useLocation } from 'react-router-dom';
 
 const SidebarContainer = styled.div`
     width: 220px;

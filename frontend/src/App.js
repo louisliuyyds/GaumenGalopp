@@ -57,9 +57,6 @@ function App() {
                                             {/* Dashboard */}
                                             <Route path="/" element={<Dashboard />} />
 
-                                            {/* Beispiel-Route */}
-                                            <Route path="/beispiel" element={<Beispiel />} />
-
                                             {/* Restaurant Admin Routes - nur für Restaurants */}
                                             <Route
                                                 path="/neuesRestaurant"
@@ -99,14 +96,6 @@ function App() {
                                                 element={
                                                     <ProtectedRoute requiredType="kunde">
                                                         <Restaurants />
-                                                    </ProtectedRoute>
-                                                }
-                                            />
-                                            <Route
-                                                path="/kunde/bestellungen"
-                                                element={
-                                                    <ProtectedRoute requiredType="kunde">
-                                                        <Bestellung />
                                                     </ProtectedRoute>
                                                 }
                                             />

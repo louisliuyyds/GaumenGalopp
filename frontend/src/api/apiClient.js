@@ -84,6 +84,8 @@ apiClient.interceptors.response.use(
       console.error('Request-Fehler:', error.message);
       return Promise.reject(error);
     }
-);
+  }
+ );
+
 
 export default apiClient;
