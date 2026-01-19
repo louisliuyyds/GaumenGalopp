@@ -1,6 +1,14 @@
+import self
 from sqlalchemy.orm import Session
 from typing import List, Optional
+
+from models import adresse
 from models.adresse import Adresse
+
+from sqlalchemy import func
+from models.restaurant import Restaurant
+from models.kunde import Kunde
+from models.bestellungen import Bestellungen
 
 
 class AdresseService:
@@ -20,18 +28,41 @@ class AdresseService:
         self.db.refresh(adresse)
         return adresse
 
-    def update(self, adresse_id: int, update_data: dict) -> Optional[Adresse]:
+    def _count_address_usage(self, adresse_id: int) -> int:
+        restaurant_count = self.db.query(func.count(Restaurant.restaurantid)) \
+                               .filter(Restaurant.adresseid == adresse_id).scalar() or 0
+        kunde_count = self.db.query(func.count(Kunde.kundenid)) \
+                      .filter(Kunde.adressid == adresse_id).scalar() or 0
+        bestellung_count = self.db.query(func.count(Bestellungen.bestellungid)) \
+                           .filter(Bestellungen.adressid == adresse_id).scalar() or 0
+        return restaurant_count + kunde_count + bestellung_count
+
+
+    def update(self, adresse_id: int, update_data: dict):
+        """Smart Update mit Copy-on-Write"""
         adresse = self.get_by_id(adresse_id)
         if not adresse:
             return None
 
-        for key, value in update_data.items():
-            if value is not None:
-                setattr(adresse, key, value)
+        usage_count = self._count_address_usage(adresse_id)
 
-        self.db.commit()
-        self.db.refresh(adresse)
-        return adresse
+        if usage_count > 1:
+            # 🆕 COPY-ON-WRITE
+            print(f" Adresse {adresse_id} geteilt ({usage_count}) → Neue Adresse")
+            neue_adresse = Adresse(**update_data)
+            self.db.add(neue_adresse)
+            self.db.commit()
+            self.db.refresh(neue_adresse)
+            return neue_adresse
+        else:
+            # ✏️ IN-PLACE UPDATE
+            print(f" Adresse {adresse_id} single-use → In-place Update")
+            for key, value in update_data.items():
+                if value is not None:
+                    setattr(adresse, key, value)
+            self.db.commit()
+            self.db.refresh(adresse)
+            return adresse
 
     def delete(self, adresse_id: int) -> bool:
         """Hard delete -- vllt lieber ganz weg lassen? -- schonmal mit check, ob in Benutzung"""

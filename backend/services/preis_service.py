@@ -9,8 +9,11 @@ class PreisService:
     def get_all(self) -> list[type[Preis]]:
         return self.db.query(Preis).all()
 
-    def get_by_id(self, preisid: int) -> Optional[Preis]:
+    def get_by_preis_id(self, preisid: int) -> Optional[Preis]:
         return self.db.query(Preis).filter(Preis.preisid == preisid).first()
+
+    def get_by_gericht_id(self, gericht_id: int) -> Optional[Preis]:
+        return self.db.query(Preis).filter(Preis.gerichtid == gericht_id,Preis.istaktiv == True).first()
 
     def create(self, preis_data: dict) -> Preis:
         new_preis = Preis(**preis_data)
@@ -20,7 +23,7 @@ class PreisService:
         return new_preis
 
     def update(self, preisid: int, update_data: dict) -> Optional[Preis]:
-        menue = self.get_by_id(preisid)
+        menue = self.get_by_preis_id(preisid)
         if not menue:
             return None
 

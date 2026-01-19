@@ -8,15 +8,19 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import Home from './pages/Dashboard';
 import Dashboard from './pages/Dashboard';
-import Beispiel from "./pages/Beispiel";
-import NeuesRestaurant from "./pages/NeuesRestaurant";
+import NeuesRestaurant from "./pages/Restaurant"
 import RestaurantDetail from "./pages/RestaurantDetail";
 import GerichtDetail from "./pages/GerichtDetail";
 import EditRestaurantInfos from "./pages/EditRestaurantInfos";
 import colors from './theme/colors';
 import Restaurants from "./pages/Restaurant";
-import Bestellung from "./pages/Bestellung";
-import KundeHome from './pages/Kundehome';
+import KundeHome from './pages/KundeHome';
+import Warenkorb from "./pages/Warenkorb";
+import KundeProfil from './pages/KundeProfil';
+import RestaurantProfil from './pages/RestaurantProfil';
+import Bestellhistorie from "./pages/Bestellhistorie";
+import EditOpeningHours from "./pages/EditOpeningHours";
+import EditMenu from "./pages/EditMenu";
 
 const AppContainer = styled.div`
     display: flex;

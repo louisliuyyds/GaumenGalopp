@@ -18,12 +18,39 @@ const oeffnungszeitVorlageService = {
     return await apiClient.get(`/api/oeffnungszeit-vorlagen/${oeffnungszeitId}`);
   },
 
+    /**
+     * Finde Vorlage per Hash-Signatur
+     * GET /api/oeffnungszeit-vorlagen/hash/{hash}
+     */
+    findByHash: async (hash) => {
+        try {
+            const result = await apiClient.get(`/api/oeffnungszeit-vorlagen/hash/${hash}`);
+            return result;
+        } catch (error) {
+            if (error.response?.status === 404) {
+                return null;
+            }
+            throw error;
+        }
+    },
+
+    /**
+     * Erstelle Vorlage mit Hash
+     * POST /api/oeffnungszeit-vorlagen/with-hash
+     */
+    createWithHash: async (vorlageData, detailsList) => {
+        return await apiClient.post('/api/oeffnungszeit-vorlagen/with-hash', {
+            vorlage: vorlageData,
+            details: detailsList
+        });
+    },
+
   /**
    * Neue Öffnungszeit-Vorlage erstellen
    * POST /api/oeffnungszeit-vorlagen
    */
   create: async (vorlageData) => {
-    return await apiClient.post('/api/oeffnungszeit-vorlagen', vorlageData);
+      return await apiClient.post('/api/oeffnungszeit-vorlagen', vorlageData); // OHNE Slash am Ende
   },
 
   /**

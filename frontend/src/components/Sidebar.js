@@ -116,6 +116,30 @@ function Sidebar() {
         logout();
         navigate('/login');
     };
+    const location = useLocation();
+    const [isAdminView, setIsAdminView] = useState(true); // true = Verwaltung, false = Kunde
+
+    // Navigation für Verwaltungsansicht
+    const adminNavItems = [
+        { path: '/', label: 'Dashboard' },
+        { path: '/restaurants', label: 'Restaurants' },
+        { path: '/restaurants/profil', label: 'Restaurant-Profil' },
+        { path: '/neuesRestaurant', label: 'Neues Restaurant' },
+        { path: '/beispiel', label: 'Beispiel' },
+    ];
+
+    // Navigation für Kundenansicht
+    const customerNavItems = [
+        { path: '/kunde', label: 'Home' },
+        { path: '/kunde/bestellungen', label: 'Meine Bestellungen' },
+        { path: '/kunde/restaurants', label: 'Restaurants'},
+        { path: '/kunde/warenkorb', label: 'Warenkorb' },
+        { path: '/bestellhistorie', label: 'Bestellhistorie' },
+        { path: '/kunde/favoriten', label: 'Favoriten' },
+        { path: '/kunde/profil', label: 'Profil' },
+    ];
+
+    const currentNavItems = isAdminView ? adminNavItems : customerNavItems;
 
     return (
         <SidebarContainer>

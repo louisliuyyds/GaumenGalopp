@@ -18,6 +18,20 @@ def get_all_kritikers(db: Session = Depends(get_db)):
     kritikers = service.get_all()
     return kritikers
 
+# GET /api/kritikers/by-kunden/{kunden_id} - Get kritiker by kunden reference
+@router.get("/by-kunden/{kunden_id}", response_model=KritikerResponse)
+def get_kritiker_by_kunden(kunden_id: int, db: Session = Depends(get_db)):
+    service = KritikerService(db)
+    kritiker = service.get_by_kunden_id(kunden_id)
+
+    if not kritiker:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Kritiker with kunden id {kunden_id} not found"
+        )
+
+    return kritiker
+
 # GET /api/kritikers/{id} - Get specific kritiker
 @router.get("/{kritiker_id}", response_model=KritikerResponse)
 def get_kritiker(kritiker_id: int, db: Session = Depends(get_db)):

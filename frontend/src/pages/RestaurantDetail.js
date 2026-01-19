@@ -1,327 +1,340 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { useParams, useNavigate } from 'react-router-dom';
 import colors from '../theme/colors';
-import MenuSection from "../components/MenuSection";
+import MenuSection from '../components/MenuSection';
+import restaurantService from '../services/restaurantService';
+import restaurantOeffnungszeitService from '../services/restaurantOeffnungszeitService';
+import oeffnungszeitDetailService from '../services/oeffnungszeitDetailService';
+
+// --- STYLED COMPONENTS ---
 
 const Container = styled.div`
-    max-width: 1400px;
+    max-width: 1200px;
     margin: 0 auto;
+    padding: 40px 20px;
+    font-family: 'Inter', sans-serif;
 `;
 
 const BackButton = styled.button`
-    background: ${colors.gradients.primary};
-    color: ${colors.text.white};
-    border: none;
-    padding: 12px 24px;
-    border-radius: 8px;
+    background: white;
+    color: ${colors.text.primary};
+    border: 1px solid ${colors.border.light};
+    padding: 10px 20px;
+    border-radius: 12px;
     cursor: pointer;
-    margin-bottom: 30px;
-    font-size: 1em;
+    margin-bottom: 25px;
     font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
     transition: all 0.3s ease;
-    box-shadow: ${colors.shadows.primarySmall};
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
 
     &:hover {
-        transform: translateY(-2px);
-        box-shadow: ${colors.shadows.primaryMedium};
+        background: #f8f9fa;
+        transform: translateX(-5px);
+        border-color: ${colors.accent.orange};
     }
 `;
 
 const HeaderSection = styled.div`
-    background: ${colors.gradients.primary};
-    border-radius: 16px;
-    padding: 40px;
-    margin-bottom: 30px;
-    color: ${colors.text.white};
-    box-shadow: ${colors.shadows.medium};
+    background: linear-gradient(135deg, #8a6d3b 0%, #b8860b 100%);
+    box-shadow: inset 0 0 50px rgba(0,0,0,0.1), 0 10px 30px rgba(0,0,0,0.1);
+    border-radius: 24px;
+    padding: 60px 50px;
+    margin-bottom: 40px;
+    color: #ffffff;
     position: relative;
-`;
+    overflow: hidden;
 
-const EditRestaurantButton = styled.button`
-    position: absolute;
-    top: 20px;
-    right: 20px;
-    background: ${colors.overlay.medium};
-    color: ${colors.text.white};
-    border: 2px solid ${colors.text.white};
-    padding: 10px 20px;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 0.95em;
-    font-weight: 600;
-    transition: all 0.3s ease;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-
-    &:hover {
-        background: ${colors.text.white};
-        color: ${colors.primary.dark};
-        transform: translateY(-2px);
-        box-shadow: ${colors.shadows.medium};
+    &::after {
+        content: "";
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+        pointer-events: none;
     }
 `;
 
-const RestaurantName = styled.h1`
-    font-size: 2.5em;
-    margin-bottom: 15px;
-    font-weight: 700;
-`;
-
-const TagsContainer = styled.div`
+const BadgeContainer = styled.div`
     display: flex;
     gap: 10px;
-    align-items: center;
     flex-wrap: wrap;
-    margin-bottom: 20px;
+    margin: 20px 0;
 `;
 
-const CuisineTag = styled.span`
-    background: ${colors.gradients.accent};
-    color: ${colors.text.white};
-    padding: 8px 16px;
-    border-radius: 20px;
-    font-size: 0.95em;
+const KochstilBadge = styled.span`
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(5px);
+    color: white;
+    padding: 8px 18px;
+    border-radius: 100px;
+    font-size: 0.85rem;
     font-weight: 600;
-`;
-
-const Rating = styled.div`
-    font-size: 1.3em;
-    color: ${colors.accent.gold};
-`;
-
-const PriceTag = styled.span`
-    background: ${colors.overlay.medium};
-    color: ${colors.text.white};
-    padding: 8px 16px;
-    border-radius: 20px;
-    font-size: 0.95em;
-    font-weight: 600;
-`;
-
-const Description = styled.p`
-    font-size: 1.1em;
-    line-height: 1.6;
-    color: ${colors.primary.light};
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    display: flex;
+    align-items: center;
+    gap: 6px;
 `;
 
 const ContentGrid = styled.div`
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1.2fr 0.8fr;
     gap: 30px;
-    margin-bottom: 40px;
-
-    @media (max-width: 968px) {
-        grid-template-columns: 1fr;
-    }
+    margin-bottom: 50px;
+    @media (max-width: 968px) { grid-template-columns: 1fr; }
 `;
 
 const InfoCard = styled.div`
-    background: ${colors.background.card};
-    border-radius: 12px;
-    padding: 30px;
-    box-shadow: ${colors.shadows.medium};
+    background: white;
+    border-radius: 24px;
+    padding: 35px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+    border: 1px solid ${colors.border.light};
+    transition: transform 0.3s ease;
+
+    &:hover {
+        transform: translateY(-5px);
+    }
 `;
 
 const CardTitle = styled.h2`
     color: ${colors.text.primary};
-    font-size: 1.5em;
-    margin-bottom: 20px;
-    padding-bottom: 10px;
-    border-bottom: 3px solid ${colors.accent.orange};
-    display: inline-block;
+    font-size: 1.4rem;
+    margin-bottom: 25px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+    &::after {
+        content: "";
+        flex: 1;
+        height: 1px;
+        background: #eee;
+    }
 `;
 
 const InfoRow = styled.div`
     display: flex;
-    margin: 15px 0;
+    justify-content: space-between;
     align-items: flex-start;
+    padding: 15px 0;
+    border-bottom: 1px solid #f5f5f5;
+    &:last-child { border-bottom: none; }
 `;
 
 const Label = styled.span`
     font-weight: 600;
-    min-width: 140px;
-    color: ${colors.text.primary};
-    font-size: 1em;
+    color: ${colors.text.secondary};
+    display: flex;
+    align-items: center;
+    gap: 8px;
 `;
 
 const Value = styled.span`
-    color: ${colors.text.secondary};
-    flex: 1;
+    color: ${colors.text.primary};
+    text-align: right;
+    font-weight: 500;
 `;
 
+const LoadingState = styled.div`
+    text-align: center;
+    padding: 150px 20px;
+    font-size: 1.5rem;
+    color: ${colors.text.light};
+`;
 
-// Mock-Daten bleiben gleich...
-const mockRestaurants = [
-    {
-        id: 1,
-        name: "Bella Italia",
-        cuisine: "Italienisch",
-        address: "Hauptstraße 15, 10115 Berlin",
-        phone: "+49 30 12345678",
-        email: "info@bella-italia.de",
-        rating: 4.5,
-        priceRange: "€€",
-        openingHours: "Mo-So: 11:00 - 23:00",
-        description: "Authentische italienische Küche im Herzen Berlins. Unsere Pizza wird im traditionellen Steinofen gebacken und unsere Pasta ist hausgemacht.",
-        specialties: "Pizza, Pasta, Antipasti",
-        capacity: 80,
-        chef: "Giovanni Rossi",
-        gerichte: [
-            {
-                id: 1,
-                name: "Pizza Margherita",
-                description: "Klassische Pizza mit Tomatensauce, Mozzarella und frischem Basilikum",
-                price: 9.50,
-                category: "Hauptgericht"
-            },
-            {
-                id: 2,
-                name: "Spaghetti Carbonara",
-                description: "Spaghetti mit Speck, Ei, Parmesan und schwarzem Pfeffer",
-                price: 12.90,
-                category: "Hauptgericht"
-            },
-            {
-                id: 3,
-                name: "Tiramisu",
-                description: "Italienisches Dessert mit Mascarpone, Löffelbiskuits und Espresso",
-                price: 6.50,
-                category: "Dessert"
-            },
-            {
-                id: 4,
-                name: "Bruschetta",
-                description: "Geröstetes Brot mit Tomaten, Knoblauch, Basilikum und Olivenöl",
-                price: 7.90,
-                category: "Vorspeise"
-            }
-        ]
-    },
-    {
-        id: 2,
-        name: "Sushi Heaven",
-        cuisine: "Japanisch",
-        address: "Friedrichstraße 42, 10117 Berlin",
-        phone: "+49 30 23456789",
-        email: "kontakt@sushi-heaven.de",
-        rating: 4.8,
-        priceRange: "€€€",
-        openingHours: "Di-So: 12:00 - 22:00",
-        description: "Frisches Sushi und authentische japanische Spezialitäten. Alle Zutaten werden täglich frisch geliefert.",
-        specialties: "Sushi, Sashimi, Ramen",
-        capacity: 50,
-        chef: "Takeshi Yamamoto",
-        gerichte: [
-            {
-                id: 5,
-                name: "California Roll",
-                description: "Inside-Out-Roll mit Surimi, Avocado und Gurke",
-                price: 8.90,
-                category: "Sushi"
-            },
-            {
-                id: 6,
-                name: "Lachs Sashimi",
-                description: "6 Stück frischer norwegischer Lachs",
-                price: 14.50,
-                category: "Sashimi"
-            },
-            {
-                id: 7,
-                name: "Miso Suppe",
-                description: "Traditionelle japanische Suppe mit Tofu und Algen",
-                price: 4.50,
-                category: "Vorspeise"
-            }
-        ]
-    },
-];
+// --- KONSTANTEN ---
+
+const WOCHENTAGE = ['Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag', 'Sonntag'];
+
+// --- HAUPTKOMPONENTE ---
 
 function RestaurantDetail() {
     const { id } = useParams();
     const navigate = useNavigate();
 
-    const restaurant = mockRestaurants.find(r => r.id === parseInt(id));
+    const [restaurant, setRestaurant] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [openingHours, setOpeningHours] = useState([]);
+    const [loadingHours, setLoadingHours] = useState(true);
 
-    if (!restaurant) {
+    // Restaurant-Daten laden
+    useEffect(() => {
+        const fetchRestaurantData = async () => {
+            try {
+                setLoading(true);
+                const data = await restaurantService.getById(id);
+                setRestaurant(data);
+            } catch (err) {
+                console.error("❌ Ladefehler:", err);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchRestaurantData();
+    }, [id]);
+
+    // Öffnungszeiten laden
+    useEffect(() => {
+        const loadOpeningHours = async () => {
+            try {
+                setLoadingHours(true);
+
+                const assignments = await restaurantOeffnungszeitService.getActiveForRestaurant(id);
+
+                if (assignments && assignments.length > 0) {
+                    const vorlageId = assignments[0].oeffnungszeitid;
+                    const details = await oeffnungszeitDetailService.getByVorlageId(vorlageId);
+
+                    if (details && details.length > 0) {
+                        const sorted = [...details].sort((a, b) => a.wochentag - b.wochentag);
+                        setOpeningHours(sorted);
+                    }
+                }
+            } catch (err) {
+                console.error('❌ Fehler beim Laden der Öffnungszeiten:', err);
+            } finally {
+                setLoadingHours(false);
+            }
+        };
+
+        if (id) loadOpeningHours();
+    }, [id]);
+
+    if (loading) {
         return (
             <Container>
-                <BackButton onClick={() => navigate('/restaurants')}>
-                    ← Zurück zur Übersicht
-                </BackButton>
-                <InfoCard>
-                    <h2>Restaurant nicht gefunden</h2>
-                </InfoCard>
+                <LoadingState>
+                    <div style={{fontSize: '3rem', marginBottom: '20px'}}>🍳</div>
+                    Dein Genuss-Moment wird vorbereitet...
+                </LoadingState>
             </Container>
         );
     }
 
-    const handleEditRestaurant = () => {
-        navigate(`/restaurants/${id}/edit`);
+    if (!restaurant) {
+        return (
+            <Container>
+                <BackButton onClick={() => navigate('/kunde')}>← Zurück</BackButton>
+                <div style={{textAlign: 'center', padding: '50px'}}>
+                    <h2>Restaurant nicht gefunden</h2>
+                </div>
+            </Container>
+        );
+    }
+
+    const totalDishes = restaurant.menue?.reduce((sum, menu) => sum + (menu.gericht?.length || 0), 0) || 0;
+
+    const renderAddress = () => {
+        if (!restaurant.adresse) return "Wird geladen...";
+        const { straße, hausnummer, postleitzahl, ort } = restaurant.adresse;
+        if (!straße && !ort) return "Adresse nicht verfügbar";
+        return (
+            <div style={{lineHeight: '1.5'}}>
+                {straße} {hausnummer}<br/>
+                <span style={{color: colors.text.light}}>{postleitzahl} {ort}</span>
+            </div>
+        );
     };
 
     return (
         <Container>
-            <BackButton onClick={() => navigate('/restaurants')}>
-                ← Zurück zur Übersicht
+            <BackButton onClick={() => navigate('/kunde')}>
+                <span>←</span> Zurück zur Übersicht
             </BackButton>
 
             <HeaderSection>
-                <EditRestaurantButton onClick={handleEditRestaurant}>
-                    Restaurant bearbeiten
-                </EditRestaurantButton>
+                <h1 style={{ fontSize: '3.2rem', marginBottom: '10px', fontWeight: '800' }}>
+                    {restaurant.name}
+                </h1>
 
-                <RestaurantName>{restaurant.name}</RestaurantName>
-                <TagsContainer>
-                    <CuisineTag>{restaurant.cuisine}</CuisineTag>
-                    <PriceTag>{restaurant.priceRange}</PriceTag>
-                    <Rating>⭐ {restaurant.rating} / 5.0</Rating>
-                </TagsContainer>
-                <Description>{restaurant.description}</Description>
+                <BadgeContainer>
+                    {restaurant.kochstile?.map((stil, idx) => (
+                        <KochstilBadge key={idx}>
+                            🍳 {stil.kochstil}
+                        </KochstilBadge>
+                    ))}
+                    <KochstilBadge style={{background: colors.accent.orange, border: 'none'}}>
+                        ⭐ 4.9 (Top Rated)
+                    </KochstilBadge>
+                </BadgeContainer>
+
+                <div style={{ display: 'flex', alignItems: 'center', gap: '20px', opacity: 0.9 }}>
+                    <p style={{ fontSize: '1.1rem' }}>
+                        <strong>{restaurant.klassifizierung || 'Premium Gastronomie'}</strong>
+                    </p>
+                    <span>•</span>
+                    <p style={{ fontSize: '1.1rem' }}>
+                        👨‍🍳 Chef: {restaurant.kuechenchef || 'Unser Küchenteam'}
+                    </p>
+                </div>
             </HeaderSection>
 
             <ContentGrid>
                 <InfoCard>
-                    <CardTitle>📞 Kontakt & Standort</CardTitle>
+                    <CardTitle>📍 Standort & Kontakt</CardTitle>
                     <InfoRow>
-                        <Label>📍 Adresse:</Label>
-                        <Value>{restaurant.address}</Value>
+                        <Label>🏠 Adresse</Label>
+                        <Value>{renderAddress()}</Value>
                     </InfoRow>
                     <InfoRow>
-                        <Label>📞 Telefon:</Label>
-                        <Value>{restaurant.phone}</Value>
+                        <Label>📞 Telefon</Label>
+                        <Value>{restaurant.telefon || '+49 (0) 123 456789'}</Value>
                     </InfoRow>
                     <InfoRow>
-                        <Label>✉️ Email:</Label>
-                        <Value>{restaurant.email}</Value>
-                    </InfoRow>
-                    <InfoRow>
-                        <Label>👨‍🍳 Küchenchef:</Label>
-                        <Value>{restaurant.chef}</Value>
+                        <Label>📧 E-Mail</Label>
+                        <Value>{restaurant.email || `info@${restaurant.name.toLowerCase().replace(/\s/g, '')}.de`}</Value>
                     </InfoRow>
                 </InfoCard>
 
                 <InfoCard>
-                    <CardTitle>🕐 Öffnungszeiten & Details</CardTitle>
-                    <InfoRow>
-                        <Label>🕐 Öffnungszeiten:</Label>
-                        <Value>{restaurant.openingHours}</Value>
-                    </InfoRow>
-                    <InfoRow>
-                        <Label>👥 Kapazität:</Label>
-                        <Value>{restaurant.capacity} Personen</Value>
-                    </InfoRow>
-                    <InfoRow>
-                        <Label>🍽️ Spezialitäten:</Label>
-                        <Value>{restaurant.specialties}</Value>
-                    </InfoRow>
+                    <CardTitle>🕐 Öffnungszeiten</CardTitle>
+                    {loadingHours ? (
+                        <InfoRow>
+                            <Value style={{width: '100%', textAlign: 'center', color: colors.text.light}}>
+                                Lade Öffnungszeiten...
+                            </Value>
+                        </InfoRow>
+                    ) : openingHours.length > 0 ? (
+                        openingHours.map((day) => (
+                            <InfoRow key={day.wochentag}>
+                                <Label>{WOCHENTAGE[day.wochentag - 1]}</Label>
+                                <Value style={{
+                                    color: day.ist_geschlossen ? colors.status.error : colors.text.primary,
+                                    fontWeight: day.ist_geschlossen ? '600' : '500'
+                                }}>
+                                    {day.ist_geschlossen
+                                        ? 'Geschlossen'
+                                        : `${day.oeffnungszeit?.slice(0, 5)} - ${day.schliessungszeit?.slice(0, 5)} Uhr`
+                                    }
+                                </Value>
+                            </InfoRow>
+                        ))
+                    ) : (
+                        <InfoRow>
+                            <Value style={{width: '100%', textAlign: 'center', color: colors.text.light}}>
+                                Keine Öffnungszeiten hinterlegt
+                            </Value>
+                        </InfoRow>
+                    )}
                 </InfoCard>
-
             </ContentGrid>
-            <MenuSection restaurant={restaurant} />
 
+            {/* Speisekarte */}
+            <div style={{marginTop: '60px'}}>
+                <div style={{display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '30px'}}>
+                    <span style={{background: '#eee', padding: '5px 15px', borderRadius: '10px', fontSize: '0.9rem', fontWeight: '600'}}>
+                        {totalDishes} Gerichte
+                    </span>
+                </div>
+                <MenuSection restaurant={restaurant} />
+            </div>
         </Container>
     );
 }

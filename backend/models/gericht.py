@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, ForeignKey
+from sqlalchemy import Column, Integer, String, ForeignKey, Boolean
 from sqlalchemy.orm import relationship
 from database import Base
 
@@ -9,6 +9,8 @@ class Gericht(Base):
     name = Column(String(255))
     beschreibung = Column(String)
     kategorie = Column(String(50))
+    ist_aktiv = Column(Boolean, nullable=False, default=True, server_default="true")
+
 
     menue = relationship("Menue", back_populates="gericht")
     labelGericht = relationship("LabelGericht", back_populates="gericht")
@@ -23,5 +25,6 @@ class Gericht(Base):
             "name": self.name,
             "beschreibung": self.beschreibung,
             "kategorie": self.kategorie,
+            "ist_aktiv": self.ist_aktiv,
             "menue": self.menue.to_dict() if self.menue else None
         }

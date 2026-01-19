@@ -1,11 +1,18 @@
+import self
 from sqlalchemy.orm import Session, joinedload
 from typing import List, Optional
+
+from models import kunde
 from models.kunde import Kunde
 from core.security import get_password_hash, verify_password
+from services.adresse_service import AdresseService
+
+
 
 class KundeService:
     def __init__(self, db: Session):
         self.db = db
+        self.adresse_service = AdresseService(db)
 
 # wenn wir eine Detailed Ansicht von den Kunden haben im Frontend (z.B. im Profil)
 # wäre es sinnvoll hier einen JoinedLoad zu machen
@@ -19,6 +26,22 @@ class KundeService:
             .options(joinedload(Kunde.adresse)) \
             .filter(Kunde.kundenid == kunden_id) \
             .first()
+    
+    def get_kuerzel_by_id(self, kunden_id: int) -> Optional[str]:
+        """Hole nur das Namenskürzel eines Kunden"""
+        result = self.db.query(Kunde.namenskuerzel) \
+            .filter(Kunde.kundenid == kunden_id) \
+            .first()
+        return result[0] if result else None
+
+
+    def get_adressid_by_kunden_id(self, kunden_id: int) -> Optional[int]:
+        return (
+            self.db.query(Kunde.adressid)
+            .filter(Kunde.kundenid == kunden_id)
+            .scalar()
+        )
+
 
     def create(self, kunde_data: dict) -> Kunde:
         kunde = Kunde(**kunde_data)
@@ -32,9 +55,16 @@ class KundeService:
         if not kunde:
             return None
 
+        adresse_data = update_data.pop("adresse", None)
+
         for key, value in update_data.items():
             if value is not None:
                 setattr(kunde, key, value)
+
+        if adresse_data and kunde.adresse:
+            for key, value in adresse_data.items():
+                if value is not None:
+                    setattr(kunde.adresse, key, value)
 
         self.db.commit()
         self.db.refresh(kunde)

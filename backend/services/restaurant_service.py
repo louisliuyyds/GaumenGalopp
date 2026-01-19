@@ -1,31 +1,77 @@
-from sqlalchemy.orm import Session
-from typing import List, Optional
+from sqlalchemy.orm import Session, joinedload, with_loader_criteria
 from models.restaurant import Restaurant
+from models.menue import Menue
+from models.gericht import Gericht
+from models.preis import Preis
+from models.adresse import Adresse
+from models.kochstil import Kochstil
+from models.kochstilrestaurant import KochstilRestaurant
+from typing import List, Optional, Any
+from services.adresse_service import AdresseService
 from core.security import get_password_hash, verify_password
 
 
 class RestaurantService:
     def __init__(self, db: Session):
         self.db = db
+        self.adresse_service = AdresseService(db)
 
-    # ===== BASIC CRUD METHODEN =====
 
-    def get_all(self) -> List[Restaurant]:
-        """Hole alle Restaurants"""
-        return self.db.query(Restaurant).all()
+    def get_all(self) -> list[type[Restaurant]]:
+        """Get all restaurants WITH address and kochstil"""
+        return self.db.query(Restaurant).options(
+            joinedload(Restaurant.adresse),
+            joinedload(Restaurant.kochstil)
+            .joinedload(KochstilRestaurant.kochstil)
+        ).all()
 
     def get_by_id(self, restaurant_id: int) -> Optional[Restaurant]:
         """Restaurant nach ID suchen"""
         return self.db.query(Restaurant).filter(Restaurant.restaurantid == restaurant_id).first()
 
-    def get_by_name(self, name: str) -> List[Restaurant]:
-        """Restaurants nach Name suchen (case-insensitive, partial match)"""
+    def get_profile(self, restaurant_id: int) -> Optional[Restaurant]:
+        return (
+            self.db.query(Restaurant)
+            .options(joinedload(Restaurant.adresse))
+            .filter(Restaurant.restaurantid == restaurant_id)
+            .first()
+        )
+    
+    def get_by_name(self, name: str) -> list[type[Restaurant]]:
         return self.db.query(Restaurant).filter(Restaurant.name.ilike(f"%{name}%")).all()
 
     def get_by_klassifizierung(self, klassifizierung: str) -> List[Restaurant]:
         """Restaurants nach Klassifizierung filtern"""
         return self.db.query(Restaurant).filter(Restaurant.klassifizierung == klassifizierung).all()
+    
+        """Get restaurant by ID WITHOUT relationships (basic data only)"""
+        return self.db.query(Restaurant).filter(
+            Restaurant.restaurantid == restaurant_id
+        ).first()
 
+    def get_by_id_with_menu(self, restaurant_id: int) -> Optional[Restaurant]:
+        return (
+            self.db.query(Restaurant)
+            .options(
+                joinedload(Restaurant.adresse),
+                joinedload(Restaurant.kochstil)
+                .joinedload(KochstilRestaurant.kochstil),
+
+                joinedload(Restaurant.menue)
+                .joinedload(Menue.gericht)
+                .joinedload(Gericht.preis),
+
+                #NUR aktive Gerichte laden (wirkt auch für joinedload)
+                with_loader_criteria(
+                    Gericht,
+                    Gericht.ist_aktiv.is_(True),
+                    include_aliases=True
+                )
+            )
+            .filter(Restaurant.restaurantid == restaurant_id)
+            .first()
+        )
+      
     def create(self, restaurant_data: dict) -> Restaurant:
         """
         Restaurant erstellen (ohne Passwort-Hashing)
@@ -37,14 +83,39 @@ class RestaurantService:
         self.db.refresh(restaurant)
         return restaurant
 
-    def update(self, restaurant_id: int, update_data: dict) -> Optional[Restaurant]:
-        """Restaurant aktualisieren"""
+    def update(self, restaurant_id: int, update_data: dict):
         restaurant = self.get_by_id(restaurant_id)
         if not restaurant:
             return None
 
-        for key, value in update_data.items():
-            if value is not None:
+        # Trenne Adress- von Restaurant-Feldern
+        adress_fields = ['straße', 'hausnummer', 'postleitzahl', 'ort', 'land']
+        adress_data = {k: v for k, v in update_data.items() if k in adress_fields}
+        restaurant_data = {k: v for k, v in update_data.items() if k not in adress_fields}
+
+        # Prüfe was geschickt wurde
+        has_adress_id = 'adresseid' in restaurant_data
+        has_adress_data = bool(adress_data)
+
+        if has_adress_id and has_adress_data:
+            raise ValueError("Sende entweder adresseid ODER Adress-Daten!")
+
+        elif has_adress_data and restaurant.adresseid:
+            # Smart Adress-Update
+            updated_adresse = self.adresse_service.update(
+                restaurant.adresseid,
+                adress_data
+            )
+            restaurant.adresseid = updated_adresse.adresseid
+
+        elif has_adress_id:
+            # Direkt setzen
+            restaurant.adresseid = restaurant_data['adresseid']
+            restaurant_data.pop('adresseid')
+
+        # Restaurant-Update
+        for key, value in restaurant_data.items():
+            if value is not None and hasattr(restaurant, key):
                 setattr(restaurant, key, value)
 
         self.db.commit()
@@ -153,4 +224,31 @@ class RestaurantService:
         self.db.commit()
         self.db.refresh(restaurant)
 
+        """Get restaurant with its menu"""
+        return self.db.query(Restaurant).filter(Restaurant.restaurantid == restaurant_id).first()
+
+    def update_profile(self, restaurant_id: int, restaurant_data: dict, adresse_data: Optional[dict]) -> Optional[Restaurant]:
+        restaurant = self.get_profile(restaurant_id)
+        if not restaurant:
+            return None
+
+        for key, value in restaurant_data.items():
+            if value is not None and hasattr(restaurant, key):
+                setattr(restaurant, key, value)
+
+        if adresse_data:
+            adresse = restaurant.adresse
+            if not adresse:
+                adresse = Adresse(**adresse_data)
+                self.db.add(adresse)
+                self.db.flush()
+                restaurant.adresseid = adresse.adresseid
+                restaurant.adresse = adresse
+            else:
+                for key, value in adresse_data.items():
+                    if value is not None:
+                        setattr(adresse, key, value)
+
+        self.db.commit()
+        self.db.refresh(restaurant)
         return restaurant

@@ -17,10 +17,11 @@ def get_all_gericht(db: Session = Depends(get_db)):
 def get_by_id(gerichtid: int, db: Session = Depends(get_db)):
     return GerichtService(db).get_by_id(gerichtid)
 
-@router.get("/byLabelId/{labelid}", response_model=list[schemas.GerichtResponse])
+@router.get("/byLabelId/{labelid}", response_model=List[schemas.GerichtResponse])
 def get_by_label_id(labelid: int, db: Session = Depends(get_db)):
     label_gerichte = LabelGerichtService(db).get_by_gericht_id(labelid)
-    return GerichtService(db).get_by_id_list([gerichte.gerichtid for gerichte in label_gerichte])
+    gericht_ids = [lg.gerichtid for lg in label_gerichte]
+    return GerichtService(db).get_by_id_list(gericht_ids)
 
 @router.post("/", response_model=schemas.GerichtResponse, status_code=status.HTTP_201_CREATED)
 def create_gericht(data: schemas.GerichtCreate, db: Session = Depends(get_db)):
@@ -37,7 +38,7 @@ def update_gericht(gerichtid: int, data: schemas.GerichtUpdate, db: Session = De
 
 @router.delete("/{gerichtid}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_gericht(gerichtid: int, db: Session = Depends(get_db)):
-    success = GerichtService(db).delete(gerichtid)
+    success = GerichtService(db).deactivate(gerichtid)
     if not success:
         raise HTTPException(status_code=404, detail="Gericht nicht gefunden")
     return None

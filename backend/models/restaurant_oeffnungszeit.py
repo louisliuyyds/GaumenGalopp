@@ -9,8 +9,7 @@ class RestaurantOeffnungszeit(Base):
     oeffnungszeitid = Column(Integer, ForeignKey('oeffnungszeit_vorlage.oeffnungszeitid'), primary_key=True)
     gueltig_von = Column(Date, primary_key=True)
     gueltig_bis = Column(Date)
-    ist_aktiv = Column(Boolean, default=True)
-    
+
     # Relationships
     restaurant = relationship("Restaurant", back_populates="oeffnungszeiten")
     vorlage = relationship("OeffnungszeitVorlage", back_populates="restaurant_zuordnungen")
@@ -22,5 +21,4 @@ class RestaurantOeffnungszeit(Base):
             "oeffnungszeitid": self.oeffnungszeitid,
             "gueltig_von": self.gueltig_von.isoformat() if self.gueltig_von else None,
             "gueltig_bis": self.gueltig_bis.isoformat() if self.gueltig_bis else None,
-            "ist_aktiv": self.ist_aktiv
         }

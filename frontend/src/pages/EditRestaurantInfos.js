@@ -1,7 +1,11 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { useParams, useNavigate } from 'react-router-dom';
 import colors from '../theme/colors';
+import { restaurantService } from '../services';
+import EditNavigationTabs from '../components/EditNavigationTabs';
+
+// ==================== STYLED COMPONENTS ====================
 
 const Container = styled.div`
     max-width: 900px;
@@ -27,58 +31,457 @@ const BackButton = styled.button`
     }
 `;
 
-const EditCard = styled.div`
-    background: ${colors.background.card};
-    border-radius: 12px;
-    padding: 40px;
-    box-shadow: ${colors.shadows.medium};
-`;
-
 const PageTitle = styled.h1`
     color: ${colors.text.primary};
     font-size: 2.5em;
     margin-bottom: 10px;
+    font-weight: 700;
 `;
 
 const Subtitle = styled.p`
     color: ${colors.text.light};
     font-size: 1.1em;
     margin-bottom: 40px;
-    padding-bottom: 20px;
-    border-bottom: 2px solid ${colors.border.light};
 `;
 
-const ComingSoon = styled.div`
-    text-align: center;
-    padding: 60px 20px;
-    color: ${colors.text.light};
-    font-size: 1.2em;
-    line-height: 1.8;
+const Form = styled.form`
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
 `;
+
+const InfoCard = styled.div`
+    background: ${colors.background.card};
+    border-radius: 12px;
+    padding: 35px;
+    box-shadow: ${colors.shadows.medium};
+    border: 1px solid ${colors.border.light};
+`;
+
+const CardTitle = styled.h2`
+    color: ${colors.text.primary};
+    font-size: 1.4rem;
+    margin-bottom: 25px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+    &::after {
+        content: "";
+        flex: 1;
+        height: 1px;
+        background: #eee;
+    }
+`;
+
+const InputGroup = styled.div`
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 20px;
+`;
+
+const Label = styled.label`
+    font-weight: 600;
+    color: ${colors.text.secondary};
+    font-size: 0.95em;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+`;
+
+const Input = styled.input`
+    padding: 12px 16px;
+    border: 2px solid ${colors.border.light};
+    border-radius: 8px;
+    font-size: 1em;
+    color: ${colors.text.primary};
+    background: ${colors.background.main};
+    transition: all 0.2s ease;
+
+    &:focus {
+        outline: none;
+        border-color: ${colors.primary.main};
+        background: white;
+    }
+
+    &:disabled {
+        background: #f5f5f5;
+        cursor: not-allowed;
+    }
+`;
+
+const ButtonContainer = styled.div`
+    display: flex;
+    gap: 15px;
+    justify-content: flex-end;
+    margin-top: 40px;
+    padding-top: 30px;
+    border-top: 2px solid ${colors.border.light};
+`;
+
+const CancelButton = styled.button`
+    background: ${colors.background.card};
+    color: ${colors.text.primary};
+    border: 2px solid ${colors.border.medium};
+    padding: 14px 32px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1.1em;
+    font-weight: 600;
+    transition: all 0.3s ease;
+
+    &:hover {
+        background: ${colors.border.light};
+    }
+`;
+
+const SaveButton = styled.button`
+    background: ${colors.gradients.primary};
+    color: ${colors.text.white};
+    border: none;
+    padding: 14px 32px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1.1em;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    box-shadow: ${colors.shadows.primarySmall};
+
+    &:hover:not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: ${colors.shadows.primaryMedium};
+    }
+
+    &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        transform: none;
+    }
+`;
+
+const LoadingState = styled.div`
+    text-align: center;
+    padding: 150px 20px;
+    font-size: 1.5rem;
+    color: ${colors.text.light};
+`;
+
+const ErrorMessage = styled.div`
+    background: ${colors.status.errorLight};
+    color: ${colors.status.error};
+    padding: 15px 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    border-left: 4px solid ${colors.status.error};
+    font-weight: 500;
+`;
+
+const SuccessMessage = styled.div`
+    background: ${colors.status.successLight};
+    color: ${colors.status.success};
+    padding: 15px 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    border-left: 4px solid ${colors.status.success};
+    font-weight: 500;
+`;
+
+const InfoBox = styled.div`
+    background: ${colors.primary.light};
+    border-left: 4px solid ${colors.primary.main};
+    padding: 15px 20px;
+    border-radius: 8px;
+    margin-top: 15px;
+    color: ${colors.text.secondary};
+    font-size: 0.9em;
+    line-height: 1.6;
+`;
+
+// ==================== HAUPTKOMPONENTE ====================
 
 function EditRestaurantInfos() {
     const { id } = useParams();
     const navigate = useNavigate();
 
+    // Ein State für ALLES (Restaurant + Adresse)
+    const [formData, setFormData] = useState({
+        // Restaurant-Felder
+        name: '',
+        klassifizierung: '',
+        telefon: '',
+        email: '',
+        kuechenchef: '',
+
+        // Adress-Felder (Backend macht Copy-on-Write!)
+        straße: '',
+        hausnummer: '',
+        postleitzahl: '',
+        ort: '',
+        land: ''
+    });
+
+    const [loading, setLoading] = useState(true);
+    const [saving, setSaving] = useState(false);
+    const [error, setError] = useState(null);
+    const [successMessage, setSuccessMessage] = useState(null);
+
+    // Daten beim Laden holen
+    useEffect(() => {
+        const fetchRestaurantData = async () => {
+            try {
+                setLoading(true);
+                setError(null);
+
+                const data = await restaurantService.getById(id);
+                console.log('Restaurant geladen:', data);
+
+                // Alle Felder in einen State
+                setFormData({
+                    // Restaurant
+                    name: data.name || '',
+                    klassifizierung: data.klassifizierung || '',
+                    telefon: data.telefon || '',
+                    email: data.email || '',
+                    kuechenchef: data.kuechenchef || '',
+
+                    // Adresse (aus nested Object)
+                    straße: data.adresse?.straße || '',
+                    hausnummer: data.adresse?.hausnummer || '',
+                    postleitzahl: data.adresse?.postleitzahl || '',
+                    ort: data.adresse?.ort || '',
+                    land: data.adresse?.land || ''
+                });
+
+            } catch (err) {
+                console.error('❌ Fehler beim Laden:', err);
+                setError('Restaurant konnte nicht geladen werden. Bitte versuche es später erneut.');
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchRestaurantData();
+    }, [id]);
+
+    // Ein Handler für ALLE Felder
+    const handleInputChange = (e) => {
+        const { name, value } = e.target;
+        setFormData(prev => ({
+            ...prev,
+            [name]: value
+        }));
+    };
+
+    // Formular absenden - Backend macht Copy-on-Write automatisch!
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+
+        try {
+            setSaving(true);
+            setError(null);
+            setSuccessMessage(null);
+
+            // Einfach ALLES an Backend senden
+            // Backend entscheidet automatisch ob neue Adresse nötig ist!
+            await restaurantService.update(id, formData);
+
+            console.log('✅ Restaurant erfolgreich aktualisiert');
+            setSuccessMessage('Restaurant erfolgreich gespeichert!');
+
+            // Nach 1.5 Sekunden zurück zur Detail-Seite
+            setTimeout(() => {
+                navigate(`/restaurants/${id}`);
+            }, 1500);
+
+        } catch (err) {
+            console.error('❌ Fehler beim Speichern:', err);
+            setError('Fehler beim Speichern. Bitte überprüfe deine Eingaben und versuche es erneut.');
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    // Abbrechen
+    const handleCancel = () => {
+        navigate(`/restaurants/${id}`);
+    };
+
+    // Loading State
+    if (loading) {
+        return (
+            <Container>
+                <LoadingState>
+                    <div style={{ fontSize: '3rem', marginBottom: '20px' }}>🍽️</div>
+                    Lade Restaurant-Daten...
+                </LoadingState>
+            </Container>
+        );
+    }
+
     return (
         <Container>
-            <BackButton onClick={() => navigate(`/restaurants`)}>
+            <BackButton onClick={() => navigate(`/restaurants/${id}`)}>
                 ← Zurück zum Restaurant
             </BackButton>
 
-            <EditCard>
-                <PageTitle>✏️ Restaurant bearbeiten</PageTitle>
-                <Subtitle>Hier kannst du alle Informationen des Restaurants anpassen</Subtitle>
+            <PageTitle>✏️ Restaurant bearbeiten</PageTitle>
+            <Subtitle>Hier kannst du die Informationen des Restaurants anpassen</Subtitle>
 
-                <ComingSoon>
-                    🍽️ Restaurant-Bearbeitungsformular kommt hier hin...<br/>
-                    <small style={{fontSize: '0.9em', color: colors.text.lighter}}>
-                        (Restaurant ID: {id})
-                    </small>
-                </ComingSoon>
+            <EditNavigationTabs restaurantId={id} />
 
+            {error && <ErrorMessage>{error}</ErrorMessage>}
+            {successMessage && <SuccessMessage>{successMessage}</SuccessMessage>}
 
-            </EditCard>
+            <Form onSubmit={handleSubmit}>
+                {/* CARD 1: Basis-Informationen */}
+                <InfoCard>
+                    <CardTitle>🍽️ Basis-Informationen</CardTitle>
+
+                    <InputGroup>
+                        <Label>📝 Name</Label>
+                        <Input
+                            type="text"
+                            name="name"
+                            value={formData.name}
+                            onChange={handleInputChange}
+                            placeholder="z.B. Restaurant Bella Vista"
+                            required
+                        />
+                    </InputGroup>
+
+                    <InputGroup>
+                        <Label>🏷️ Klassifizierung</Label>
+                        <Input
+                            type="text"
+                            name="klassifizierung"
+                            value={formData.klassifizierung}
+                            onChange={handleInputChange}
+                            placeholder="z.B. Italienisch, Sterne-Restaurant"
+                        />
+                    </InputGroup>
+
+                    <InputGroup>
+                        <Label>👨‍🍳 Küchenchef</Label>
+                        <Input
+                            type="text"
+                            name="kuechenchef"
+                            value={formData.kuechenchef}
+                            onChange={handleInputChange}
+                            placeholder="z.B. Giovanni Rossi"
+                        />
+                    </InputGroup>
+                </InfoCard>
+
+                {/* CARD 2: Kontaktdaten */}
+                <InfoCard>
+                    <CardTitle>📞 Kontaktdaten</CardTitle>
+
+                    <InputGroup>
+                        <Label>📞 Telefon</Label>
+                        <Input
+                            type="tel"
+                            name="telefon"
+                            value={formData.telefon}
+                            onChange={handleInputChange}
+                            placeholder="z.B. +49 30 12345678"
+                        />
+                    </InputGroup>
+
+                    <InputGroup>
+                        <Label>📧 E-Mail</Label>
+                        <Input
+                            type="email"
+                            name="email"
+                            value={formData.email}
+                            onChange={handleInputChange}
+                            placeholder="z.B. info@restaurant.de"
+                        />
+                    </InputGroup>
+                </InfoCard>
+
+                {/* CARD 3: Adresse */}
+                <InfoCard>
+                    <CardTitle>📍 Adresse</CardTitle>
+
+                    <InputGroup>
+                        <Label>🏠 Straße</Label>
+                        <Input
+                            type="text"
+                            name="straße"
+                            value={formData.straße}
+                            onChange={handleInputChange}
+                            placeholder="z.B. Hauptstraße"
+                            required
+                        />
+                    </InputGroup>
+
+                    <InputGroup>
+                        <Label>🔢 Hausnummer</Label>
+                        <Input
+                            type="text"
+                            name="hausnummer"
+                            value={formData.hausnummer}
+                            onChange={handleInputChange}
+                            placeholder="z.B. 123"
+                            required
+                        />
+                    </InputGroup>
+
+                    <InputGroup>
+                        <Label>📮 Postleitzahl</Label>
+                        <Input
+                            type="text"
+                            name="postleitzahl"
+                            value={formData.postleitzahl}
+                            onChange={handleInputChange}
+                            placeholder="z.B. 10115"
+                            required
+                        />
+                    </InputGroup>
+
+                    <InputGroup>
+                        <Label>🏙️ Ort</Label>
+                        <Input
+                            type="text"
+                            name="ort"
+                            value={formData.ort}
+                            onChange={handleInputChange}
+                            placeholder="z.B. Berlin"
+                            required
+                        />
+                    </InputGroup>
+
+                    <InputGroup>
+                        <Label>🌍 Land</Label>
+                        <Input
+                            type="text"
+                            name="land"
+                            value={formData.land}
+                            onChange={handleInputChange}
+                            placeholder="z.B. Deutschland"
+                            required
+                        />
+                    </InputGroup>
+
+                    <InfoBox>
+                        🧠 <strong>Intelligentes Backend-System:</strong><br/>
+                        Das Backend entscheidet automatisch, ob eine neue Adresse erstellt werden muss.
+                        Wenn andere Restaurants oder Kunden die gleiche Adresse nutzen, bleibt ihre Adresse unverändert.
+                    </InfoBox>
+                </InfoCard>
+
+                {/* Buttons */}
+                <ButtonContainer>
+                    <CancelButton type="button" onClick={handleCancel}>
+                        Abbrechen
+                    </CancelButton>
+                    <SaveButton type="submit" disabled={saving}>
+                        {saving ? '💾 Speichert...' : '💾 Änderungen speichern'}
+                    </SaveButton>
+                </ButtonContainer>
+            </Form>
         </Container>
     );
 }

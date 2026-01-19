@@ -18,6 +18,7 @@ class OeffnungszeitVorlageResponse(BaseModel):
     oeffnungszeitid: int
     bezeichnung: str
     beschreibung: Optional[str]
+    hash_signatur: Optional[str]
     
     class Config:
         from_attributes = True
