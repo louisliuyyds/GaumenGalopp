@@ -31,5 +31,6 @@ class Restaurant(Base):
             "adresseid": self.adresseid,
             "telefon": self.telefon,
             "kuechenchef": self.kuechenchef,
-            "email": self.email
+            "email": self.email,
+            "passwordhash": self.passwordhash
         }
