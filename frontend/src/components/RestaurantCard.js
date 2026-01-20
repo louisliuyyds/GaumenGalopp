@@ -174,14 +174,6 @@ const parseMichelinStars = (klassifizierung) => {
     return m ? Number(m[1]) : null;
 };
 
-/**
- * RestaurantCard (UI-only refresh)
- * - Michelin as identity label (typographic, not a pill)
- * - Customer rating + delivery in one compact meta row
- * - Kochstile reduced: show 1 + "+n"
- * - Address compacted
- * - No duplicate info blocks
- */
 function RestaurantCard({ restaurant, basePath = "/restaurants" }) {
     const navigate = useNavigate();
 
@@ -208,6 +200,11 @@ function RestaurantCard({ restaurant, basePath = "/restaurants" }) {
     const primaryCuisine = kochstile[0]?.kochstil;
     const extraCuisineCount = Math.max(kochstile.length - 1, 0);
 
+    // Echte Bewertungen aus API
+    const rating = restaurant.bewertungen?.durchschnitt_gesamt || 0;
+    const ratingCount = restaurant.bewertungen?.anzahl_gesamt || 0;
+    const hasRatings = ratingCount > 0;
+
     return (
         <Card onClick={handleClick}>
             <Header>
@@ -223,9 +220,13 @@ function RestaurantCard({ restaurant, basePath = "/restaurants" }) {
                         </Michelin>
                     </TitleRow>
 
-                    {/* One compact meta line (no pills, no borders) */}
+                    {/* Echte Bewertungen */}
                     <MetaRow>
-                        <span title="Kundenbewertung">⭐ 4.5</span>
+                        {hasRatings ? (
+                            <span title={`${ratingCount} Bewertungen`}>⭐ {rating.toFixed(1)}</span>
+                        ) : (
+                            <span title="Noch keine Bewertungen">⭐ Noch keine Bewertungen</span>
+                        )}
                         <Dot />
                         <span title="Lieferzeit">🕐 30–40 Min</span>
                     </MetaRow>

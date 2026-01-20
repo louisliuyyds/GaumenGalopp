@@ -23,14 +23,18 @@ router = APIRouter(
     tags=["restaurants"]
 )
 
-# GET /api/restaurants - Get all restaurants WITH kochstil
+# GET /api/restaurants - Get all restaurants WITH kochstil AND bewertungen
 @router.get("/")
 def get_all_restaurants(db: Session = Depends(get_db)):
     service = RestaurantService(db)
     restaurants = service.get_all()
 
-    return [
-        {
+    result = []
+    for r in restaurants:
+        # Bewertungen für jedes Restaurant aggregieren
+        bewertungen = service.get_restaurant_bewertungen_aggregiert(r.restaurantid)
+
+        result.append({
             "restaurantid": r.restaurantid,
             "name": r.name,
             "klassifizierung": r.klassifizierung,
@@ -43,10 +47,11 @@ def get_all_restaurants(db: Session = Depends(get_db)):
                     "stilid": kr.kochstil.stilid,
                     "kochstil": kr.kochstil.kochstil,
                 } for kr in r.kochstil
-            ] if r.kochstil else []
-        }
-        for r in restaurants
-    ]
+            ] if r.kochstil else [],
+            "bewertungen": bewertungen
+        })
+
+    return result
 
 
 # GET /api/restaurants/{id} - Get specific restaurant WITH menu AND address

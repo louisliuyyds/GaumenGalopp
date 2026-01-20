@@ -8,6 +8,8 @@ import { labelGerichtService } from "../services";
 import { bewertungService } from "../services";
 import { kundeService } from "../services";
 import { preisService } from "../services";  // Preis-Service importieren
+import { kritikerService } from "../services";  // Kritiker-Service importieren
+import BewertungForm from '../components/BewertungForm';  // NEU: Import hinzugefügt
 
 
 const InfoSection = styled.div`
@@ -78,7 +80,7 @@ const RetryButton = styled.button`
     cursor: pointer;
     margin-top: 10px;
     font-weight: 600;
-    
+
     &:hover {
         opacity: 0.9;
     }
@@ -254,7 +256,7 @@ function GerichtDetail() {
             setLoadingPreis(true);
             const response = await preisService.getByGerichtId(gerichtId);
             const preisData = response.data || response;
-            
+
             // Falls mehrere Preise zurückkommen (Array), nimm den ersten oder aktuellsten
             if (Array.isArray(preisData) && preisData.length > 0) {
                 setPreis(preisData[0]);
@@ -280,9 +282,9 @@ function GerichtDetail() {
             const labelGerichtResponse = await labelGerichtService.getByGerichtId(gerichtId);
             const labelGerichtData = labelGerichtResponse.data || labelGerichtResponse;
             const labelGerichtArray = Array.isArray(labelGerichtData) ? labelGerichtData : [];
-            
+
             console.log('LabelGericht geladen:', labelGerichtArray);
-        
+
             if (labelGerichtArray.length > 0) {
                 const labelPromises = labelGerichtArray.map(async (labelGericht) => {
                     try {
@@ -293,7 +295,7 @@ function GerichtDetail() {
                         return null;
                     }
                 });
-                
+
                 const loadedLabels = await Promise.all(labelPromises);
                 const validLabels = loadedLabels.filter(label => label !== null);
                 setLabels(validLabels);
@@ -308,7 +310,7 @@ function GerichtDetail() {
             setLoadingLabels(false);
         }
     };
-    
+
     const fetchBewertung = async () => {
         try {
             setLoadingBewertungen(true);
@@ -318,7 +320,7 @@ function GerichtDetail() {
             const bewertungen = Array.isArray(data) ? data : [];
             setBewertungen(bewertungen);
             console.log('Bewertungen geladen:', data);
-            
+
             // Kundendaten für alle Bewertungen laden
             if (bewertungen.length > 0) {
                 await fetchKundenFuerBewertungen(bewertungen);
@@ -339,19 +341,38 @@ function GerichtDetail() {
                 kundenIds.map(async (kundenid) => {
                     try {
                         const kundeData = await kundeService.getKuerzelById(kundenid);
-                        kundenMap[kundenid] = kundeData;
+
+                        // Prüfe ob Kunde auch Kritiker ist
+                        let isKritiker = false;
+                        try {
+                            await kritikerService.getByKundenId(kundenid);
+                            isKritiker = true;
+                        } catch (err) {
+                            // Kein Kritiker gefunden - ist ok
+                        }
+
+                        kundenMap[kundenid] = {
+                            ...kundeData,
+                            isKritiker: isKritiker
+                        };
                     } catch (err) {
                         console.error(`Fehler beim Laden von Kunde ${kundenid}:`, err);
-                        kundenMap[kundenid] = { namenskuerzel: 'Unbekannt' };
+                        kundenMap[kundenid] = { namenskuerzel: 'Unbekannt', isKritiker: false };
                     }
                 })
             );
-            
+
             setKunden(kundenMap);
             console.log('Kunden geladen:', kundenMap);
         } catch (err) {
             console.error('Fehler beim Laden der Kunden:', err);
         }
+    };
+
+    // NEU: Callback für Auto-Reload nach Bewertung
+    const handleBewertungSubmitted = async () => {
+        console.log('📝 Neue Bewertung erstellt - lade Bewertungen neu...');
+        await fetchBewertung();
     };
 
     const renderSterne = (anzahl) => {
@@ -443,9 +464,9 @@ function GerichtDetail() {
             <BackButton onClick={() => navigate(`/restaurants/${restaurantId}`)}>
                 ← Zurück zum Restaurant
             </BackButton>
-            
+
             <DetailCard>
-                <GerichtName>{gericht.name}</GerichtName> 
+                <GerichtName>{gericht.name}</GerichtName>
                 {!loadingLabels && labels.length > 0 && (
                     <LabelContainer>
                         {labels.map((label) => (
@@ -473,7 +494,7 @@ function GerichtDetail() {
                     <InfoValue>{gericht.kategorie || 'Nicht angegeben'}</InfoValue>
                 </InfoSection>
             </DetailCard>
-            
+
             {!loadingBewertungen && !bewertungError && bewertung.length > 0 && (
                 <DetailCard>
                     <BewertungenSection>
@@ -493,7 +514,21 @@ function GerichtDetail() {
                             <BewertungCard key={bewertung.bewertungid}>
                                 <BewertungHeader>
                                     <BenutzerName>
+                                        {kunden[bewertung.kundenid]?.isKritiker && '👨‍🍳 '}
                                         {kunden[bewertung.kundenid]?.namenskuerzel || 'Lädt...'}
+                                        {kunden[bewertung.kundenid]?.isKritiker && (
+                                            <span style={{
+                                                marginLeft: '8px',
+                                                background: 'linear-gradient(135deg, #8a6d3b 0%, #b8860b 100%)',
+                                                color: 'white',
+                                                padding: '3px 10px',
+                                                borderRadius: '12px',
+                                                fontSize: '0.75em',
+                                                fontWeight: '700'
+                                            }}>
+                                                Kritiker
+                                            </span>
+                                        )}
                                     </BenutzerName>
                                     <Sterne>{renderSterne(bewertung.rating)}</Sterne>
                                 </BewertungHeader>
@@ -504,6 +539,12 @@ function GerichtDetail() {
                     </BewertungenSection>
                 </DetailCard>
             )}
+
+            {/* NEU: Bewertungsformular */}
+            <BewertungForm
+                gerichtId={gerichtId}
+                onBewertungSubmitted={handleBewertungSubmitted}
+            />
         </Container>
     );
 }
