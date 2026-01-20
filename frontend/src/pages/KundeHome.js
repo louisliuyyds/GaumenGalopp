@@ -1,4 +1,4 @@
-import React, { useState, useEffect} from 'react';
+import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom';
 import colors from '../theme/colors';
@@ -133,12 +133,12 @@ const CategoryName = styled.div`
     color: ${colors.text.primary};
     font-size: 1.1em;
     font-weight: 600;
+    margin-bottom: 5px;
 `;
 
 const CategoryCount = styled.div`
     color: ${colors.text.light};
     font-size: 0.9em;
-    margin-top: 5px;
 `;
 
 const FeaturedSection = styled.div`
@@ -174,48 +174,17 @@ const RestaurantImage = styled.div`
     align-items: center;
     justify-content: center;
     font-size: 4em;
-    position: relative;
-`;
-
-const FavoriteButton = styled.button`
-    position: absolute;
-    top: 15px;
-    right: 15px;
-    background: ${colors.background.card};
-    border: none;
-    width: 45px;
-    height: 45px;
-    border-radius: 50%;
-    cursor: pointer;
-    font-size: 1.3em;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.3s ease;
-    box-shadow: ${colors.shadows.small};
-
-    &:hover {
-        transform: scale(1.1);
-        box-shadow: ${colors.shadows.medium};
-    }
 `;
 
 const RestaurantContent = styled.div`
     padding: 25px;
 `;
 
-const RestaurantHeader = styled.div`
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 12px;
-`;
-
 const RestaurantName = styled.h3`
     color: ${colors.text.primary};
     font-size: 1.4em;
     font-weight: 700;
-    margin-bottom: 5px;
+    margin-bottom: 10px;
 `;
 
 const CuisineTag = styled.span`
@@ -225,6 +194,7 @@ const CuisineTag = styled.span`
     border-radius: 15px;
     font-size: 0.8em;
     font-weight: 600;
+    margin-right: 5px;
 `;
 
 const RestaurantInfo = styled.div`
@@ -260,64 +230,50 @@ const DeliveryTime = styled.div`
     font-weight: 600;
 `;
 
-const PromoSection = styled.div`
-    background: ${colors.gradients.accent};
-    border-radius: 16px;
-    padding: 40px;
-    margin-bottom: 40px;
+const LoadingMessage = styled.div`
     text-align: center;
-    color: ${colors.text.white};
-    box-shadow: ${colors.shadows.gold};
-`;
-
-const PromoTitle = styled.h2`
-    font-size: 2em;
-    margin-bottom: 15px;
-    font-weight: 700;
-`;
-
-const PromoText = styled.p`
+    padding: 50px;
     font-size: 1.2em;
-    margin-bottom: 20px;
+    color: ${colors.text.light};
 `;
 
-const PromoButton = styled.button`
-    background: ${colors.text.white};
-    color: ${colors.accent.orange};
-    border: none;
-    padding: 14px 32px;
-    border-radius: 25px;
-    cursor: pointer;
-    font-size: 1.1em;
-    font-weight: 700;
-    transition: all 0.3s ease;
-    box-shadow: ${colors.shadows.medium};
-
-    &:hover {
-        transform: translateY(-3px);
-        box-shadow: ${colors.shadows.large};
-    }
-`;
+// Icon-Mapping für Kochstile
+const iconMap = {
+    'Italienisch': '🍕',
+    'Japanisch': '🍣',
+    'Amerikanisch': '🍔',
+    'Französisch': '🥐',
+    'Chinesisch': '🥡',
+    'Indisch': '🍛',
+    'Deutsch': '🥨',
+    'Griechisch': '🥙',
+    'Thai': '🍜',
+    'Mexikanisch': '🌮',
+    'Spanisch': '🥘',
+    'Türkisch': '🥙',
+    'Vegetarisch': '🥗',
+    'Vegan': '🌱'
+};
 
 function KundeHome() {
     const navigate = useNavigate();
     const [searchQuery, setSearchQuery] = useState('');
-    const [favorites, setFavorites] = useState([1, 4]);
     const [topCategories, setTopCategories] = useState([]);
     const [featuredRestaurants, setFeaturedRestaurants] = useState([]);
-
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        const loadTopCategories = async () => {
+        const loadData = async () => {
             try {
-                // Lade alle Kochstile und Restaurants
+                setLoading(true);
+
                 const [kochstileRes, restaurantsRes] = await Promise.all([
                     kochstilService.getAll(),
                     restaurantService.getAll()
                 ]);
 
-                const kochstile = kochstileRes.data;
-                const restaurants = restaurantsRes.data;
+                const kochstile = kochstileRes.data || kochstileRes || [];
+                const restaurants = restaurantsRes.data || restaurantsRes || [];
 
                 // Zähle Restaurants pro Kategorie
                 const counts = kochstile.map(k => ({
@@ -327,25 +283,27 @@ function KundeHome() {
                     ).length
                 }));
 
-                // Sortiere nach Anzahl, nimm Top 6
+                // Top 6 Kategorien (mit Restaurants)
                 const top6 = counts
-                    .filter(k => k.count > 0) // Nur mit Restaurants
+                    .filter(k => k.count > 0)
                     .sort((a, b) => b.count - a.count)
                     .slice(0, 6);
 
                 setTopCategories(top6);
 
+                // Top 4 Restaurants (einfach die ersten 4)
                 const featured = restaurants.slice(0, 4);
                 setFeaturedRestaurants(featured);
 
             } catch (error) {
                 console.error('Fehler beim Laden:', error);
+            } finally {
+                setLoading(false);
             }
         };
 
-        loadTopCategories();
+        loadData();
     }, []);
-
 
     const handleSearch = () => {
         if (searchQuery.trim()) {
@@ -353,23 +311,22 @@ function KundeHome() {
         }
     };
 
-    const handleCategoryClick = (category) => {
-        navigate(`/kunde/restaurants?cuisine=${category}`);
+    const handleCategoryClick = (kochstilName) => {
+        navigate(`/kunde/restaurants?cuisine=${kochstilName}`);
     };
 
-    const toggleFavorite = (restaurantId, e) => {
-        e.stopPropagation();
-        setFavorites(prev => 
-            prev.includes(restaurantId) 
-                ? prev.filter(id => id !== restaurantId)
-                : [...prev, restaurantId]
+    if (loading) {
+        return (
+            <Container>
+                <LoadingMessage>Lädt deine Lieblingsorte...</LoadingMessage>
+            </Container>
         );
-    };
+    }
 
     return (
         <Container>
             <HeroSection>
-                <HeroTitle> Willkommen bei GaumenGalopp</HeroTitle>
+                <HeroTitle>🍽️ Willkommen bei GaumenGalopp</HeroTitle>
                 <HeroSubtitle>
                     Entdecke die besten Restaurants in deiner Nähe und bestelle dein Lieblingsessen
                 </HeroSubtitle>
@@ -386,13 +343,14 @@ function KundeHome() {
             </HeroSection>
 
             <CategorySection>
-                <SectionTitle> Küchen entdecken</SectionTitle>
+                <SectionTitle>🌍 Küchen entdecken</SectionTitle>
                 <CategoriesGrid>
                     {topCategories.map(category => (
                         <CategoryCard
                             key={category.stilid}
-                            onClick={() => navigate(`/kunde/restaurants?cuisine=${category.kochstil}`)}
+                            onClick={() => handleCategoryClick(category.kochstil)}
                         >
+                            <CategoryIcon>{iconMap[category.kochstil] || '🍽️'}</CategoryIcon>
                             <CategoryName>{category.kochstil}</CategoryName>
                             <CategoryCount>{category.count} Restaurants</CategoryCount>
                         </CategoryCard>
@@ -401,36 +359,52 @@ function KundeHome() {
             </CategorySection>
 
             <FeaturedSection>
-                <SectionTitle>Beliebte Restaurants</SectionTitle>
-                <RestaurantsGrid>
-                    {featuredRestaurants.map((restaurant) => (
-                        <RestaurantCard
-                            key={restaurant.restaurantid}
-                            onClick={() => navigate(`/kunde/restaurants/${restaurant.restaurantid}`)}
-                        >
-                            <RestaurantImage $gradient={colors.gradients.luxury}>
-                                <span>🍽️</span> {/* Oder Icon basierend auf Kochstil */}
-                            </RestaurantImage>
-                            <RestaurantContent>
-                                <RestaurantHeader>
-                                    <div>
-                                        <RestaurantName>{restaurant.name}</RestaurantName>
-                                        {restaurant.kochstile && restaurant.kochstile.length > 0 && (
-                                            <CuisineTag>{restaurant.kochstile[0].kochstil}</CuisineTag>
-                                        )}
-                                    </div>
-                                </RestaurantHeader>
-                                <RestaurantInfo>
-                                    📍 {restaurant.adresse?.ort || 'Unbekannt'}
-                                </RestaurantInfo>
-                                <RestaurantFooter>
-                                    <Rating>⭐ 4.5</Rating> {/* Später aus DB */}
-                                    <DeliveryTime>🕐 30-40 Min</DeliveryTime>
-                                </RestaurantFooter>
-                            </RestaurantContent>
-                        </RestaurantCard>
-                    ))}
-                </RestaurantsGrid>
+                <SectionTitle>⭐ Beliebte Restaurants</SectionTitle>
+                {featuredRestaurants.length === 0 ? (
+                    <LoadingMessage>Keine Restaurants verfügbar</LoadingMessage>
+                ) : (
+                    <RestaurantsGrid>
+                        {featuredRestaurants.map((restaurant) => (
+                            <RestaurantCard
+                                key={restaurant.restaurantid}
+                                onClick={() => navigate(`/kunde/restaurants/${restaurant.restaurantid}`)}
+                            >
+                                <RestaurantImage $gradient={colors.gradients.luxury}>
+                                    <span>
+                                        {restaurant.kochstil && restaurant.kochstil.length > 0
+                                            ? iconMap[restaurant.kochstil[0].kochstil] || '🍽️'
+                                            : '🍽️'
+                                        }
+                                    </span>
+                                </RestaurantImage>
+                                <RestaurantContent>
+                                    <RestaurantName>{restaurant.name}</RestaurantName>
+
+                                    {restaurant.kochstil && restaurant.kochstil.length > 0 && (
+                                        <div style={{ marginBottom: '10px' }}>
+                                            {restaurant.kochstil.map(k => (
+                                                <CuisineTag key={k.stilid}>
+                                                    {k.kochstil}
+                                                </CuisineTag>
+                                            ))}
+                                        </div>
+                                    )}
+
+                                    {restaurant.adresse && (
+                                        <RestaurantInfo>
+                                            📍 {restaurant.adresse.ort}
+                                        </RestaurantInfo>
+                                    )}
+
+                                    <RestaurantFooter>
+                                        <Rating>⭐ 4.5</Rating>
+                                        <DeliveryTime>🕐 30-40 Min</DeliveryTime>
+                                    </RestaurantFooter>
+                                </RestaurantContent>
+                            </RestaurantCard>
+                        ))}
+                    </RestaurantsGrid>
+                )}
             </FeaturedSection>
         </Container>
     );

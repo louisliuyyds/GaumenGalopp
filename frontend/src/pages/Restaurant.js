@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import colors from "../theme/colors";
@@ -15,6 +15,35 @@ const Header = styled.h1`
     margin-bottom: 30px;
     font-size: 2.5em;
     font-weight: 700;
+`;
+
+const FilterSection = styled.div`
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 30px;
+    padding: 20px;
+    background: ${colors.background.card};
+    border-radius: 12px;
+    box-shadow: ${colors.shadows.small};
+`;
+
+const FilterButton = styled.button`
+    padding: 10px 20px;
+    border: 2px solid ${props => props.$active ? colors.primary.main : colors.border.light};
+    border-radius: 8px;
+    background: ${props => props.$active ? colors.primary.main : 'white'};
+    color: ${props => props.$active ? 'white' : colors.text.primary};
+    cursor: pointer;
+    font-size: 0.95em;
+    font-weight: 600;
+    transition: all 0.3s ease;
+
+    &:hover {
+        transform: translateY(-2px);
+        box-shadow: ${colors.shadows.small};
+        border-color: ${colors.primary.main};
+    }
 `;
 
 const RestaurantGrid = styled.div`
@@ -67,26 +96,45 @@ const RestaurantType = styled.span`
     font-weight: 600;
 `;
 
-const FilterSection = styled.div``;
+const CuisineTag = styled.span`
+    display: inline-block;
+    background: ${colors.background.light};
+    color: ${colors.text.secondary};
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 0.8em;
+    margin-right: 5px;
+    margin-top: 5px;
+    font-weight: 500;
+`;
+
+const LoadingMessage = styled.div`
+    text-align: center;
+    padding: 50px;
+    font-size: 1.2em;
+    color: ${colors.text.light};
+`;
+
+const ErrorMessage = styled.div`
+    background: ${colors.status.errorLight};
+    color: ${colors.status.error};
+    padding: 20px;
+    border-radius: 8px;
+    margin: 20px 0;
+    text-align: center;
+`;
 
 function Restaurants() {
     const [restaurants, setRestaurants] = useState([]);
     const [allKochstile, setAllKochstile] = useState([]);
     const [selectedKochstil, setSelectedKochstil] = useState(null);
-
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
     const [searchParams, setSearchParams] = useSearchParams();
     const navigate = useNavigate();
 
-    const cuisineParam = searchParams.get("cuisine");
-
-    const handleEditRestaurant = (restaurantid) => {
-        navigate(`/restaurants/${restaurantid}/edit`);
-    };
-
-    // 1) Daten laden: Restaurants + Kochstile parallel
+    // Laden der Daten beim Mount (nur einmal)
     useEffect(() => {
         const loadData = async () => {
             try {
@@ -98,95 +146,53 @@ function Restaurants() {
                     kochstilService.getAll(),
                 ]);
 
-                const restaurantsData = Array.isArray(restaurantsRes?.data)
-                    ? restaurantsRes.data
-                    : Array.isArray(restaurantsRes)
-                        ? restaurantsRes
-                        : [];
-
-                const kochstileData = Array.isArray(kochstileRes?.data)
-                    ? kochstileRes.data
-                    : Array.isArray(kochstileRes)
-                        ? kochstileRes
-                        : [];
+                const restaurantsData = restaurantsRes.data || restaurantsRes || [];
+                const kochstileData = kochstileRes.data || kochstileRes || [];
 
                 setRestaurants(restaurantsData);
                 setAllKochstile(kochstileData);
-
-                // 2) URL Param auswerten -> stilid setzen
-                if (cuisineParam) {
-                    const match = kochstileData.find(
-                        (k) => (k.kochstil ?? "").toLowerCase() === cuisineParam.toLowerCase()
-                    );
-                    const nextSelected = match ? Number(match.stilid) : null;
-                    setSelectedKochstil(nextSelected);
-
-                    console.log("URL cuisineParam:", cuisineParam);
-                    console.log("Match:", match);
-                    console.log("selectedKochstil set to:", nextSelected);
-                } else {
-                    setSelectedKochstil(null);
-                    console.log("No cuisineParam -> selectedKochstil null");
-                }
-
-                // 3) Debug: sind Kochstile wirklich in den Restaurants drin?
-                const withKochstil = restaurantsData.filter(
-                    (r) => (r.kochstil?.length ?? 0) > 0
-                ).length;
-                console.log(
-                    "Restaurants total:",
-                    restaurantsData.length,
-                    "with kochstil:",
-                    withKochstil
-                );
-                console.log("Sample restaurant[0]:", restaurantsData[0]);
             } catch (err) {
-                console.error("Fehler beim Laden:", err);
-                setError("Fehler beim Laden der Daten.");
+                console.error('Fehler beim Laden:', err);
+                setError('Fehler beim Laden der Restaurants.');
             } finally {
                 setLoading(false);
             }
         };
 
         loadData();
-        // WICHTIG: nur auf cuisineParam hören, nicht auf searchParams-Objekt
-    }, [cuisineParam]);
+    }, []); // Nur beim Mount
 
-    // 4) Filter (robust: Number-Vergleich)
-    const filteredRestaurants = useMemo(() => {
-        if (selectedKochstil == null) return restaurants;
+    // URL-Parameter auswerten (separate useEffect)
+    useEffect(() => {
+        const cuisineParam = searchParams.get('cuisine');
 
-        const filtered = restaurants.filter((restaurant) =>
-            restaurant.kochstil?.some(
-                (k) => Number(k.stilid) === Number(selectedKochstil)
-            )
-        );
-
-        console.log(
-            "Filter active stilid:",
-            selectedKochstil,
-            "filtered:",
-            filtered.length,
-            "of",
-            restaurants.length
-        );
-
-        return filtered;
-    }, [restaurants, selectedKochstil]);
-
-    // 5) Button/Filter setzen + URL synchronisieren
-    const handleFilterChange = (stilId) => {
-        const normalizedId = stilId == null ? null : Number(stilId);
-        setSelectedKochstil(normalizedId);
-
-        if (normalizedId == null) {
-            setSearchParams({});
-            return;
+        if (cuisineParam && allKochstile.length > 0) {
+            const match = allKochstile.find(
+                k => k.kochstil.toLowerCase() === cuisineParam.toLowerCase()
+            );
+            setSelectedKochstil(match ? match.stilid : null);
+        } else if (!cuisineParam) {
+            setSelectedKochstil(null);
         }
+    }, [searchParams, allKochstile]); // Nur bei URL- oder Kochstil-Änderung
 
-        const kochstil = allKochstile.find((k) => Number(k.stilid) === normalizedId);
-        if (kochstil?.kochstil) {
-            setSearchParams({ cuisine: kochstil.kochstil });
+    // Restaurants filtern
+    const filteredRestaurants = restaurants.filter(restaurant => {
+        if (!selectedKochstil) return true;
+        return restaurant.kochstil?.some(
+            k => Number(k.stilid) === Number(selectedKochstil)
+        );
+    });
+
+    // Filter ändern
+    const handleFilterChange = (stilId) => {
+        setSelectedKochstil(stilId);
+
+        if (stilId) {
+            const kochstil = allKochstile.find(k => k.stilid === stilId);
+            if (kochstil) {
+                setSearchParams({ cuisine: kochstil.kochstil });
+            }
         } else {
             setSearchParams({});
         }
@@ -195,7 +201,7 @@ function Restaurants() {
     if (loading) {
         return (
             <Container>
-                <div>Lade Restaurants...</div>
+                <LoadingMessage>Lade Restaurants...</LoadingMessage>
             </Container>
         );
     }
@@ -203,59 +209,38 @@ function Restaurants() {
     if (error) {
         return (
             <Container>
-                <div>{error}</div>
-                {/* Reload durch URL neu setzen ist ok, oder einfach window.location.reload() */}
-                <button onClick={() => window.location.reload()}>Erneut versuchen</button>
+                <ErrorMessage>{error}</ErrorMessage>
             </Container>
         );
     }
 
     return (
         <Container>
-            <Header>Unsere Ultra High Quality Arschgeilen Restaurants</Header>
-
-            {/* Debug-Box – kannst du später entfernen */}
-            <div style={{ background: "#f4f4f4", padding: 10, marginBottom: 20 }}>
-                <div>
-                    <strong>Debug:</strong> cuisineParam = {String(cuisineParam || "")}
-                </div>
-                <div>selectedKochstil = {String(selectedKochstil)}</div>
-                <div>
-                    total = {restaurants.length} | filtered = {filteredRestaurants.length}
-                </div>
-            </div>
+            <Header>Restaurants</Header>
 
             <FilterSection>
-                <button
+                <FilterButton
+                    $active={!selectedKochstil}
                     onClick={() => handleFilterChange(null)}
-                    style={{
-                        backgroundColor: selectedKochstil == null ? "#3498db" : "#ecf0f1",
-                        color: selectedKochstil == null ? "white" : "#333",
-                    }}
                 >
                     Alle ({restaurants.length})
-                </button>
+                </FilterButton>
 
-                {(allKochstile ?? []).map((k) => {
-                    const count = restaurants.filter((r) =>
-                        r.kochstil?.some((rk) => Number(rk.stilid) === Number(k.stilid))
+                {allKochstile.map(k => {
+                    const count = restaurants.filter(r =>
+                        r.kochstil?.some(rk => Number(rk.stilid) === Number(k.stilid))
                     ).length;
 
-                    const isActive =
-                        selectedKochstil != null &&
-                        Number(selectedKochstil) === Number(k.stilid);
+                    if (count === 0) return null;
 
                     return (
-                        <button
+                        <FilterButton
                             key={k.stilid}
+                            $active={selectedKochstil === k.stilid}
                             onClick={() => handleFilterChange(k.stilid)}
-                            style={{
-                                backgroundColor: isActive ? "#3498db" : "#ecf0f1",
-                                color: isActive ? "white" : "#333",
-                            }}
                         >
                             {k.kochstil} ({count})
-                        </button>
+                        </FilterButton>
                     );
                 })}
             </FilterSection>
@@ -264,38 +249,44 @@ function Restaurants() {
                 {filteredRestaurants.map((restaurant) => (
                     <RestaurantCard
                         key={restaurant.restaurantid}
-                        onClick={() => handleEditRestaurant(restaurant.restaurantid)}
+                        onClick={() => navigate(`/restaurants/${restaurant.restaurantid}`)}
                     >
                         <RestaurantName>{restaurant.name}</RestaurantName>
-                        <RestaurantType>{restaurant.klassifizierung}</RestaurantType>
 
-                        {/* Optional: Kochstile anzeigen (hilft beim Debuggen) */}
-                        {restaurant.kochstil?.length > 0 && (
-                            <div style={{ marginTop: 10, marginBottom: 10 }}>
-                                {restaurant.kochstil.map((k) => (
-                                    <span
-                                        key={k.stilid}
-                                        style={{
-                                            background: "#e0e0e0",
-                                            padding: "4px 8px",
-                                            borderRadius: 6,
-                                            marginRight: 6,
-                                            fontSize: "0.85em",
-                                            display: "inline-block",
-                                        }}
-                                    >
-                    {k.kochstil} (#{k.stilid})
-                  </span>
+                        {restaurant.klassifizierung && (
+                            <RestaurantType>{restaurant.klassifizierung}</RestaurantType>
+                        )}
+
+                        {restaurant.kochstil && restaurant.kochstil.length > 0 && (
+                            <div style={{ marginTop: '10px' }}>
+                                {restaurant.kochstil.map(k => (
+                                    <CuisineTag key={k.stilid}>
+                                        {k.kochstil}
+                                    </CuisineTag>
                                 ))}
                             </div>
                         )}
 
-                        <RestaurantInfo>{restaurant.kuechenchef}</RestaurantInfo>
-                        <RestaurantInfo>{restaurant.telefon}</RestaurantInfo>
-                        <RestaurantInfo>Adresse-ID: {restaurant.adresseid}</RestaurantInfo>
+                        {restaurant.kuechenchef && (
+                            <RestaurantInfo>👨‍🍳 {restaurant.kuechenchef}</RestaurantInfo>
+                        )}
+                        {restaurant.telefon && (
+                            <RestaurantInfo>📞 {restaurant.telefon}</RestaurantInfo>
+                        )}
+                        {restaurant.adresse && (
+                            <RestaurantInfo>
+                                📍 {restaurant.adresse.ort}
+                            </RestaurantInfo>
+                        )}
                     </RestaurantCard>
                 ))}
             </RestaurantGrid>
+
+            {filteredRestaurants.length === 0 && (
+                <LoadingMessage>
+                    Keine Restaurants gefunden {selectedKochstil && 'für diese Kategorie'}.
+                </LoadingMessage>
+            )}
         </Container>
     );
 }
