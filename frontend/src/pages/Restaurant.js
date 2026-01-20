@@ -80,84 +80,101 @@ function Restaurants() {
     const [searchParams, setSearchParams] = useSearchParams();
     const navigate = useNavigate();
 
-    // Stabiler: tatsächlichen String als Trigger nutzen, nicht das SearchParams-Objekt
     const cuisineParam = searchParams.get("cuisine");
 
     const handleEditRestaurant = (restaurantid) => {
         navigate(`/restaurants/${restaurantid}/edit`);
     };
 
-    const fetchRestaurants = async () => {
-        try {
-            setLoading(true);
-            setError(null);
-
-            const response = await restaurantService.getAll();
-            const data = Array.isArray(response?.data)
-                ? response.data
-                : Array.isArray(response)
-                    ? response
-                    : [];
-
-            setRestaurants(data);
-            console.log("Restaurants geladen:", data);
-            // Debug: hilft sofort zu sehen, ob kochstile wirklich drin sind
-            // console.log("Sample restaurant:", data?.[0]);
-            // console.log("Sample kochstile:", data?.[0]?.kochstile);
-        } catch (err) {
-            console.error("Fehler beim Laden:", err);
-            setError("Fehler beim Laden der Restaurants.");
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    // Restaurants beim Start laden
+    // 1) Daten laden: Restaurants + Kochstile parallel
     useEffect(() => {
-        fetchRestaurants();
-    }, []);
-
-    // Kochstile laden + URL->stilid synchronisieren
-    useEffect(() => {
-        const loadKochstile = async () => {
+        const loadData = async () => {
             try {
-                const response = await kochstilService.getAll();
-                const kochstile = Array.isArray(response?.data) ? response.data : [];
-                setAllKochstile(kochstile);
+                setLoading(true);
+                setError(null);
 
+                const [restaurantsRes, kochstileRes] = await Promise.all([
+                    restaurantService.getAll(),
+                    kochstilService.getAll(),
+                ]);
+
+                const restaurantsData = Array.isArray(restaurantsRes?.data)
+                    ? restaurantsRes.data
+                    : Array.isArray(restaurantsRes)
+                        ? restaurantsRes
+                        : [];
+
+                const kochstileData = Array.isArray(kochstileRes?.data)
+                    ? kochstileRes.data
+                    : Array.isArray(kochstileRes)
+                        ? kochstileRes
+                        : [];
+
+                setRestaurants(restaurantsData);
+                setAllKochstile(kochstileData);
+
+                // 2) URL Param auswerten -> stilid setzen
                 if (cuisineParam) {
-                    const match = kochstile.find(
-                        (k) =>
-                            (k.kochstil ?? "").toLowerCase() === cuisineParam.toLowerCase()
+                    const match = kochstileData.find(
+                        (k) => (k.kochstil ?? "").toLowerCase() === cuisineParam.toLowerCase()
                     );
-                    setSelectedKochstil(match ? Number(match.stilid) : null);
+                    const nextSelected = match ? Number(match.stilid) : null;
+                    setSelectedKochstil(nextSelected);
+
+                    console.log("URL cuisineParam:", cuisineParam);
+                    console.log("Match:", match);
+                    console.log("selectedKochstil set to:", nextSelected);
                 } else {
                     setSelectedKochstil(null);
+                    console.log("No cuisineParam -> selectedKochstil null");
                 }
-            } catch (e) {
-                console.error("Fehler beim Laden der Kochstile:", e);
-                setAllKochstile([]);
-                setSelectedKochstil(null);
+
+                // 3) Debug: sind Kochstile wirklich in den Restaurants drin?
+                const withKochstil = restaurantsData.filter(
+                    (r) => (r.kochstil?.length ?? 0) > 0
+                ).length;
+                console.log(
+                    "Restaurants total:",
+                    restaurantsData.length,
+                    "with kochstil:",
+                    withKochstil
+                );
+                console.log("Sample restaurant[0]:", restaurantsData[0]);
+            } catch (err) {
+                console.error("Fehler beim Laden:", err);
+                setError("Fehler beim Laden der Daten.");
+            } finally {
+                setLoading(false);
             }
         };
 
-        loadKochstile();
+        loadData();
+        // WICHTIG: nur auf cuisineParam hören, nicht auf searchParams-Objekt
     }, [cuisineParam]);
 
+    // 4) Filter (robust: Number-Vergleich)
     const filteredRestaurants = useMemo(() => {
-        const list = Array.isArray(restaurants) ? restaurants : [];
+        if (selectedKochstil == null) return restaurants;
 
-        // Kein Filter aktiv -> alles anzeigen
-        if (selectedKochstil == null) return list;
-
-        // Robust: Number-Vergleich, damit String/Number egal ist
-        return list.filter((restaurant) =>
-            restaurant.kochstile?.some(
+        const filtered = restaurants.filter((restaurant) =>
+            restaurant.kochstil?.some(
                 (k) => Number(k.stilid) === Number(selectedKochstil)
             )
         );
+
+        console.log(
+            "Filter active stilid:",
+            selectedKochstil,
+            "filtered:",
+            filtered.length,
+            "of",
+            restaurants.length
+        );
+
+        return filtered;
     }, [restaurants, selectedKochstil]);
 
+    // 5) Button/Filter setzen + URL synchronisieren
     const handleFilterChange = (stilId) => {
         const normalizedId = stilId == null ? null : Number(stilId);
         setSelectedKochstil(normalizedId);
@@ -167,28 +184,11 @@ function Restaurants() {
             return;
         }
 
-        const kochstil = allKochstile.find(
-            (k) => Number(k.stilid) === normalizedId
-        );
-
+        const kochstil = allKochstile.find((k) => Number(k.stilid) === normalizedId);
         if (kochstil?.kochstil) {
             setSearchParams({ cuisine: kochstil.kochstil });
         } else {
             setSearchParams({});
-        }
-    };
-
-    // Optional: Delete-Handler bleibt, auch wenn du aktuell keinen Button nutzt
-    const handleDelete = async (id, name) => {
-        if (window.confirm(`Möchten Sie das Restaurant "${name}" wirklich löschen?`)) {
-            try {
-                await restaurantService.delete(id);
-                console.log("Restaurant gelöscht:", id);
-                await fetchRestaurants();
-            } catch (err) {
-                console.error("Fehler beim Löschen:", err);
-                alert("Fehler beim Löschen des Restaurants");
-            }
         }
     };
 
@@ -204,7 +204,8 @@ function Restaurants() {
         return (
             <Container>
                 <div>{error}</div>
-                <button onClick={fetchRestaurants}>Erneut versuchen</button>
+                {/* Reload durch URL neu setzen ist ok, oder einfach window.location.reload() */}
+                <button onClick={() => window.location.reload()}>Erneut versuchen</button>
             </Container>
         );
     }
@@ -212,6 +213,17 @@ function Restaurants() {
     return (
         <Container>
             <Header>Unsere Ultra High Quality Arschgeilen Restaurants</Header>
+
+            {/* Debug-Box – kannst du später entfernen */}
+            <div style={{ background: "#f4f4f4", padding: 10, marginBottom: 20 }}>
+                <div>
+                    <strong>Debug:</strong> cuisineParam = {String(cuisineParam || "")}
+                </div>
+                <div>selectedKochstil = {String(selectedKochstil)}</div>
+                <div>
+                    total = {restaurants.length} | filtered = {filteredRestaurants.length}
+                </div>
+            </div>
 
             <FilterSection>
                 <button
@@ -225,8 +237,8 @@ function Restaurants() {
                 </button>
 
                 {(allKochstile ?? []).map((k) => {
-                    const count = (restaurants ?? []).filter((r) =>
-                        r.kochstile?.some((rk) => Number(rk.stilid) === Number(k.stilid))
+                    const count = restaurants.filter((r) =>
+                        r.kochstil?.some((rk) => Number(rk.stilid) === Number(k.stilid))
                     ).length;
 
                     const isActive =
@@ -256,6 +268,28 @@ function Restaurants() {
                     >
                         <RestaurantName>{restaurant.name}</RestaurantName>
                         <RestaurantType>{restaurant.klassifizierung}</RestaurantType>
+
+                        {/* Optional: Kochstile anzeigen (hilft beim Debuggen) */}
+                        {restaurant.kochstil?.length > 0 && (
+                            <div style={{ marginTop: 10, marginBottom: 10 }}>
+                                {restaurant.kochstil.map((k) => (
+                                    <span
+                                        key={k.stilid}
+                                        style={{
+                                            background: "#e0e0e0",
+                                            padding: "4px 8px",
+                                            borderRadius: 6,
+                                            marginRight: 6,
+                                            fontSize: "0.85em",
+                                            display: "inline-block",
+                                        }}
+                                    >
+                    {k.kochstil} (#{k.stilid})
+                  </span>
+                                ))}
+                            </div>
+                        )}
+
                         <RestaurantInfo>{restaurant.kuechenchef}</RestaurantInfo>
                         <RestaurantInfo>{restaurant.telefon}</RestaurantInfo>
                         <RestaurantInfo>Adresse-ID: {restaurant.adresseid}</RestaurantInfo>

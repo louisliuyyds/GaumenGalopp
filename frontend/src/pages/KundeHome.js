@@ -323,7 +323,7 @@ function KundeHome() {
                 const counts = kochstile.map(k => ({
                     ...k,
                     count: restaurants.filter(r =>
-                        r.kochstile?.some(rk => rk.stilid === k.stilid)
+                        r.kochstil?.some(rk => Number(rk.stilid) === Number(k.stilid))
                     ).length
                 }));
 

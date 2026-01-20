@@ -47,11 +47,10 @@ def get_all_restaurants(db: Session = Depends(get_db)):
                 "land": r.adresse.land
             } if r.adresse else None,
 
-            "kochstile": [
+            "kochstil": [
                 {
                     "stilid": kr.kochstil.stilid,
                     "kochstil": kr.kochstil.kochstil,
-                    "beschreibung": kr.kochstil.beschreibung
                 } for kr in r.kochstil
             ] if r.kochstil else []
         }
@@ -92,11 +91,10 @@ def get_restaurant(
             "land": restaurant.adresse.land
         } if restaurant.adresse else None,
 
-        "kochstile": [
+        "kochstil": [
             {
                 "stilid": kr.kochstil.stilid,
                 "kochstil": kr.kochstil.kochstil,
-                "beschreibung": kr.kochstil.beschreibung
             } for kr in restaurant.kochstil
         ] if restaurant.kochstil else [],
         # Menüs mit Gerichten und Preisen
