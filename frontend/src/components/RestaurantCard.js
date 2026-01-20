@@ -1,7 +1,7 @@
-import React from 'react';
-import styled from 'styled-components';
-import { useNavigate } from 'react-router-dom';
-import colors from '../theme/colors';
+import React from "react";
+import styled from "styled-components";
+import { useNavigate } from "react-router-dom";
+import colors from "../theme/colors";
 
 const Card = styled.div`
     background: ${colors.background.card};
@@ -13,110 +13,174 @@ const Card = styled.div`
     box-shadow: ${colors.shadows.small};
 
     &:hover {
-        transform: translateY(-8px);
+        transform: translateY(-6px);
         box-shadow: ${colors.shadows.large};
         border-color: ${colors.accent.orange};
     }
 `;
 
-const RestaurantImage = styled.div`
-    height: 200px;
-    background: ${props => props.$gradient || colors.gradients.primary};
+const Header = styled.div`
+    display: flex;
+    gap: 12px;
+    padding: 16px 18px 10px 18px;
+    align-items: flex-start;
+`;
+
+const IconBadge = styled.div`
+    width: 44px;
+    height: 44px;
+    border-radius: 14px;
+    background: ${colors.gradients.luxury};
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 4em;
+    font-size: 1.6em;
+    flex: 0 0 auto;
+    box-shadow: ${colors.shadows.small};
+    border: 1px solid ${colors.border.light};
 `;
 
-const Content = styled.div`
-    padding: 25px;
+const TitleBlock = styled.div`
+    flex: 1 1 auto;
+    min-width: 0;
+`;
+
+const TitleRow = styled.div`
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    align-items: baseline;
 `;
 
 const RestaurantName = styled.h3`
     color: ${colors.text.primary};
-    font-size: 1.4em;
-    font-weight: 700;
-    margin-bottom: 10px;
+    font-size: 1.15em;
+    font-weight: 800;
+    margin: 0;
+    line-height: 1.2;
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 `;
 
-const CuisineTag = styled.span`
-    display: inline-block;
-    background: ${colors.accent.orange};
-    color: ${colors.text.white};
-    padding: 5px 12px;
-    border-radius: 15px;
-    font-size: 0.8em;
-    font-weight: 600;
-    margin-right: 5px;
-    margin-bottom: 5px;
-`;
-
-const InfoRow = styled.div`
+const Michelin = styled.div`
+    flex: 0 0 auto;
     color: ${colors.text.secondary};
-    font-size: 0.95em;
-    margin: 8px 0;
-    display: flex;
-    align-items: flex-start;
-    gap: 8px;
-    line-height: 1.4;
-`;
-
-const Footer = styled.div`
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-top: 15px;
-    padding-top: 15px;
-    border-top: 2px solid ${colors.border.light};
-`;
-
-const Rating = styled.div`
-    display: flex;
+    font-size: 0.9em;
+    font-weight: 800;
+    white-space: nowrap;
+    display: inline-flex;
     align-items: center;
     gap: 6px;
+`;
+
+const MichelinStar = styled.span`
     color: ${colors.accent.orange};
-    font-weight: 700;
-    font-size: 1.1em;
+    font-weight: 900;
 `;
 
-const DeliveryTime = styled.div`
+const MetaRow = styled.div`
+    margin-top: 8px;
     color: ${colors.text.light};
-    font-size: 0.9em;
-    font-weight: 600;
-`;
-
-const ChefInfo = styled.div`
-    color: ${colors.text.secondary};
-    font-size: 0.9em;
-    margin: 8px 0;
+    font-size: 0.92em;
+    font-weight: 700;
     display: flex;
-    align-items: center;
+    flex-wrap: wrap;
     gap: 8px;
+    align-items: center;
 `;
 
-// Icon-Mapping für Kochstile
+const Dot = styled.span`
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: ${colors.border.light};
+    display: inline-block;
+`;
+
+const Content = styled.div`
+    padding: 0 18px 16px 18px;
+`;
+
+const CuisineLine = styled.div`
+    margin-top: 10px;
+    color: ${colors.text.secondary};
+    font-size: 0.92em;
+    font-weight: 800;
+    display: flex;
+    gap: 8px;
+    align-items: center;
+`;
+
+const CuisinePill = styled.span`
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: ${colors.background.page};
+    border: 1px solid ${colors.border.light};
+    color: ${colors.text.secondary};
+    font-size: 0.82em;
+    font-weight: 800;
+`;
+
+const AddressRow = styled.div`
+    margin-top: 10px;
+    color: ${colors.text.secondary};
+    font-size: 0.92em;
+    line-height: 1.35;
+    display: flex;
+    gap: 8px;
+    align-items: flex-start;
+`;
+
+const Divider = styled.div`
+    height: 1px;
+    background: ${colors.border.light};
+    margin: 14px 18px 0 18px;
+`;
+
+const FooterHint = styled.div`
+    padding: 10px 18px 14px 18px;
+    display: flex;
+    justify-content: flex-end;
+    color: ${colors.text.light};
+    font-size: 0.85em;
+    font-weight: 800;
+`;
+
 const iconMap = {
-    'Italienisch': '🍕',
-    'Japanisch': '🍣',
-    'Amerikanisch': '🍔',
-    'Französisch': '🥐',
-    'Chinesisch': '🥡',
-    'Indisch': '🍛',
-    'Deutsch': '🥨',
-    'Griechisch': '🥙',
-    'Thai': '🍜',
-    'Mexikanisch': '🌮',
-    'Spanisch': '🥘',
-    'Türkisch': '🥙',
-    'Vegetarisch': '🥗',
-    'Vegan': '🌱'
+    Italienisch: "🍕",
+    Japanisch: "🍣",
+    Amerikanisch: "🍔",
+    Französisch: "🥐",
+    Chinesisch: "🥡",
+    Indisch: "🍛",
+    Deutsch: "🥨",
+    Griechisch: "🥙",
+    Thai: "🍜",
+    Mexikanisch: "🌮",
+    Spanisch: "🥘",
+    Türkisch: "🥙",
+    Vegetarisch: "🥗",
+    Vegan: "🌱",
+    "Fast Food": "🍟",
+};
+
+const parseMichelinStars = (klassifizierung) => {
+    if (!klassifizierung) return null;
+    const m = String(klassifizierung).match(/(\d+)/);
+    return m ? Number(m[1]) : null;
 };
 
 /**
- * RestaurantCard - Wiederverwendbare Restaurant-Karte
- *
- * @param {Object} restaurant - Restaurant-Objekt aus der API
- * @param {string} basePath - Base-Pfad für Navigation (z.B. "/kunde/restaurants" oder "/restaurants")
+ * RestaurantCard (UI-only refresh)
+ * - Michelin as identity label (typographic, not a pill)
+ * - Customer rating + delivery in one compact meta row
+ * - Kochstile reduced: show 1 + "+n"
+ * - Address compacted
+ * - No duplicate info blocks
  */
 function RestaurantCard({ restaurant, basePath = "/restaurants" }) {
     const navigate = useNavigate();
@@ -125,77 +189,75 @@ function RestaurantCard({ restaurant, basePath = "/restaurants" }) {
         navigate(`${basePath}/${restaurant.restaurantid}`);
     };
 
-    // Icon basierend auf erstem Kochstil
-    const icon = restaurant.kochstil && restaurant.kochstil.length > 0
-        ? iconMap[restaurant.kochstil[0].kochstil] || '🍽️'
-        : '🍽️';
+    const kochstile = Array.isArray(restaurant.kochstil) ? restaurant.kochstil : [];
+    const icon =
+        kochstile.length > 0 ? iconMap[kochstile[0].kochstil] || "🍽️" : "🍽️";
 
-    // Vollständige Adresse formatieren
-    const formatAddress = () => {
-        if (!restaurant.adresse) return null;
+    const michelinStars = parseMichelinStars(restaurant.klassifizierung);
 
-        const { straße, hausnummer, postleitzahl, ort } = restaurant.adresse;
+    // Compact address: "Straße Hausnr · Ort"
+    const addressText = (() => {
+        const a = restaurant.adresse;
+        if (!a) return null;
+        const line1 = [a.straße, a.hausnummer].filter(Boolean).join(" ");
+        const city = [a.ort].filter(Boolean).join(" ");
+        if (!line1 && !city) return null;
+        return [line1, city].filter(Boolean).join(" · ");
+    })();
 
-        if (!straße && !ort) return null;
-
-        return (
-            <>
-                {straße && hausnummer && `${straße} ${hausnummer}`}
-                {straße && hausnummer && (postleitzahl || ort) && <br />}
-                {postleitzahl && `${postleitzahl} `}
-                {ort}
-            </>
-        );
-    };
-
-    const address = formatAddress();
+    const primaryCuisine = kochstile[0]?.kochstil;
+    const extraCuisineCount = Math.max(kochstile.length - 1, 0);
 
     return (
         <Card onClick={handleClick}>
-            <RestaurantImage $gradient={colors.gradients.luxury}>
-                <span>{icon}</span>
-            </RestaurantImage>
+            <Header>
+                <IconBadge aria-hidden="true">{icon}</IconBadge>
+
+                <TitleBlock>
+                    <TitleRow>
+                        <RestaurantName title={restaurant.name}>{restaurant.name}</RestaurantName>
+
+                        <Michelin title="Michelin-Klassifizierung">
+                            Michelin <MichelinStar>★</MichelinStar>
+                            {michelinStars != null ? michelinStars : restaurant.klassifizierung}
+                        </Michelin>
+                    </TitleRow>
+
+                    {/* One compact meta line (no pills, no borders) */}
+                    <MetaRow>
+                        <span title="Kundenbewertung">⭐ 4.5</span>
+                        <Dot />
+                        <span title="Lieferzeit">🕐 30–40 Min</span>
+                    </MetaRow>
+                </TitleBlock>
+            </Header>
+
             <Content>
-                <RestaurantName>{restaurant.name}</RestaurantName>
-
-                {/* Kochstile */}
-                {restaurant.kochstil && restaurant.kochstil.length > 0 && (
-                    <div style={{ marginBottom: '10px' }}>
-                        {restaurant.kochstil.map(k => (
-                            <CuisineTag key={k.stilid}>
-                                {k.kochstil}
-                            </CuisineTag>
-                        ))}
-                    </div>
+                {/* Kochstile: 1 + "+n" */}
+                {primaryCuisine && (
+                    <CuisineLine>
+                        <CuisinePill>{primaryCuisine}</CuisinePill>
+                        {extraCuisineCount > 0 && (
+                            <CuisinePill
+                                title={kochstile.map((k) => k.kochstil).join(", ")}
+                            >
+                                +{extraCuisineCount}
+                            </CuisinePill>
+                        )}
+                    </CuisineLine>
                 )}
 
-                {/* Küchenchef */}
-                {restaurant.kuechenchef && (
-                    <ChefInfo>
-                        👨‍🍳 {restaurant.kuechenchef}
-                    </ChefInfo>
+                {/* Address: compact, single line */}
+                {addressText && (
+                    <AddressRow>
+                        <span aria-hidden="true">📍</span>
+                        <span>{addressText}</span>
+                    </AddressRow>
                 )}
-
-                {/* Adresse */}
-                {address && (
-                    <InfoRow>
-                        <span>📍</span>
-                        <span>{address}</span>
-                    </InfoRow>
-                )}
-
-                {/* Telefon */}
-                {restaurant.telefon && (
-                    <InfoRow>
-                        📞 {restaurant.telefon}
-                    </InfoRow>
-                )}
-
-                <Footer>
-                    <Rating>⭐ 4.5</Rating>
-                    <DeliveryTime>🕐 30-40 Min</DeliveryTime>
-                </Footer>
             </Content>
+
+            <Divider />
+            <FooterHint>Mehr →</FooterHint>
         </Card>
     );
 }

@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import colors from '../theme/colors';
 import kochstilService from '../services/kochstilService';
 import restaurantService from '../services/restaurantService';
+import RestaurantCard from '../components/RestaurantCard';
 
 const Container = styled.div`
     max-width: 1400px;
@@ -151,85 +152,6 @@ const RestaurantsGrid = styled.div`
     gap: 25px;
 `;
 
-const RestaurantCard = styled.div`
-    background: ${colors.background.card};
-    border-radius: 16px;
-    overflow: hidden;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    border: 2px solid ${colors.border.light};
-    box-shadow: ${colors.shadows.small};
-
-    &:hover {
-        transform: translateY(-8px);
-        box-shadow: ${colors.shadows.large};
-        border-color: ${colors.accent.orange};
-    }
-`;
-
-const RestaurantImage = styled.div`
-    height: 200px;
-    background: ${props => props.$gradient || colors.gradients.primary};
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 4em;
-`;
-
-const RestaurantContent = styled.div`
-    padding: 25px;
-`;
-
-const RestaurantName = styled.h3`
-    color: ${colors.text.primary};
-    font-size: 1.4em;
-    font-weight: 700;
-    margin-bottom: 10px;
-`;
-
-const CuisineTag = styled.span`
-    background: ${colors.accent.orange};
-    color: ${colors.text.white};
-    padding: 5px 12px;
-    border-radius: 15px;
-    font-size: 0.8em;
-    font-weight: 600;
-    margin-right: 5px;
-`;
-
-const RestaurantInfo = styled.div`
-    color: ${colors.text.secondary};
-    font-size: 0.95em;
-    margin: 8px 0;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-`;
-
-const RestaurantFooter = styled.div`
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-top: 15px;
-    padding-top: 15px;
-    border-top: 2px solid ${colors.border.light};
-`;
-
-const Rating = styled.div`
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    color: ${colors.accent.orange};
-    font-weight: 700;
-    font-size: 1.1em;
-`;
-
-const DeliveryTime = styled.div`
-    color: ${colors.text.light};
-    font-size: 0.9em;
-    font-weight: 600;
-`;
-
 const LoadingMessage = styled.div`
     text-align: center;
     padding: 50px;
@@ -237,7 +159,7 @@ const LoadingMessage = styled.div`
     color: ${colors.text.light};
 `;
 
-// Icon-Mapping für Kochstile
+// Icon-Mapping für Kategorien
 const iconMap = {
     'Italienisch': '🍕',
     'Japanisch': '🍣',
@@ -275,7 +197,6 @@ function KundeHome() {
                 const kochstile = kochstileRes.data || kochstileRes || [];
                 const restaurants = restaurantsRes.data || restaurantsRes || [];
 
-                // Zähle Restaurants pro Kategorie
                 const counts = kochstile.map(k => ({
                     ...k,
                     count: restaurants.filter(r =>
@@ -283,17 +204,13 @@ function KundeHome() {
                     ).length
                 }));
 
-                // Top 6 Kategorien (mit Restaurants)
                 const top6 = counts
                     .filter(k => k.count > 0)
                     .sort((a, b) => b.count - a.count)
                     .slice(0, 6);
 
                 setTopCategories(top6);
-
-                // Top 4 Restaurants (einfach die ersten 4)
-                const featured = restaurants.slice(0, 4);
-                setFeaturedRestaurants(featured);
+                setFeaturedRestaurants(restaurants.slice(0, 4));
 
             } catch (error) {
                 console.error('Fehler beim Laden:', error);
@@ -364,44 +281,12 @@ function KundeHome() {
                     <LoadingMessage>Keine Restaurants verfügbar</LoadingMessage>
                 ) : (
                     <RestaurantsGrid>
-                        {featuredRestaurants.map((restaurant) => (
+                        {featuredRestaurants.map(restaurant => (
                             <RestaurantCard
                                 key={restaurant.restaurantid}
-                                onClick={() => navigate(`/kunde/restaurants/${restaurant.restaurantid}`)}
-                            >
-                                <RestaurantImage $gradient={colors.gradients.luxury}>
-                                    <span>
-                                        {restaurant.kochstil && restaurant.kochstil.length > 0
-                                            ? iconMap[restaurant.kochstil[0].kochstil] || '🍽️'
-                                            : '🍽️'
-                                        }
-                                    </span>
-                                </RestaurantImage>
-                                <RestaurantContent>
-                                    <RestaurantName>{restaurant.name}</RestaurantName>
-
-                                    {restaurant.kochstil && restaurant.kochstil.length > 0 && (
-                                        <div style={{ marginBottom: '10px' }}>
-                                            {restaurant.kochstil.map(k => (
-                                                <CuisineTag key={k.stilid}>
-                                                    {k.kochstil}
-                                                </CuisineTag>
-                                            ))}
-                                        </div>
-                                    )}
-
-                                    {restaurant.adresse && (
-                                        <RestaurantInfo>
-                                            📍 {restaurant.adresse.ort}
-                                        </RestaurantInfo>
-                                    )}
-
-                                    <RestaurantFooter>
-                                        <Rating>⭐ 4.5</Rating>
-                                        <DeliveryTime>🕐 30-40 Min</DeliveryTime>
-                                    </RestaurantFooter>
-                                </RestaurantContent>
-                            </RestaurantCard>
+                                restaurant={restaurant}
+                                basePath="/kunde/restaurants"
+                            />
                         ))}
                     </RestaurantsGrid>
                 )}

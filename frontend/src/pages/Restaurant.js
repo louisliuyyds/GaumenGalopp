@@ -4,6 +4,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import colors from "../theme/colors";
 import { restaurantService } from "../services";
 import kochstilService from "../services/kochstilService";
+import RestaurantCard from "../components/RestaurantCard";
 
 const Container = styled.div`
     max-width: 1400px;
@@ -53,61 +54,6 @@ const RestaurantGrid = styled.div`
     margin-top: 20px;
 `;
 
-const RestaurantCard = styled.div`
-    background: ${colors.background.card};
-    border-radius: 12px;
-    padding: 25px;
-    box-shadow: ${colors.shadows.medium};
-    cursor: pointer;
-    transition: all 0.3s ease;
-    border: 2px solid transparent;
-
-    &:hover {
-        transform: translateY(-8px);
-        box-shadow: ${colors.shadows.large};
-        border-color: ${colors.accent.orange};
-    }
-`;
-
-const RestaurantName = styled.h2`
-    color: ${colors.text.primary};
-    margin-bottom: 15px;
-    font-size: 1.6em;
-    font-weight: 600;
-`;
-
-const RestaurantInfo = styled.p`
-    color: ${colors.text.light};
-    margin: 8px 0;
-    font-size: 0.95em;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-`;
-
-const RestaurantType = styled.span`
-    display: inline-block;
-    background: ${colors.gradients.accent};
-    color: ${colors.text.white};
-    padding: 6px 14px;
-    border-radius: 15px;
-    font-size: 0.85em;
-    margin-top: 10px;
-    font-weight: 600;
-`;
-
-const CuisineTag = styled.span`
-    display: inline-block;
-    background: ${colors.background.light};
-    color: ${colors.text.secondary};
-    padding: 4px 10px;
-    border-radius: 12px;
-    font-size: 0.8em;
-    margin-right: 5px;
-    margin-top: 5px;
-    font-weight: 500;
-`;
-
 const LoadingMessage = styled.div`
     text-align: center;
     padding: 50px;
@@ -134,7 +80,7 @@ function Restaurants() {
     const [searchParams, setSearchParams] = useSearchParams();
     const navigate = useNavigate();
 
-    // Laden der Daten beim Mount (nur einmal)
+    // Laden der Daten beim Mount
     useEffect(() => {
         const loadData = async () => {
             try {
@@ -160,9 +106,9 @@ function Restaurants() {
         };
 
         loadData();
-    }, []); // Nur beim Mount
+    }, []);
 
-    // URL-Parameter auswerten (separate useEffect)
+    // URL-Parameter auswerten
     useEffect(() => {
         const cuisineParam = searchParams.get('cuisine');
 
@@ -174,7 +120,7 @@ function Restaurants() {
         } else if (!cuisineParam) {
             setSelectedKochstil(null);
         }
-    }, [searchParams, allKochstile]); // Nur bei URL- oder Kochstil-Änderung
+    }, [searchParams, allKochstile]);
 
     // Restaurants filtern
     const filteredRestaurants = restaurants.filter(restaurant => {
@@ -246,39 +192,12 @@ function Restaurants() {
             </FilterSection>
 
             <RestaurantGrid>
-                {filteredRestaurants.map((restaurant) => (
+                {filteredRestaurants.map(restaurant => (
                     <RestaurantCard
                         key={restaurant.restaurantid}
-                        onClick={() => navigate(`/restaurants/${restaurant.restaurantid}`)}
-                    >
-                        <RestaurantName>{restaurant.name}</RestaurantName>
-
-                        {restaurant.klassifizierung && (
-                            <RestaurantType>{restaurant.klassifizierung}</RestaurantType>
-                        )}
-
-                        {restaurant.kochstil && restaurant.kochstil.length > 0 && (
-                            <div style={{ marginTop: '10px' }}>
-                                {restaurant.kochstil.map(k => (
-                                    <CuisineTag key={k.stilid}>
-                                        {k.kochstil}
-                                    </CuisineTag>
-                                ))}
-                            </div>
-                        )}
-
-                        {restaurant.kuechenchef && (
-                            <RestaurantInfo>👨‍🍳 {restaurant.kuechenchef}</RestaurantInfo>
-                        )}
-                        {restaurant.telefon && (
-                            <RestaurantInfo>📞 {restaurant.telefon}</RestaurantInfo>
-                        )}
-                        {restaurant.adresse && (
-                            <RestaurantInfo>
-                                📍 {restaurant.adresse.ort}
-                            </RestaurantInfo>
-                        )}
-                    </RestaurantCard>
+                        restaurant={restaurant}
+                        basePath="/restaurants"
+                    />
                 ))}
             </RestaurantGrid>
 
