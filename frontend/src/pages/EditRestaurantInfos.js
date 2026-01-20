@@ -265,8 +265,8 @@ function EditRestaurantInfos() {
                     kochstilRestaurantService.getKochstileByRestaurant(id)
                 ]);
 
-                setAvailableKochstile(kochstileResponse.data);
-                const assignedIds = assignedResponse.data.map(k => k.stilid);
+                setAvailableKochstile(kochstileResponse);
+                const assignedIds = assignedResponse.map(k => k.stilid);
                 setSelectedKochstile(assignedIds);
                 setOriginalKochstile(assignedIds);
 
@@ -310,7 +310,6 @@ function EditRestaurantInfos() {
         if (existing) {
             toggleKochstil(existing.stilid);
             setNewKochstil('');
-            alert('Diese Kategorie existiert bereits und wurde ausgewählt!');
             return;
         }
 
@@ -320,14 +319,12 @@ function EditRestaurantInfos() {
                 beschreibung: ''
             });
 
-            const newStil = response.data;
+            const newStil = response;
             setAvailableKochstile(prev => [...prev, newStil]);
             setSelectedKochstile(prev => [...prev, newStil.stilid]);
             setNewKochstil('');
-            alert('Neue Kategorie erfolgreich erstellt!');
         } catch (error) {
             console.error('Fehler beim Erstellen:', error);
-            alert('Fehler beim Erstellen der Kategorie');
         }
     };
 
@@ -465,7 +462,7 @@ function EditRestaurantInfos() {
                             borderRadius: '8px',
                             backgroundColor: '#f9f9f9'
                         }}>
-                            {availableKochstile.length > 0 ? (
+                            {availableKochstile?.length > 0 ? (
                                 availableKochstile.map(k => (
                                     <button
                                         key={k.stilid}
@@ -611,12 +608,6 @@ function EditRestaurantInfos() {
                             required
                         />
                     </InputGroup>
-
-                    <InfoBox>
-                        🧠 <strong>Intelligentes Backend-System:</strong><br/>
-                        Das Backend entscheidet automatisch, ob eine neue Adresse erstellt werden muss.
-                        Wenn andere Restaurants oder Kunden die gleiche Adresse nutzen, bleibt ihre Adresse unverändert.
-                    </InfoBox>
                 </InfoCard>
 
                 {/* Buttons */}

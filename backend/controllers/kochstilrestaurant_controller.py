@@ -41,9 +41,9 @@ def remove_kochstil_from_restaurant(
     return None
 
 @router.get("/restaurant/{restaurant_id}", response_model=List[KochstilRestaurantResponse])
-def get_kochstile_by_restaurant(restaurant_id: int, db: Session = Depends(get_db)):
+def get_kochstil_by_restaurant(restaurant_id: int, db: Session = Depends(get_db)):
     service = KochstilRestaurantService(db)
-    kochstile = service.get_kochstile_by_restaurant(restaurant_id)
+    kochstile = service.get_kochstil_by_restaurant(restaurant_id)
     return kochstile
 
 @router.get("/kochstil/{stil_id}", response_model=List[KochstilRestaurantResponse])
