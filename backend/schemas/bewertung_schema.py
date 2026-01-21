@@ -4,6 +4,8 @@ from typing import Optional
 
 # What data comes IN when creating a bewertung
 class BewertungCreate(BaseModel):
+    kundenid: int
+    gerichtid: int
     rating: int
     kommentar: str
     erstelltam: datetime

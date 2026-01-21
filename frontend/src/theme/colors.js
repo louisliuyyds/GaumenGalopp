@@ -3,21 +3,29 @@
 const colors = {
     // Haupt-Farbschema
     primary: {
+        main: '#1a3a2e',      // Haupt-Grün (für Kompatibilität)
         dark: '#1a1410',      // Tiefes Schokoladenbraun
         medium: '#2d2419',    // Warmes dunkles Braun
         light: '#f5f0e8',     // Cremiges Beige
+    },
+    // Sekundär-Farbschema (NEU - für Kompatibilität)
+    secondary: {
+        main: '#866948ff',    // Warmes Braun
+        light: '#dbc681ff',   // Helles Gold-Braun
     },
     // Akzent-Farben
     accent: {
         orange: '#d4af37',    // Klassisches Gold
         lightOrange: '#e8c568', // Helles Gold
         gold: '#f4d03f',      // Leuchtendes Gold für Highlights
+        black: '#1a1410',     // Für Hover-Effekte
     },
     // Basis-Farben
     background: {
         main: '#faf8f3',      // Warmes Off-White
         card: '#ffffff',      // Card-Hintergrund
         light: '#f5efe6',     // Sanftes Beige
+        page: '#faf8f3',      // Page background (alias für main)
         gradient: 'linear-gradient(135deg, #faf8f3 0%, #f5efe6 100%)',
     },
     // Text-Farben
@@ -32,11 +40,15 @@ const colors = {
     // Status-Farben
     status: {
         success: '#7a9d54',   // Gedämpftes Olivgrün
+        successLight: '#e8f5e9', // Helles Grün für Backgrounds
         successHover: '#6b8a48',
         error: '#a04747',     // Warmes Rot
+        errorLight: '#fdecea', // Helles Rot für Backgrounds
         errorHover: '#8f3d3d',
         warning: '#d4863c',   // Warmes Orange
+        warningLight: '#fff3e0', // Helles Orange für Backgrounds
         info: '#6b7fa3',      // Gedämpftes Blau
+        infoLight: '#e3f2fd', // Helles Blau für Backgrounds
     },
     // Border & Shadow
     border: {
@@ -50,6 +62,7 @@ const colors = {
         accent: 'linear-gradient(135deg, #f4e1a2ff 0%, #f4d03f 100%)',
         card: 'linear-gradient(135deg, #ffffff 0%, #faf8f3 100%)',
         luxury: 'linear-gradient(135deg, #f5efe6 0%, #e8dfd0 50%, #d4af37 100%)',
+        warning: 'linear-gradient(135deg, #d4863c 0%, #f4d03f 100%)',
     },
     // Transparente Overlays
     overlay: {

@@ -39,7 +39,7 @@ function App() {
         <AuthProvider>
             <Router>
                 <Routes>
-                    {/* Öffentliche Routes - Login & Register */}
+                    {/* Öffentliche Routes */}
                     <Route path="/login" element={<Login />} />
                     <Route path="/register" element={<Register />} />
 
@@ -52,28 +52,8 @@ function App() {
                                     <Sidebar />
                                     <ContentArea>
                                         <Routes>
-                                            {/* Dashboard - für alle */}
+                                            {/* Dashboard */}
                                             <Route path="/" element={<Dashboard />} />
-
-                                            {/* Restaurant Admin Routes - nur für Restaurants */}
-                                            <Route
-                                                path="/neuesRestaurant"
-                                                element={
-                                                    <ProtectedRoute requiredType="restaurant">
-                                                        <Restaurants />
-                                                    </ProtectedRoute>
-                                                }
-                                            />
-
-                                            {/* Restaurant Profil - nur für Restaurants */}
-                                            <Route
-                                                path="/restaurants/profil"
-                                                element={
-                                                    <ProtectedRoute requiredType="restaurant">
-                                                        <RestaurantProfil />
-                                                    </ProtectedRoute>
-                                                }
-                                            />
 
                                             {/* Restaurant Routes - für alle */}
                                             <Route path="/restaurants" element={<Restaurants />} />
@@ -102,6 +82,16 @@ function App() {
                                                 element={
                                                     <ProtectedRoute requiredType="restaurant">
                                                         <EditMenu />
+                                                    </ProtectedRoute>
+                                                }
+                                            />
+
+                                            {/* Restaurant Profil Route */}
+                                            <Route
+                                                path="/restaurants/profil"
+                                                element={
+                                                    <ProtectedRoute requiredType="restaurant">
+                                                        <RestaurantProfil />
                                                     </ProtectedRoute>
                                                 }
                                             />
@@ -140,18 +130,21 @@ function App() {
                                                 }
                                             />
                                             <Route
-                                                path="/kunde/bestellungen"
+                                                path="/kunde/bestellhistorie"
                                                 element={
                                                     <ProtectedRoute requiredType="kunde">
                                                         <Bestellhistorie />
                                                     </ProtectedRoute>
                                                 }
                                             />
-                                            
-                                            {/* Bestellhistorie - für alle (Restaurant kann auch Bestellungen sehen) */}
-                                            <Route path="/bestellhistorie" element={<Bestellhistorie />} />
 
-                                            {/* Fallback - redirect to home */}
+                                            {/* Bestellhistorie auch für Restaurants */}
+                                            <Route
+                                                path="/bestellhistorie"
+                                                element={<Bestellhistorie />}
+                                            />
+
+                                            {/* Fallback */}
                                             <Route path="*" element={<Navigate to="/" replace />} />
                                         </Routes>
                                     </ContentArea>

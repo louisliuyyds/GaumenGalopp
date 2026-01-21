@@ -1,7 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom';
 import colors from '../theme/colors';
+import kochstilService from '../services/kochstilService';
+import restaurantService from '../services/restaurantService';
+import RestaurantCard from '../components/RestaurantCard';
 
 const Container = styled.div`
     max-width: 1400px;
@@ -131,12 +134,12 @@ const CategoryName = styled.div`
     color: ${colors.text.primary};
     font-size: 1.1em;
     font-weight: 600;
+    margin-bottom: 5px;
 `;
 
 const CategoryCount = styled.div`
     color: ${colors.text.light};
     font-size: 0.9em;
-    margin-top: 5px;
 `;
 
 const FeaturedSection = styled.div`
@@ -149,215 +152,75 @@ const RestaurantsGrid = styled.div`
     gap: 25px;
 `;
 
-const RestaurantCard = styled.div`
-    background: ${colors.background.card};
-    border-radius: 16px;
-    overflow: hidden;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    border: 2px solid ${colors.border.light};
-    box-shadow: ${colors.shadows.small};
-
-    &:hover {
-        transform: translateY(-8px);
-        box-shadow: ${colors.shadows.large};
-        border-color: ${colors.accent.orange};
-    }
-`;
-
-const RestaurantImage = styled.div`
-    height: 200px;
-    background: ${props => props.$gradient || colors.gradients.primary};
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 4em;
-    position: relative;
-`;
-
-const FavoriteButton = styled.button`
-    position: absolute;
-    top: 15px;
-    right: 15px;
-    background: ${colors.background.card};
-    border: none;
-    width: 45px;
-    height: 45px;
-    border-radius: 50%;
-    cursor: pointer;
-    font-size: 1.3em;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.3s ease;
-    box-shadow: ${colors.shadows.small};
-
-    &:hover {
-        transform: scale(1.1);
-        box-shadow: ${colors.shadows.medium};
-    }
-`;
-
-const RestaurantContent = styled.div`
-    padding: 25px;
-`;
-
-const RestaurantHeader = styled.div`
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 12px;
-`;
-
-const RestaurantName = styled.h3`
-    color: ${colors.text.primary};
-    font-size: 1.4em;
-    font-weight: 700;
-    margin-bottom: 5px;
-`;
-
-const CuisineTag = styled.span`
-    background: ${colors.accent.orange};
-    color: ${colors.text.white};
-    padding: 5px 12px;
-    border-radius: 15px;
-    font-size: 0.8em;
-    font-weight: 600;
-`;
-
-const RestaurantInfo = styled.div`
-    color: ${colors.text.secondary};
-    font-size: 0.95em;
-    margin: 8px 0;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-`;
-
-const RestaurantFooter = styled.div`
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-top: 15px;
-    padding-top: 15px;
-    border-top: 2px solid ${colors.border.light};
-`;
-
-const Rating = styled.div`
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    color: ${colors.accent.orange};
-    font-weight: 700;
-    font-size: 1.1em;
-`;
-
-const DeliveryTime = styled.div`
-    color: ${colors.text.light};
-    font-size: 0.9em;
-    font-weight: 600;
-`;
-
-const PromoSection = styled.div`
-    background: ${colors.gradients.accent};
-    border-radius: 16px;
-    padding: 40px;
-    margin-bottom: 40px;
+const LoadingMessage = styled.div`
     text-align: center;
-    color: ${colors.text.white};
-    box-shadow: ${colors.shadows.gold};
-`;
-
-const PromoTitle = styled.h2`
-    font-size: 2em;
-    margin-bottom: 15px;
-    font-weight: 700;
-`;
-
-const PromoText = styled.p`
+    padding: 50px;
     font-size: 1.2em;
-    margin-bottom: 20px;
+    color: ${colors.text.light};
 `;
 
-const PromoButton = styled.button`
-    background: ${colors.text.white};
-    color: ${colors.accent.orange};
-    border: none;
-    padding: 14px 32px;
-    border-radius: 25px;
-    cursor: pointer;
-    font-size: 1.1em;
-    font-weight: 700;
-    transition: all 0.3s ease;
-    box-shadow: ${colors.shadows.medium};
-
-    &:hover {
-        transform: translateY(-3px);
-        box-shadow: ${colors.shadows.large};
-    }
-`;
-
-// Mock-Daten
-const categories = [
-    { name: 'Italienisch', icon: '🍕', count: 42 },
-    { name: 'Japanisch', icon: '🍣', count: 28 },
-    { name: 'Amerikanisch', icon: '🍔', count: 35 },
-    { name: 'Französisch', icon: '🥐', count: 18 },
-    { name: 'Chinesisch', icon: '🥡', count: 31 },
-    { name: 'Indisch', icon: '🍛', count: 22 },
-];
-
-const featuredRestaurants = [
-    {
-        id: 1,
-        name: 'Bella Italia',
-        cuisine: 'Italienisch',
-        rating: 4.8,
-        deliveryTime: '25-35 Min',
-        distance: '2.3 km',
-        icon: '🍕',
-        gradient: colors.gradients.luxury,
-        isFavorite: true
-    },
-    {
-        id: 2,
-        name: 'Sushi Heaven',
-        cuisine: 'Japanisch',
-        rating: 4.9,
-        deliveryTime: '30-40 Min',
-        distance: '3.1 km',
-        icon: '🍣',
-        gradient: colors.gradients.luxury,
-        isFavorite: false
-    },
-    {
-        id: 3,
-        name: 'Burger Palace',
-        cuisine: 'Amerikanisch',
-        rating: 4.6,
-        deliveryTime: '20-30 Min',
-        distance: '1.8 km',
-        icon: '🍔',
-        gradient: colors.gradients.luxury,
-        isFavorite: false
-    },
-    {
-        id: 4,
-        name: 'Le Bistro',
-        cuisine: 'Französisch',
-        rating: 4.7,
-        deliveryTime: '35-45 Min',
-        distance: '4.2 km',
-        icon: '🥐',
-        gradient: colors.gradients.luxury,
-        isFavorite: true
-    },
-];
+// Icon-Mapping für Kategorien
+const iconMap = {
+    'Italienisch': '🍕',
+    'Japanisch': '🍣',
+    'Amerikanisch': '🍔',
+    'Französisch': '🥐',
+    'Chinesisch': '🥡',
+    'Indisch': '🍛',
+    'Deutsch': '🥨',
+    'Griechisch': '🥙',
+    'Thai': '🍜',
+    'Mexikanisch': '🌮',
+    'Spanisch': '🥘',
+    'Türkisch': '🥙',
+    'Vegetarisch': '🥗',
+    'Vegan': '🌱'
+};
 
 function KundeHome() {
     const navigate = useNavigate();
     const [searchQuery, setSearchQuery] = useState('');
-    const [favorites, setFavorites] = useState([1, 4]);
+    const [topCategories, setTopCategories] = useState([]);
+    const [featuredRestaurants, setFeaturedRestaurants] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const loadData = async () => {
+            try {
+                setLoading(true);
+
+                const [kochstileRes, restaurantsRes] = await Promise.all([
+                    kochstilService.getAll(),
+                    restaurantService.getAll()
+                ]);
+
+                const kochstile = kochstileRes.data || kochstileRes || [];
+                const restaurants = restaurantsRes.data || restaurantsRes || [];
+
+                const counts = kochstile.map(k => ({
+                    ...k,
+                    count: restaurants.filter(r =>
+                        r.kochstil?.some(rk => Number(rk.stilid) === Number(k.stilid))
+                    ).length
+                }));
+
+                const top6 = counts
+                    .filter(k => k.count > 0)
+                    .sort((a, b) => b.count - a.count)
+                    .slice(0, 6);
+
+                setTopCategories(top6);
+                setFeaturedRestaurants(restaurants.slice(0, 4));
+
+            } catch (error) {
+                console.error('Fehler beim Laden:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        loadData();
+    }, []);
 
     const handleSearch = () => {
         if (searchQuery.trim()) {
@@ -365,23 +228,22 @@ function KundeHome() {
         }
     };
 
-    const handleCategoryClick = (category) => {
-        navigate(`/kunde/restaurants?cuisine=${category}`);
+    const handleCategoryClick = (kochstilName) => {
+        navigate(`/kunde/restaurants?cuisine=${kochstilName}`);
     };
 
-    const toggleFavorite = (restaurantId, e) => {
-        e.stopPropagation();
-        setFavorites(prev => 
-            prev.includes(restaurantId) 
-                ? prev.filter(id => id !== restaurantId)
-                : [...prev, restaurantId]
+    if (loading) {
+        return (
+            <Container>
+                <LoadingMessage>Lädt deine Lieblingsorte...</LoadingMessage>
+            </Container>
         );
-    };
+    }
 
     return (
         <Container>
             <HeroSection>
-                <HeroTitle> Willkommen bei GaumenGalopp</HeroTitle>
+                <HeroTitle>🍽️ Willkommen bei GaumenGalopp</HeroTitle>
                 <HeroSubtitle>
                     Entdecke die besten Restaurants in deiner Nähe und bestelle dein Lieblingsessen
                 </HeroSubtitle>
@@ -398,15 +260,15 @@ function KundeHome() {
             </HeroSection>
 
             <CategorySection>
-                <SectionTitle> Küchen entdecken</SectionTitle>
+                <SectionTitle>🌍 Küchen entdecken</SectionTitle>
                 <CategoriesGrid>
-                    {categories.map((category, index) => (
-                        <CategoryCard 
-                            key={index}
-                            onClick={() => handleCategoryClick(category.name)}
+                    {topCategories.map(category => (
+                        <CategoryCard
+                            key={category.stilid}
+                            onClick={() => handleCategoryClick(category.kochstil)}
                         >
-                            <CategoryIcon>{category.icon}</CategoryIcon>
-                            <CategoryName>{category.name}</CategoryName>
+                            <CategoryIcon>{iconMap[category.kochstil] || '🍽️'}</CategoryIcon>
+                            <CategoryName>{category.kochstil}</CategoryName>
                             <CategoryCount>{category.count} Restaurants</CategoryCount>
                         </CategoryCard>
                     ))}
@@ -414,38 +276,20 @@ function KundeHome() {
             </CategorySection>
 
             <FeaturedSection>
-                <SectionTitle> Beliebte Restaurants</SectionTitle>
-                <RestaurantsGrid>
-                    {featuredRestaurants.map((restaurant) => (
-                        <RestaurantCard
-                            key={restaurant.id}
-                            onClick={() => navigate(`/kunde/restaurants/${restaurant.id}`)}
-                        >
-                            <RestaurantImage $gradient={restaurant.gradient}>
-                                <span>{restaurant.icon}</span>
-                            </RestaurantImage>
-                            <RestaurantContent>
-                                <RestaurantHeader>
-                                    <div>
-                                        <RestaurantName>{restaurant.name}</RestaurantName>
-                                        <CuisineTag>{restaurant.cuisine}</CuisineTag>
-                                    </div>
-                                </RestaurantHeader>
-                                <RestaurantInfo>
-                                    📍 {restaurant.distance}
-                                </RestaurantInfo>
-                                <RestaurantFooter>
-                                    <Rating>
-                                        ⭐ {restaurant.rating}
-                                    </Rating>
-                                    <DeliveryTime>
-                                        🕐 {restaurant.deliveryTime}
-                                    </DeliveryTime>
-                                </RestaurantFooter>
-                            </RestaurantContent>
-                        </RestaurantCard>
-                    ))}
-                </RestaurantsGrid>
+                <SectionTitle>⭐ Beliebte Restaurants</SectionTitle>
+                {featuredRestaurants.length === 0 ? (
+                    <LoadingMessage>Keine Restaurants verfügbar</LoadingMessage>
+                ) : (
+                    <RestaurantsGrid>
+                        {featuredRestaurants.map(restaurant => (
+                            <RestaurantCard
+                                key={restaurant.restaurantid}
+                                restaurant={restaurant}
+                                basePath="/kunde/restaurants"
+                            />
+                        ))}
+                    </RestaurantsGrid>
+                )}
             </FeaturedSection>
         </Container>
     );

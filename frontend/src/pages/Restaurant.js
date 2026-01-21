@@ -1,8 +1,10 @@
-import React, {useEffect, useState} from 'react';
-import styled from 'styled-components';
-import { useNavigate } from 'react-router-dom';
-import colors from '../theme/colors';
-import {restaurantService} from "../services";
+import React, { useEffect, useState } from "react";
+import styled from "styled-components";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import colors from "../theme/colors";
+import { restaurantService } from "../services";
+import kochstilService from "../services/kochstilService";
+import RestaurantCard from "../components/RestaurantCard";
 
 const Container = styled.div`
     max-width: 1400px;
@@ -16,6 +18,35 @@ const Header = styled.h1`
     font-weight: 700;
 `;
 
+const FilterSection = styled.div`
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 30px;
+    padding: 20px;
+    background: ${colors.background.card};
+    border-radius: 12px;
+    box-shadow: ${colors.shadows.small};
+`;
+
+const FilterButton = styled.button`
+    padding: 10px 20px;
+    border: 2px solid ${props => props.$active ? colors.primary.main : colors.border.light};
+    border-radius: 8px;
+    background: ${props => props.$active ? colors.primary.main : 'white'};
+    color: ${props => props.$active ? 'white' : colors.text.primary};
+    cursor: pointer;
+    font-size: 0.95em;
+    font-weight: 600;
+    transition: all 0.3s ease;
+
+    &:hover {
+        transform: translateY(-2px);
+        box-shadow: ${colors.shadows.small};
+        border-color: ${colors.primary.main};
+    }
+`;
+
 const RestaurantGrid = styled.div`
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
@@ -23,142 +54,158 @@ const RestaurantGrid = styled.div`
     margin-top: 20px;
 `;
 
-const RestaurantCard = styled.div`
-    background: ${colors.background.card};
-    border-radius: 12px;
-    padding: 25px;
-    box-shadow: ${colors.shadows.medium};
-    cursor: pointer;
-    transition: all 0.3s ease;
-    border: 2px solid transparent;
-
-    &:hover {
-        transform: translateY(-8px);
-        box-shadow: ${colors.shadows.large};
-        border-color: ${colors.accent.orange};
-    }
-`;
-
-const RestaurantName = styled.h2`
-    color: ${colors.text.primary};
-    margin-bottom: 15px;
-    font-size: 1.6em;
-    font-weight: 600;
-`;
-
-const RestaurantInfo = styled.p`
-    color: ${colors.text.light};
-    margin: 8px 0;
-    font-size: 0.95em;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-`;
-
-const RestaurantType = styled.span`
-    display: inline-block;
-    background: ${colors.gradients.accent};
-    color: ${colors.text.white};
-    padding: 6px 14px;
-    border-radius: 15px;
-    font-size: 0.85em;
-    margin-top: 10px;
-    font-weight: 600;
-`;
-
-const Rating = styled.div`
-    color: ${colors.accent.gold};
+const LoadingMessage = styled.div`
+    text-align: center;
+    padding: 50px;
     font-size: 1.2em;
-    margin-top: 12px;
-    font-weight: 600;
+    color: ${colors.text.light};
+`;
+
+const ErrorMessage = styled.div`
+    background: ${colors.status.errorLight};
+    color: ${colors.status.error};
+    padding: 20px;
+    border-radius: 8px;
+    margin: 20px 0;
+    text-align: center;
 `;
 
 function Restaurants() {
     const [restaurants, setRestaurants] = useState([]);
+    const [allKochstile, setAllKochstile] = useState([]);
+    const [selectedKochstil, setSelectedKochstil] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
+    const [searchParams, setSearchParams] = useSearchParams();
     const navigate = useNavigate();
 
-    // Navigation zur Edit-Seite mit der Restaurant-ID
-    const handleEditRestaurant = (restaurantid) => {
-        navigate(`/restaurants/${restaurantid}/edit`);
-    };
-
-    //Al the functions that handle updating the Data
-    const fetchRestaurants = async () => {
-        try {
-            setLoading(true);
-            setError(null);
-            const data = await restaurantService.getAll();
-            setRestaurants(data);
-            console.log('Restaurants geladen:', data);
-        } catch (err) {
-            console.error('Fehler beim Laden:', err);
-            setError('Fehler beim Laden der Restaurants. Bitte versuchen Sie es später erneut.');
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    // Beim ersten Laden ausführen
+    // Laden der Daten beim Mount
     useEffect(() => {
-        fetchRestaurants();
+        const loadData = async () => {
+            try {
+                setLoading(true);
+                setError(null);
+
+                const [restaurantsRes, kochstileRes] = await Promise.all([
+                    restaurantService.getAll(),
+                    kochstilService.getAll(),
+                ]);
+
+                const restaurantsData = restaurantsRes.data || restaurantsRes || [];
+                const kochstileData = kochstileRes.data || kochstileRes || [];
+
+                setRestaurants(restaurantsData);
+                setAllKochstile(kochstileData);
+            } catch (err) {
+                console.error('Fehler beim Laden:', err);
+                setError('Fehler beim Laden der Restaurants.');
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        loadData();
     }, []);
 
-    // Restaurant löschen
-    const handleDelete = async (id, name) => {
-        if (window.confirm(`Möchten Sie das Restaurant "${name}" wirklich löschen?`)) {
-            try {
-                await restaurantService.delete(id);
-                console.log('Restaurant gelöscht:', id);
-                // Liste neu laden
-                await fetchRestaurants();
-            } catch (err) {
-                console.error('Fehler beim Löschen:', err);
-                alert('Fehler beim Löschen des Restaurants');
+    // URL-Parameter auswerten
+    useEffect(() => {
+        const cuisineParam = searchParams.get('cuisine');
+
+        if (cuisineParam && allKochstile.length > 0) {
+            const match = allKochstile.find(
+                k => k.kochstil.toLowerCase() === cuisineParam.toLowerCase()
+            );
+            setSelectedKochstil(match ? match.stilid : null);
+        } else if (!cuisineParam) {
+            setSelectedKochstil(null);
+        }
+    }, [searchParams, allKochstile]);
+
+    // Restaurants filtern
+    const filteredRestaurants = restaurants.filter(restaurant => {
+        if (!selectedKochstil) return true;
+        return restaurant.kochstil?.some(
+            k => Number(k.stilid) === Number(selectedKochstil)
+        );
+    });
+
+    // Filter ändern
+    const handleFilterChange = (stilId) => {
+        setSelectedKochstil(stilId);
+
+        if (stilId) {
+            const kochstil = allKochstile.find(k => k.stilid === stilId);
+            if (kochstil) {
+                setSearchParams({ cuisine: kochstil.kochstil });
             }
+        } else {
+            setSearchParams({});
         }
     };
 
-    // Anzeige während des Ladens
     if (loading) {
         return (
             <Container>
-                <div>Lade Restaurants...</div>
+                <LoadingMessage>Lade Restaurants...</LoadingMessage>
             </Container>
         );
     }
 
-    // Fehleranzeige
     if (error) {
         return (
             <Container>
-                <div>{error}</div>
-                <button onClick={fetchRestaurants}>
-                    Erneut versuchen
-                </button>
+                <ErrorMessage>{error}</ErrorMessage>
             </Container>
         );
     }
 
     return (
         <Container>
-            <Header>Unsere Ultra High Quality Arschgeilen Restaurants</Header>
+            <Header>Restaurants</Header>
+
+            <FilterSection>
+                <FilterButton
+                    $active={!selectedKochstil}
+                    onClick={() => handleFilterChange(null)}
+                >
+                    Alle ({restaurants.length})
+                </FilterButton>
+
+                {allKochstile.map(k => {
+                    const count = restaurants.filter(r =>
+                        r.kochstil?.some(rk => Number(rk.stilid) === Number(k.stilid))
+                    ).length;
+
+                    if (count === 0) return null;
+
+                    return (
+                        <FilterButton
+                            key={k.stilid}
+                            $active={selectedKochstil === k.stilid}
+                            onClick={() => handleFilterChange(k.stilid)}
+                        >
+                            {k.kochstil} ({count})
+                        </FilterButton>
+                    );
+                })}
+            </FilterSection>
+
             <RestaurantGrid>
-                {restaurants.map((restaurant) => (
+                {filteredRestaurants.map(restaurant => (
                     <RestaurantCard
                         key={restaurant.restaurantid}
-                        onClick={() => handleEditRestaurant(restaurant.restaurantid)}
-                    >
-                        <RestaurantName>{restaurant.name}</RestaurantName>
-                        <RestaurantType>{restaurant.klassifizierung}</RestaurantType>
-                        <RestaurantInfo>👨‍🍳 {restaurant.kuechenchef}</RestaurantInfo>
-                        <RestaurantInfo>📞 {restaurant.telefon}</RestaurantInfo>
-                        <RestaurantInfo>🏠 Adresse-ID: {restaurant.adresseid}</RestaurantInfo>
-                    </RestaurantCard>
+                        restaurant={restaurant}
+                        basePath="/restaurants"
+                    />
                 ))}
             </RestaurantGrid>
+
+            {filteredRestaurants.length === 0 && (
+                <LoadingMessage>
+                    Keine Restaurants gefunden {selectedKochstil && 'für diese Kategorie'}.
+                </LoadingMessage>
+            )}
         </Container>
     );
 }

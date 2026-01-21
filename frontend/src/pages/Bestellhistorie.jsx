@@ -1,8 +1,10 @@
-import React, { useState } from 'react';
+import React, {useEffect, useState} from 'react';
 import styled from 'styled-components';
 import colors from '../theme/colors';
 import bestellungService from '../services/bestellungService';
 import restaurantService from '../services/restaurantService';
+import { useAuth } from '../context/AuthContext';
+
 
 // --- STYLED COMPONENTS ---
 const SearchBox = styled.div`
@@ -137,12 +139,13 @@ const EmptyState = styled.div` text-align: center; padding: 50px; color: ${color
 
 // --- HAUPTKOMPONENTE ---
 function Bestellhistorie() {
-    const [kundenId, setKundenId] = useState('');
     const [bestellungen, setBestellungen] = useState([]);
     const [statusMsg, setStatusMsg] = useState('Geben Sie eine Kunden-ID ein.');
     const [loading, setLoading] = useState(false);
     const [selectedBestellung, setSelectedBestellung] = useState(null);
     const [modalLoading, setModalLoading] = useState(false);
+    const { user } = useAuth();
+    const kundenId = user?.user_id;
 
     const getStatusColor = (status) => {
         const statusMap = { 'zugestellt': colors.accent.green, 'storniert': colors.accent.red };
@@ -153,6 +156,12 @@ function Bestellhistorie() {
         const statusMap = { 'zugestellt': 'Erfolgreich', 'storniert': 'Storniert' };
         return statusMap[status] || status;
     };
+
+    useEffect(() => {
+        if (kundenId) {
+            handleSearch();
+        }
+    }, []);
 
     const handleSearch = async () => {
         if (!kundenId) {
@@ -259,19 +268,6 @@ function Bestellhistorie() {
     return (
         <div>
             <h1 style={{ color: colors.text.primary, fontWeight: '700' }}>📋 Meine Bestellungen</h1>
-
-            <SearchBox>
-                <Input
-                    type="number"
-                    placeholder="Deine Kunden-ID..."
-                    value={kundenId}
-                    onChange={(e) => setKundenId(e.target.value)}
-                    onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
-                />
-                <Button onClick={handleSearch} disabled={loading}>
-                    {loading ? 'Lade...' : 'Historie anzeigen'}
-                </Button>
-            </SearchBox>
 
             {bestellungen.length > 0 ? (
                 <>

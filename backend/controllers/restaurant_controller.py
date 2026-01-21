@@ -1,7 +1,7 @@
-# controllers/restaurant_controller.py
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from typing import List
+
 from database import get_db
 from services.restaurant_service import RestaurantService
 from services.restaurant_oeffnungszeit_service import RestaurantOeffnungszeitService
@@ -9,12 +9,13 @@ from schemas.restaurant_schema import (
     RestaurantCreate,
     RestaurantUpdate,
     RestaurantResponse,
-    RestaurantProfileResponse,
     RestaurantProfileUpdate,
-)
-from schemas.restaurant_oeffnungszeit_schema import (
-    RestaurantOpeningProfileResponse,
+    RestaurantProfileResponse,
     RestaurantOpeningProfileUpdate,
+    RestaurantOpeningProfileResponse,
+    RestaurantBewertungenResponse,
+    GerichtHighlightSchema,
+    CustomerFavoriteSchema
 )
 
 router = APIRouter(
@@ -22,14 +23,18 @@ router = APIRouter(
     tags=["restaurants"]
 )
 
-# GET /api/restaurants - Get all restaurants WITH addresses AND kochstil
+# GET /api/restaurants - Get all restaurants WITH kochstil AND bewertungen
 @router.get("/")
 def get_all_restaurants(db: Session = Depends(get_db)):
     service = RestaurantService(db)
     restaurants = service.get_all()
 
-    return [
-        {
+    result = []
+    for r in restaurants:
+        # Bewertungen für jedes Restaurant aggregieren
+        bewertungen = service.get_restaurant_bewertungen_aggregiert(r.restaurantid)
+
+        result.append({
             "restaurantid": r.restaurantid,
             "name": r.name,
             "klassifizierung": r.klassifizierung,
@@ -37,26 +42,16 @@ def get_all_restaurants(db: Session = Depends(get_db)):
             "telefon": r.telefon,
             "kuechenchef": r.kuechenchef,
             "email": r.email,
-            # Adresse
-            "adresse": {
-                "adresseid": r.adresse.adresseid,
-                "straße": r.adresse.straße,
-                "hausnummer": r.adresse.hausnummer,
-                "postleitzahl": r.adresse.postleitzahl,
-                "ort": r.adresse.ort,
-                "land": r.adresse.land
-            } if r.adresse else None,
-
-            "kochstile": [
+            "kochstil": [
                 {
                     "stilid": kr.kochstil.stilid,
                     "kochstil": kr.kochstil.kochstil,
-                    "beschreibung": kr.kochstil.beschreibung
                 } for kr in r.kochstil
-            ] if r.kochstil else []
-        }
-        for r in restaurants
-    ]
+            ] if r.kochstil else [],
+            "bewertungen": bewertungen
+        })
+
+    return result
 
 
 # GET /api/restaurants/{id} - Get specific restaurant WITH menu AND address
@@ -82,7 +77,6 @@ def get_restaurant(
         "telefon": restaurant.telefon,
         "kuechenchef": restaurant.kuechenchef,
         "email": restaurant.email,
-        # Adresse
         "adresse": {
             "adresseid": restaurant.adresse.adresseid,
             "straße": restaurant.adresse.straße,
@@ -92,14 +86,13 @@ def get_restaurant(
             "land": restaurant.adresse.land
         } if restaurant.adresse else None,
 
-        "kochstile": [
+        "kochstil": [
             {
                 "stilid": kr.kochstil.stilid,
                 "kochstil": kr.kochstil.kochstil,
-                "beschreibung": kr.kochstil.beschreibung
             } for kr in restaurant.kochstil
         ] if restaurant.kochstil else [],
-        # Menüs mit Gerichten und Preisen
+
         "menue": [
             {
                 "menuid": menu.menuid,
@@ -143,8 +136,9 @@ def create_restaurant(
     new_restaurant = service.create(restaurant.model_dump())
     return new_restaurant
 
+
 # PUT /api/restaurants/{restaurant_id} - Update restaurant
-@router.put("/{restaurant_id}", response_model=RestaurantResponse)
+@router.put("/{restaurantid}", response_model=RestaurantResponse)
 def update_restaurant(
         restaurantid: int,
         restaurant_update: RestaurantUpdate,
@@ -164,9 +158,10 @@ def update_restaurant(
 
     return updated_restaurant
 
+
 # DELETE /api/restaurants/{restaurant_id} - Delete restaurant
-@router.delete("/{restaurant_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_restaurant(restaurant_id: int, db: Session = Depends(get_db)):
+@router.delete("/{restaurantid}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_restaurant(restaurantid: int, db: Session = Depends(get_db)):
     service = RestaurantService(db)
     success = service.delete(restaurantid)
 
@@ -175,7 +170,7 @@ def delete_restaurant(restaurant_id: int, db: Session = Depends(get_db)):
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Restaurant with id {restaurantid} not found"
         )
-    
+
     return None
 
 
@@ -197,9 +192,9 @@ def get_restaurant_profile(restaurant_id: int, db: Session = Depends(get_db)):
 # PUT /api/restaurants/{restaurant_id}/profil - Update restaurant incl. address
 @router.put("/{restaurant_id}/profil", response_model=RestaurantProfileResponse)
 def update_restaurant_profile(
-    restaurant_id: int,
-    profile_update: RestaurantProfileUpdate,
-    db: Session = Depends(get_db)
+        restaurant_id: int,
+        profile_update: RestaurantProfileUpdate,
+        db: Session = Depends(get_db)
 ):
     service = RestaurantService(db)
     restaurant_payload = profile_update.model_dump(exclude={"adresse"}, exclude_unset=True)
@@ -220,6 +215,7 @@ def update_restaurant_profile(
     return updated_restaurant
 
 
+# GET /api/restaurants/{restaurant_id}/oeffnungszeiten - Get opening hours
 @router.get("/{restaurant_id}/oeffnungszeiten", response_model=RestaurantOpeningProfileResponse)
 def get_restaurant_opening_profile(restaurant_id: int, db: Session = Depends(get_db)):
     service = RestaurantOeffnungszeitService(db)
@@ -234,11 +230,12 @@ def get_restaurant_opening_profile(restaurant_id: int, db: Session = Depends(get
     return assignment
 
 
+# PUT /api/restaurants/{restaurant_id}/oeffnungszeiten - Update opening hours
 @router.put("/{restaurant_id}/oeffnungszeiten", response_model=RestaurantOpeningProfileResponse)
 def update_restaurant_opening_profile(
-    restaurant_id: int,
-    opening_update: RestaurantOpeningProfileUpdate,
-    db: Session = Depends(get_db)
+        restaurant_id: int,
+        opening_update: RestaurantOpeningProfileUpdate,
+        db: Session = Depends(get_db)
 ):
     service = RestaurantOeffnungszeitService(db)
     assignment_data = opening_update.model_dump(exclude={"vorlage"}, exclude_unset=True)
@@ -257,3 +254,61 @@ def update_restaurant_opening_profile(
         )
 
     return updated_assignment
+
+
+# ===== NEUE BEWERTUNGS-ENDPOINTS =====
+
+@router.get("/{restaurantid}/bewertungen-gesamt", response_model=RestaurantBewertungenResponse)
+def get_restaurant_bewertungen_gesamt(restaurantid: int, db: Session = Depends(get_db)):
+    """
+    Aggregierte Bewertungen für Restaurant
+    Kombiniert Kunden- und Kritiker-Bewertungen
+    """
+    service = RestaurantService(db)
+
+    # Prüfe ob Restaurant existiert
+    restaurant = service.get_by_id(restaurantid)
+    if not restaurant:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Restaurant with id {restaurantid} not found"
+        )
+
+    bewertungen = service.get_restaurant_bewertungen_aggregiert(restaurantid)
+    return bewertungen
+
+
+@router.get("/{restaurantid}/kritiker-highlights", response_model=List[GerichtHighlightSchema])
+def get_kritiker_highlights(restaurantid: int, db: Session = Depends(get_db)):
+    """
+    Top 5 Gerichte mit höchsten Kritiker-Bewertungen
+    """
+    service = RestaurantService(db)
+
+    restaurant = service.get_by_id(restaurantid)
+    if not restaurant:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Restaurant with id {restaurantid} not found"
+        )
+
+    highlights = service.get_kritiker_highlights(restaurantid, limit=5)
+    return highlights
+
+
+@router.get("/{restaurantid}/customer-favorites", response_model=List[CustomerFavoriteSchema])
+def get_customer_favorites(restaurantid: int, db: Session = Depends(get_db)):
+    """
+    Top 5 Gerichte mit höchsten Kunden-Bewertungen inkl. Kommentare
+    """
+    service = RestaurantService(db)
+
+    restaurant = service.get_by_id(restaurantid)
+    if not restaurant:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Restaurant with id {restaurantid} not found"
+        )
+
+    favorites = service.get_customer_favorites(restaurantid, limit=5)
+    return favorites

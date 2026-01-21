@@ -4,6 +4,8 @@ import { useParams, useNavigate } from 'react-router-dom';
 import colors from '../theme/colors';
 import { restaurantService } from '../services';
 import EditNavigationTabs from '../components/EditNavigationTabs';
+import kochstilService from '../services/kochstilService';
+import kochstilRestaurantService from '../services/kochstilRestaurantService';
 
 // ==================== STYLED COMPONENTS ====================
 
@@ -226,6 +228,10 @@ function EditRestaurantInfos() {
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState(null);
     const [successMessage, setSuccessMessage] = useState(null);
+    const [availableKochstile, setAvailableKochstile] = useState([]);
+    const [selectedKochstile, setSelectedKochstile] = useState([]);
+    const [originalKochstile, setOriginalKochstile] = useState([]); // Für Diff beim Speichern
+    const [newKochstil, setNewKochstil] = useState('');
 
     // Daten beim Laden holen
     useEffect(() => {
@@ -254,9 +260,19 @@ function EditRestaurantInfos() {
                     land: data.adresse?.land || ''
                 });
 
+                const [kochstileResponse, assignedResponse] = await Promise.all([
+                    kochstilService.getAll(),
+                    kochstilRestaurantService.getKochstileByRestaurant(id)
+                ]);
+
+                setAvailableKochstile(kochstileResponse);
+                const assignedIds = assignedResponse.map(k => k.stilid);
+                setSelectedKochstile(assignedIds);
+                setOriginalKochstile(assignedIds);
+
             } catch (err) {
-                console.error('❌ Fehler beim Laden:', err);
-                setError('Restaurant konnte nicht geladen werden. Bitte versuche es später erneut.');
+                console.error('Fehler beim Laden:', err);
+                setError('Restaurant konnte nicht geladen werden');
             } finally {
                 setLoading(false);
             }
@@ -274,7 +290,45 @@ function EditRestaurantInfos() {
         }));
     };
 
-    // Formular absenden - Backend macht Copy-on-Write automatisch!
+    // Toggle bestehende Kategorie
+    const toggleKochstil = (stilId) => {
+        setSelectedKochstile(prev =>
+            prev.includes(stilId)
+                ? prev.filter(id => id !== stilId)
+                : [...prev, stilId]
+        );
+    };
+
+// Neue Kategorie hinzufügen
+    const handleAddNewKochstil = async () => {
+        if (!newKochstil.trim()) return;
+
+        const existing = availableKochstile.find(
+            k => k.kochstil.toLowerCase() === newKochstil.toLowerCase()
+        );
+
+        if (existing) {
+            toggleKochstil(existing.stilid);
+            setNewKochstil('');
+            return;
+        }
+
+        try {
+            const response = await kochstilService.create({
+                kochstil: newKochstil.trim(),
+                beschreibung: ''
+            });
+
+            const newStil = response;
+            setAvailableKochstile(prev => [...prev, newStil]);
+            setSelectedKochstile(prev => [...prev, newStil.stilid]);
+            setNewKochstil('');
+        } catch (error) {
+            console.error('Fehler beim Erstellen:', error);
+        }
+    };
+
+    // Formular absenden - Backend macht Copy-on-Write automatisch
     const handleSubmit = async (e) => {
         e.preventDefault();
 
@@ -283,14 +337,36 @@ function EditRestaurantInfos() {
             setError(null);
             setSuccessMessage(null);
 
-            // Einfach ALLES an Backend senden
-            // Backend entscheidet automatisch ob neue Adresse nötig ist!
+            // 1. Restaurant-Daten aktualisieren
             await restaurantService.update(id, formData);
-
             console.log('✅ Restaurant erfolgreich aktualisiert');
+
+            // 2. Kochstile aktualisieren
+            const toAdd = selectedKochstile.filter(stilId => !originalKochstile.includes(stilId));
+            const toRemove = originalKochstile.filter(stilId => !selectedKochstile.includes(stilId));
+
+            // Neue Kochstile hinzufügen
+            for (const stilId of toAdd) {
+                await kochstilRestaurantService.assignKochstilToRestaurant({
+                    restaurantid: parseInt(id),
+                    stilid: stilId
+                });
+            }
+
+            // Entfernte Kochstile löschen
+            for (const stilId of toRemove) {
+                await kochstilRestaurantService.removeKochstilFromRestaurant(parseInt(id), stilId);
+            }
+
+            console.log('✅ Kochstile erfolgreich aktualisiert');
+
+            // 3. Original-State updaten (für weitere Edits)
+            setOriginalKochstile(selectedKochstile);
+
+            // 4. Success-Message anzeigen
             setSuccessMessage('Restaurant erfolgreich gespeichert!');
 
-            // Nach 1.5 Sekunden zurück zur Detail-Seite
+            // 5. Nach 1.5 Sekunden zurück zur Detail-Seite
             setTimeout(() => {
                 navigate(`/restaurants/${id}`);
             }, 1500);
@@ -371,6 +447,74 @@ function EditRestaurantInfos() {
                             onChange={handleInputChange}
                             placeholder="z.B. Giovanni Rossi"
                         />
+                    </InputGroup>
+                    <InputGroup>
+                        <Label>🍽️ Kategorien</Label>
+
+                        {/* Bestehende Kategorien */}
+                        <div style={{
+                            display: 'flex',
+                            flexWrap: 'wrap',
+                            gap: '10px',
+                            marginBottom: '10px',
+                            padding: '10px',
+                            border: '1px solid #ddd',
+                            borderRadius: '8px',
+                            backgroundColor: '#f9f9f9'
+                        }}>
+                            {availableKochstile?.length > 0 ? (
+                                availableKochstile.map(k => (
+                                    <button
+                                        key={k.stilid}
+                                        type="button"
+                                        onClick={() => toggleKochstil(k.stilid)}
+                                        style={{
+                                            padding: '8px 16px',
+                                            borderRadius: '20px',
+                                            border: '2px solid',
+                                            borderColor: selectedKochstile.includes(k.stilid) ? '#3498db' : '#ddd',
+                                            backgroundColor: selectedKochstile.includes(k.stilid) ? '#3498db' : 'white',
+                                            color: selectedKochstile.includes(k.stilid) ? 'white' : '#333',
+                                            cursor: 'pointer',
+                                            fontSize: '14px',
+                                            fontWeight: selectedKochstile.includes(k.stilid) ? 'bold' : 'normal',
+                                            transition: 'all 0.2s'
+                                        }}
+                                    >
+                                        {k.kochstil}
+                                    </button>
+                                ))
+                            ) : (
+                                <span style={{ color: '#666' }}>Lade Kategorien...</span>
+                            )}
+                        </div>
+
+                        {/* Neue Kategorie hinzufügen */}
+                        <div style={{ display: 'flex', gap: '10px' }}>
+                            <Input
+                                type="text"
+                                value={newKochstil}
+                                onChange={(e) => setNewKochstil(e.target.value)}
+                                onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddNewKochstil())}
+                                placeholder="Neue Kategorie hinzufügen..."
+                            />
+                            <button
+                                type="button"
+                                onClick={handleAddNewKochstil}
+                                style={{
+                                    padding: '10px 20px',
+                                    backgroundColor: '#2ecc71',
+                                    color: 'white',
+                                    border: 'none',
+                                    borderRadius: '4px',
+                                    cursor: 'pointer',
+                                    fontWeight: 'bold',
+                                    whiteSpace: 'nowrap'
+                                }}
+                            >
+                                + Hinzufügen
+                            </button>
+                        </div>
                     </InputGroup>
                 </InfoCard>
 
@@ -464,12 +608,6 @@ function EditRestaurantInfos() {
                             required
                         />
                     </InputGroup>
-
-                    <InfoBox>
-                        🧠 <strong>Intelligentes Backend-System:</strong><br/>
-                        Das Backend entscheidet automatisch, ob eine neue Adresse erstellt werden muss.
-                        Wenn andere Restaurants oder Kunden die gleiche Adresse nutzen, bleibt ihre Adresse unverändert.
-                    </InfoBox>
                 </InfoCard>
 
                 {/* Buttons */}
