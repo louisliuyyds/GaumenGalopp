@@ -52,42 +52,15 @@ function App() {
                                     <Sidebar />
                                     <ContentArea>
                                         <Routes>
-                                            {/* Dashboard - für alle */}
+                                            {/* Dashboard */}
                                             <Route path="/" element={<Dashboard />} />
 
-                                            {/* Restaurant Admin Routes - NUR für Restaurants */}
-                                            <Route
-                                                path="/neuesRestaurant"
-                                                element={
-                                                    <ProtectedRoute requiredType="restaurant">
-                                                        <Restaurants />
-                                                    </ProtectedRoute>
-                                                }
-                                            />
-                                            <Route
-                                                path="/restaurants/profil"
-                                                element={
-                                                    <ProtectedRoute requiredType="restaurant">
-                                                        <RestaurantProfil />
-                                                    </ProtectedRoute>
-                                                }
-                                            />
-                                            <Route
-                                                path="/kunde/restaurants/:id"
-                                                element={
-                                                    <ProtectedRoute requiredType="kunde">
-                                                        <RestaurantDetail />
-                                                    </ProtectedRoute>
-                                                }
-                                            />
-                                            <Route
-                                                path="/kunde/restaurants/:restaurantId/gericht/:gerichtId"
-                                                element={
-                                                    <ProtectedRoute requiredType="kunde">
-                                                        <GerichtDetail />
-                                                    </ProtectedRoute>
-                                                }
-                                            />
+                                            {/* Restaurant Routes - für alle */}
+                                            <Route path="/restaurants" element={<Restaurants />} />
+                                            <Route path="/restaurants/:id" element={<RestaurantDetail />} />
+                                            <Route path="/restaurants/:restaurantId/gericht/:gerichtId" element={<GerichtDetail />} />
+
+                                            {/* Edit Routes - nur für Restaurants */}
                                             <Route
                                                 path="/restaurants/:id/edit"
                                                 element={
@@ -97,7 +70,7 @@ function App() {
                                                 }
                                             />
                                             <Route
-                                                path="/restaurants/:id/edit/hours"
+                                                path="/restaurants/:id/edit/opening"
                                                 element={
                                                     <ProtectedRoute requiredType="restaurant">
                                                         <EditOpeningHours />
@@ -113,12 +86,17 @@ function App() {
                                                 }
                                             />
 
-                                            {/* Restaurant Ansichten - für alle */}
-                                            <Route path="/restaurants" element={<Restaurants />} />
-                                            <Route path="/restaurants/:id" element={<RestaurantDetail />} />
-                                            <Route path="/restaurants/:restaurantId/gericht/:gerichtId" element={<GerichtDetail />} />
+                                            {/* Restaurant Profil Route */}
+                                            <Route
+                                                path="/restaurants/profil"
+                                                element={
+                                                    <ProtectedRoute requiredType="restaurant">
+                                                        <RestaurantProfil />
+                                                    </ProtectedRoute>
+                                                }
+                                            />
 
-                                            {/* Kunden Routes - NUR für Kunden */}
+                                            {/* Kunden Routes - nur für Kunden */}
                                             <Route
                                                 path="/kunde"
                                                 element={
@@ -158,6 +136,12 @@ function App() {
                                                         <Bestellhistorie />
                                                     </ProtectedRoute>
                                                 }
+                                            />
+
+                                            {/* Bestellhistorie auch für Restaurants */}
+                                            <Route
+                                                path="/bestellhistorie"
+                                                element={<Bestellhistorie />}
                                             />
 
                                             {/* Fallback */}

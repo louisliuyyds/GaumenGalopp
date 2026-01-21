@@ -53,7 +53,8 @@ const UserRole = styled.div`
 `;
 
 const RoleBadge = styled.span`
-    background: ${props => props.type === 'restaurant' ? colors.primary.main : colors.secondary.main};
+    background: ${props => props.type === 'restaurant' ?
+            colors.primary.main : colors.secondary.main};
     color: white;
     padding: 2px 8px;
     border-radius: 4px;
@@ -147,7 +148,7 @@ function Sidebar() {
             {user && (
                 <UserInfo>
                     <UserType>
-                        {isRestaurant ? 'Restaurant-Verwaltung' : 'Kundenbereich'}
+                        {isRestaurant ? '🍽️ Restaurant-Verwaltung' : '👤 Kundenbereich'}
                     </UserType>
                     <UserRole>
                         {user.email}
@@ -172,22 +173,16 @@ function Sidebar() {
                         <SectionTitle>Restaurant Verwaltung</SectionTitle>
                         <NavSection>
                             <NavItem
+                                to={`/restaurants/${user.user_id}`}
+                                className={isActive(`/restaurants/${user.user_id}`) ? 'active' : ''}
+                            >
+                                🍽️ Mein Restaurant
+                            </NavItem>
+                            <NavItem
                                 to="/restaurants"
-                                className={isActive('/restaurants') && !isActive('/restaurants/profil') ? 'active' : ''}
+                                className={isActive('/restaurants') && !isActive(`/restaurants/${user.user_id}`) ? 'active' : ''}
                             >
-                                Meine Restaurants
-                            </NavItem>
-                            <NavItem
-                                to="/restaurants/profil"
-                                className={isActive('/restaurants/profil') ? 'active' : ''}
-                            >
-                                Restaurant-Profil
-                            </NavItem>
-                            <NavItem
-                                to="/neuesRestaurant"
-                                className={isActive('/neuesRestaurant') ? 'active' : ''}
-                            >
-                                Neues Restaurant
+                                Alle Restaurants
                             </NavItem>
                         </NavSection>
 

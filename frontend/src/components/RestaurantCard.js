@@ -227,9 +227,7 @@ function RestaurantCard({ restaurant, basePath = "/restaurants" }) {
                         ) : (
                             <span title="Noch keine Bewertungen">⭐ Noch keine Bewertungen</span>
                         )}
-                        <Dot />
-                        <span title="Lieferzeit">🕐 30–40 Min</span>
-                    </MetaRow>
+                        </MetaRow>
                 </TitleBlock>
             </Header>
 

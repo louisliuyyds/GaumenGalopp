@@ -1,99 +1,98 @@
-import React, { useState } from 'react';
-import styled from 'styled-components';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import styled from 'styled-components';
 import { useAuth } from '../context/AuthContext';
+import kochstilService from '../services/kochstilService';
+import kochstilRestaurantService from '../services/kochstilRestaurantService';
 import colors from '../theme/colors';
 
-// Styled Components
+// Alle Styled Components bleiben gleich...
 const RegisterContainer = styled.div`
-    min-height: 100vh;
     display: flex;
-    align-items: center;
     justify-content: center;
-    background: linear-gradient(135deg, ${colors.primary.light} 0%, ${colors.primary.main} 100%);
+    align-items: center;
+    min-height: 100vh;
+    background: ${colors.gradients.secondary};
     padding: 20px;
 `;
 
 const RegisterCard = styled.div`
     background: white;
     border-radius: 16px;
-    box-shadow: ${colors.shadows.large};
     padding: 40px;
+    box-shadow: ${colors.shadows.large};
     width: 100%;
-    max-width: 500px;
+    max-width: 600px;
 `;
 
 const Logo = styled.h1`
+    font-size: 2.5em;
+    background: ${colors.gradients.primary};
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
     text-align: center;
-    color: ${colors.primary.main};
-    font-size: 2em;
     margin-bottom: 10px;
-    font-weight: 700;
 `;
 
 const Subtitle = styled.p`
     text-align: center;
     color: ${colors.text.light};
     margin-bottom: 30px;
+    font-size: 1.1em;
 `;
 
 const ToggleContainer = styled.div`
     display: flex;
     gap: 10px;
     margin-bottom: 30px;
-    background: ${colors.background.light};
-    padding: 4px;
-    border-radius: 8px;
+    background: ${colors.background.main};
+    border-radius: 12px;
+    padding: 6px;
 `;
 
 const ToggleButton = styled.button`
     flex: 1;
     padding: 12px;
     border: none;
-    border-radius: 6px;
-    font-size: 1em;
+    border-radius: 8px;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.3s ease;
     background: ${props => props.$active ? colors.primary.main : 'transparent'};
-    color: ${props => props.$active ? 'white' : colors.text.light};
+    color: ${props => props.$active ? 'white' : colors.text.primary};
+    box-shadow: ${props => props.$active ? colors.shadows.primarySmall : 'none'};
 
     &:hover {
-        background: ${props => props.$active ? colors.primary.main : colors.background.main};
+        background: ${props => props.$active ? colors.primary.main : colors.background.card};
     }
-`;
-
-const HelpText = styled.div`
-    background: ${colors.background.light};
-    padding: 12px;
-    border-radius: 8px;
-    font-size: 0.9em;
-    color: ${colors.text.light};
-    margin-bottom: 20px;
-    text-align: center;
 `;
 
 const Form = styled.form`
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: 20px;
 `;
 
 const FormRow = styled.div`
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 16px;
+    gap: 20px;
+
+    @media (max-width: 600px) {
+        grid-template-columns: 1fr;
+    }
 `;
 
 const FormGroup = styled.div`
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: 8px;
 `;
 
 const Label = styled.label`
-    color: ${colors.text.main};
-    font-weight: 500;
+    font-weight: 600;
+    color: ${colors.text.primary};
     font-size: 0.9em;
 `;
 
@@ -102,22 +101,26 @@ const Input = styled.input`
     border: 2px solid ${colors.background.main};
     border-radius: 8px;
     font-size: 1em;
-    transition: border-color 0.3s ease;
+    transition: all 0.3s ease;
 
     &:focus {
         outline: none;
         border-color: ${colors.primary.main};
-    }
-
-    &::placeholder {
-        color: ${colors.text.light};
+        box-shadow: ${colors.shadows.primarySmall};
     }
 `;
 
+const HelpText = styled.p`
+    color: ${colors.text.light};
+    font-size: 0.9em;
+    margin: 10px 0;
+    font-weight: 600;
+`;
+
 const RegisterButton = styled.button`
-    background: ${colors.primary.main};
-    color: white;
     padding: 14px;
+    background: ${colors.gradients.primary};
+    color: white;
     border: none;
     border-radius: 8px;
     font-size: 1.1em;
@@ -130,10 +133,6 @@ const RegisterButton = styled.button`
     &:hover {
         transform: translateY(-2px);
         box-shadow: ${colors.shadows.primaryLarge};
-    }
-
-    &:active {
-        transform: translateY(0);
     }
 
     &:disabled {
@@ -211,6 +210,11 @@ function Register() {
         klassifizierung: ''
     });
 
+    // Kochstile State (nur für Restaurant)
+    const [availableKochstile, setAvailableKochstile] = useState([]);
+    const [selectedKochstile, setSelectedKochstile] = useState([]);
+    const [newKochstil, setNewKochstil] = useState('');
+
     // Adresse State (für beide User-Typen)
     const [adresse, setAdresse] = useState({
         strasse: '',
@@ -219,6 +223,22 @@ function Register() {
         stadt: '',
         land: 'Deutschland'
     });
+
+    // Kochstile laden beim Wechsel zu Restaurant-Typ
+    useEffect(() => {
+        if (userType === 'restaurant') {
+            loadKochstile();
+        }
+    }, [userType]);
+
+    const loadKochstile = async () => {
+        try {
+            const response = await kochstilService.getAll();
+            setAvailableKochstile(response);
+        } catch (error) {
+            console.error('Fehler beim Laden der Kochstile:', error);
+        }
+    };
 
     const handleKundeChange = (e) => {
         setKundeData({
@@ -239,6 +259,47 @@ function Register() {
             ...adresse,
             [e.target.name]: e.target.value
         });
+    };
+
+    // Toggle Kochstil
+    const toggleKochstil = (stilId) => {
+        setSelectedKochstile(prev =>
+            prev.includes(stilId)
+                ? prev.filter(id => id !== stilId)
+                : [...prev, stilId]
+        );
+    };
+
+    // Neuen Kochstil hinzufügen
+    const handleAddNewKochstil = async () => {
+        if (!newKochstil.trim()) return;
+
+        const existing = availableKochstile.find(
+            k => k.kochstil.toLowerCase() === newKochstil.toLowerCase()
+        );
+
+        if (existing) {
+            toggleKochstil(existing.stilid);
+            setNewKochstil('');
+            alert('Diese Kategorie existiert bereits und wurde ausgewählt!');
+            return;
+        }
+
+        try {
+            const response = await kochstilService.create({
+                kochstil: newKochstil.trim(),
+                beschreibung: ''
+            });
+
+            const newStil = response;
+            setAvailableKochstile(prev => [...prev, newStil]);
+            setSelectedKochstile(prev => [...prev, newStil.stilid]);
+            setNewKochstil('');
+            alert('Neue Kategorie erfolgreich erstellt!');
+        } catch (error) {
+            console.error('Fehler beim Erstellen:', error);
+            alert('Fehler beim Erstellen der Kategorie');
+        }
     };
 
     const validateKundeForm = () => {
@@ -332,7 +393,7 @@ function Register() {
                     return;
                 }
 
-                await registerRestaurant({
+                const result = await registerRestaurant({
                     name: restaurantData.name,
                     email: restaurantData.email,
                     password: restaurantData.password,
@@ -346,6 +407,15 @@ function Register() {
                     stadt: adresse.stadt,
                     land: adresse.land
                 });
+
+                // Kochstile zuweisen
+                const restaurantId = result.user.id;
+                for (const stilId of selectedKochstile) {
+                    await kochstilRestaurantService.assignKochstilToRestaurant({
+                        restaurantid: restaurantId,
+                        stilid: stilId
+                    });
+                }
 
                 setSuccess('Registrierung erfolgreich! Du wirst weitergeleitet...');
 
@@ -528,6 +598,76 @@ function Register() {
                                     value={restaurantData.klassifizierung}
                                     onChange={handleRestaurantChange}
                                 />
+                            </FormGroup>
+
+                            {/* KOCHSTILE AUSWAHL */}
+                            <FormGroup>
+                                <Label>🍽️ Kategorien</Label>
+
+                                {/* Bestehende Kategorien */}
+                                <div style={{
+                                    display: 'flex',
+                                    flexWrap: 'wrap',
+                                    gap: '10px',
+                                    marginBottom: '10px',
+                                    padding: '10px',
+                                    border: '1px solid #ddd',
+                                    borderRadius: '8px',
+                                    backgroundColor: '#f9f9f9'
+                                }}>
+                                    {availableKochstile?.length > 0 ? (
+                                        availableKochstile.map(k => (
+                                            <button
+                                                key={k.stilid}
+                                                type="button"
+                                                onClick={() => toggleKochstil(k.stilid)}
+                                                style={{
+                                                    padding: '8px 16px',
+                                                    borderRadius: '20px',
+                                                    border: '2px solid',
+                                                    borderColor: selectedKochstile.includes(k.stilid) ? '#3498db' : '#ddd',
+                                                    backgroundColor: selectedKochstile.includes(k.stilid) ? '#3498db' : 'white',
+                                                    color: selectedKochstile.includes(k.stilid) ? 'white' : '#333',
+                                                    cursor: 'pointer',
+                                                    fontSize: '14px',
+                                                    fontWeight: selectedKochstile.includes(k.stilid) ? 'bold' : 'normal',
+                                                    transition: 'all 0.2s'
+                                                }}
+                                            >
+                                                {k.kochstil}
+                                            </button>
+                                        ))
+                                    ) : (
+                                        <span style={{ color: '#666' }}>Lade Kategorien...</span>
+                                    )}
+                                </div>
+
+                                {/* Neue Kategorie hinzufügen */}
+                                <div style={{ display: 'flex', gap: '10px' }}>
+                                    <Input
+                                        type="text"
+                                        value={newKochstil}
+                                        onChange={(e) => setNewKochstil(e.target.value)}
+                                        onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddNewKochstil())}
+                                        placeholder="Neue Kategorie hinzufügen..."
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={handleAddNewKochstil}
+                                        style={{
+                                            padding: '10px 20px',
+                                            backgroundColor: '#2ecc71',
+                                            color: 'white',
+                                            border: 'none',
+                                            borderRadius: '4px',
+                                            cursor: 'pointer',
+                                            fontWeight: 'bold',
+                                            whiteSpace: 'nowrap'
+                                        }}
+                                    >
+                                        + Hinzufügen
+                                    </button>
+                                </div>
                             </FormGroup>
 
                             <FormGroup>

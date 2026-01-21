@@ -3,6 +3,8 @@ import styled from 'styled-components';
 import { useParams, useNavigate } from 'react-router-dom';
 import colors from '../theme/colors';
 import { restaurantService } from '../services';
+import { useAuth } from '../context/AuthContext';
+import EditNavigationTabs from '../components/EditNavigationTabs';
 
 // ==================== STYLED COMPONENTS ====================
 
@@ -332,11 +334,11 @@ const EmptyState = styled.div`
     font-size: 1.1em;
 `;
 
-// ==================== HAUPTKOMPONENTE ====================
-
 function RestaurantDetails() {
     const { id } = useParams();
     const navigate = useNavigate();
+
+
 
     const [restaurant, setRestaurant] = useState(null);
     const [bewertungen, setBewertungen] = useState(null);
@@ -344,6 +346,9 @@ function RestaurantDetails() {
     const [customerFavorites, setCustomerFavorites] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+
+    const { user, isRestaurant } = useAuth();
+    const isOwnRestaurant = isRestaurant && user?.user_id === restaurant?.restaurantid;
 
     useEffect(() => {
         loadRestaurantData();
@@ -447,6 +452,40 @@ function RestaurantDetails() {
                         <MetaItem>📞 {restaurant.telefon}</MetaItem>
                     )}
                 </RestaurantMeta>
+                {isOwnRestaurant && (
+                    <div style={{ marginTop: '20px' }}>
+                        <button
+                            onClick={() => navigate(`/restaurants/${id}/edit`)}
+                            style={{
+                                background: 'rgba(255,255,255,0.95)',
+                                color: '#8a6d3b',
+                                border: '2px solid rgba(255,255,255,0.3)',
+                                padding: '10px 20px',
+                                borderRadius: '8px',
+                                fontWeight: '600',
+                                cursor: 'pointer',
+                                fontSize: '0.95em',
+                                boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+                                transition: 'all 0.3s ease',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '8px'
+                            }}
+                            onMouseOver={(e) => {
+                                e.target.style.background = 'white';
+                                e.target.style.transform = 'translateY(-1px)';
+                                e.target.style.boxShadow = '0 4px 12px rgba(0,0,0,0.2)';
+                            }}
+                            onMouseOut={(e) => {
+                                e.target.style.background = 'rgba(255,255,255,0.95)';
+                                e.target.style.transform = 'translateY(0)';
+                                e.target.style.boxShadow = '0 2px 8px rgba(0,0,0,0.15)';
+                            }}
+                        >
+                            ✏️ Restaurant bearbeiten
+                        </button>
+                    </div>
+                )}
             </RestaurantHeader>
 
             {/* KRITIKER HIGHLIGHTS */}
