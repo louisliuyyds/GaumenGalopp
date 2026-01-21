@@ -185,16 +185,6 @@ function Sidebar() {
                                 Alle Restaurants
                             </NavItem>
                         </NavSection>
-
-                        <SectionTitle>Bestellungen</SectionTitle>
-                        <NavSection>
-                            <NavItem
-                                to="/bestellhistorie"
-                                className={isActive('/bestellhistorie') ? 'active' : ''}
-                            >
-                                Bestellhistorie
-                            </NavItem>
-                        </NavSection>
                     </>
                 )}
 

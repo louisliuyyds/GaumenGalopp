@@ -1,8 +1,10 @@
-import React, { useState } from 'react';
+import React, {useEffect, useState} from 'react';
 import styled from 'styled-components';
 import colors from '../theme/colors';
 import {warenkorbService} from "../services/warenkorbService";
 import {kundeService} from "../services";
+import { useAuth } from '../context/AuthContext';
+
 
 const SearchBox = styled.div`
     background: ${colors.background.card};
@@ -144,12 +146,20 @@ background: ${colors.accent.black};
 `;
 
 function Warenkorb() {
-    const [kundenId, setKundenId] = useState('');
     const [cart, setCart] = useState(null);
     const [loading, setLoading] = useState(false);
     const [statusMsg, setStatusMsg] = useState('');
     const [editingNoteId, setEditingNoteId] = useState(null);
     const [editingNoteText, setEditingNoteText] = useState('');
+    const { user } = useAuth();
+    const kundenId = user?.user_id;
+
+
+    useEffect(() => {
+        if (kundenId) {
+            handleSearch();
+        }
+    }, []);
 
     const handleSearch = async () => {
         if (!kundenId) {
@@ -257,18 +267,7 @@ function Warenkorb() {
         <Container>
             <Header>Warenkorb</Header>
 
-            <SearchBox>
-                <Input
-                    type="number"
-                    placeholder="Deine Kunden-ID... (z.B. 53)"
-                    value={kundenId}
-                    onChange={(e) => setKundenId(e.target.value)}
-                    onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
-                />
-                <Button onClick={handleSearch} disabled={loading}>
-                    {loading ? 'Lade...' : 'Warenkorb anzeigen'}
-                </Button>
-            </SearchBox>
+
 
             {statusMsg && <StatusMessage>{statusMsg}</StatusMessage>}
 
