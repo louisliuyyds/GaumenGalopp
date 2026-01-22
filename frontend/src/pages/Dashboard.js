@@ -275,7 +275,7 @@ function Dashboard() {
                                 </OrderStatus>
                             </OrderHeader>
                             <OrderDetails>
-                                <span>👤 Kunde ID: {order.kundenid}</span>
+                                <span>👤 Kunde: {order.kundenid}</span>
                                 <span style={{fontWeight: '800', fontSize: '1.2em', color: colors.text.primary}}>
                                     {parseFloat(order.displayPrice || 0).toLocaleString('de-DE', {minimumFractionDigits: 2})}€
                                 </span>

@@ -28,8 +28,10 @@ class BestellungService:
             Bestellungen.bestellungid == bestellungid
         ).first()
 
-    def get_all(self) -> List[Bestellungen]:
-        return self.db.query(Bestellungen).all()
+    def get_all(self) -> list[Type[Bestellungen]]:
+        return self.db.query(Bestellungen).filter(
+            Bestellungen.status != 'warenkorb'
+        ).all()
 
     def update(self, bestellungid: int, update_data: dict) -> Optional[Bestellungen]:
         bestellung = self.get_by_id(bestellungid)
@@ -59,7 +61,7 @@ class BestellungService:
     def get_by_kunde(self, kundenid: int) -> list[Type[Bestellungen]]:
         return self.db.query(Bestellungen).filter(
             Bestellungen.kundenid == kundenid,
-            Bestellungen.status != 'warenkorb'  # Exclude carts!
+            Bestellungen.status != 'warenkorb'
         ).order_by(Bestellungen.bestellzeit.desc()).all()
 
     def get_detail_by_id(self, bestellungid: int) -> Optional[dict]:
@@ -73,6 +75,19 @@ class BestellungService:
 
         if not bestellung:
             return None
+
+        if bestellung.status == "warenkorb":
+            return {
+                "bestellungid": bestellung.bestellungid,
+                "kundenid": bestellung.kundenid,
+                "status": bestellung.status,
+                "bestellzeit": bestellung.bestellzeit,
+                "restaurant": None,
+                "lieferant": None,
+                "adresse": None,
+                "positionen": [],
+                "gesamtpreis": 0
+            }
 
         # Hole Restaurant
         restaurant = self.db.query(Restaurant).filter(

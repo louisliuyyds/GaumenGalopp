@@ -1,4 +1,3 @@
-# schemas/bestellung_schemas.py
 from pydantic import BaseModel, computed_field
 from typing import Optional, List
 from datetime import datetime
@@ -17,18 +16,17 @@ class BestellungUpdate(BaseModel):
     status: Optional[str] = None
     lieferantid: Optional[int] = None
 
-# 🔥 FIXED: Erweiterte Response mit gesamtpreis
+
 class BestellungResponse(BaseModel):
     bestellungid: int
     kundenid: int
     restaurantid: int
-    adressid: int  # 🔥 Das ist die richtige Spalte
+    adressid: int
     lieferantid: Optional[int] = None
     bestellzeit: datetime
     status: str
-    gesamtpreis: Optional[float] = None  # 🔥 NEU: Für Dashboard
+    gesamtpreis: Optional[float] = None
 
-    # 🔥 Alias damit Frontend auch "lieferadresseid" verwenden kann
     @property
     def lieferadresseid(self):
         return self.adressid
