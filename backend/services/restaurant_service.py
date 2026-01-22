@@ -130,6 +130,109 @@ class RestaurantService:
 
     # ===== NEUE BEWERTUNGS-METHODEN =====
 
+    def get_bulk_bewertungen_aggregiert(self, restaurant_ids: List[int]) -> dict:
+        """
+        🚀 OPTIMIERT: Aggregierte Bewertungen für MEHRERE Restaurants auf einmal
+        Reduziert N+1 Query Problem von O(n) auf O(1) - nur 3 Queries total!
+        """
+        if not restaurant_ids:
+            return {}
+
+        # 1. Alle Gerichte für ALLE Restaurants auf einmal holen (1 Query)
+        gerichte_mapping = (
+            self.db.query(
+                Menue.restaurantid,
+                Gericht.gerichtid
+            )
+            .join(Gericht, Gericht.menuid == Menue.menuid)
+            .filter(Menue.restaurantid.in_(restaurant_ids))
+            .filter(Gericht.ist_aktiv == True)
+            .all()
+        )
+
+        # Mapping: restaurant_id -> [gericht_ids]
+        restaurant_gerichte = {}
+        all_gericht_ids = set()
+        for rest_id, gericht_id in gerichte_mapping:
+            if rest_id not in restaurant_gerichte:
+                restaurant_gerichte[rest_id] = []
+            restaurant_gerichte[rest_id].append(gericht_id)
+            all_gericht_ids.add(gericht_id)
+
+        if not all_gericht_ids:
+            # Keine Gerichte gefunden -> leere Bewertungen für alle
+            return {
+                rest_id: {
+                    "durchschnitt_gesamt": 0.0,
+                    "anzahl_gesamt": 0,
+                    "anzahl_kunden": 0,
+                    "anzahl_kritiker": 0,
+                    "durchschnitt_kunden": None,
+                    "durchschnitt_kritiker": None
+                }
+                for rest_id in restaurant_ids
+            }
+
+        # 2. ALLE Kunden-Bewertungen auf einmal holen (1 Query)
+        kunden_bewertungen = (
+            self.db.query(
+                Bewertung.gerichtid,
+                Bewertung.rating
+            )
+            .filter(Bewertung.gerichtid.in_(all_gericht_ids))
+            .all()
+        )
+
+        # 3. ALLE Kritiker-Bewertungen auf einmal holen (1 Query)
+        kritiker_bewertungen = (
+            self.db.query(
+                Bewertungkritiker.gerichtid,
+                Bewertungkritiker.rating
+            )
+            .filter(Bewertungkritiker.gerichtid.in_(all_gericht_ids))
+            .all()
+        )
+
+        # 4. Bewertungen pro Restaurant aggregieren (in Python, kein DB-Query!)
+        result = {}
+        for rest_id in restaurant_ids:
+            gericht_ids = restaurant_gerichte.get(rest_id, [])
+
+            if not gericht_ids:
+                result[rest_id] = {
+                    "durchschnitt_gesamt": 0.0,
+                    "anzahl_gesamt": 0,
+                    "anzahl_kunden": 0,
+                    "anzahl_kritiker": 0,
+                    "durchschnitt_kunden": None,
+                    "durchschnitt_kritiker": None
+                }
+                continue
+
+            # Filter Bewertungen für dieses Restaurant
+            rest_kunden = [b.rating for b in kunden_bewertungen if b.gerichtid in gericht_ids]
+            rest_kritiker = [b.rating for b in kritiker_bewertungen if b.gerichtid in gericht_ids]
+
+            anzahl_kunden = len(rest_kunden)
+            anzahl_kritiker = len(rest_kritiker)
+            durchschnitt_kunden = sum(rest_kunden) / anzahl_kunden if anzahl_kunden > 0 else None
+            durchschnitt_kritiker = sum(rest_kritiker) / anzahl_kritiker if anzahl_kritiker > 0 else None
+
+            # Gesamt-Durchschnitt
+            alle_ratings = rest_kunden + rest_kritiker
+            durchschnitt_gesamt = sum(alle_ratings) / len(alle_ratings) if alle_ratings else 0.0
+
+            result[rest_id] = {
+                "durchschnitt_gesamt": round(durchschnitt_gesamt, 2),
+                "anzahl_gesamt": anzahl_kunden + anzahl_kritiker,
+                "anzahl_kunden": anzahl_kunden,
+                "anzahl_kritiker": anzahl_kritiker,
+                "durchschnitt_kunden": round(durchschnitt_kunden, 2) if durchschnitt_kunden else None,
+                "durchschnitt_kritiker": round(durchschnitt_kritiker, 2) if durchschnitt_kritiker else None
+            }
+
+        return result
+
     def get_restaurant_bewertungen_aggregiert(self, restaurant_id: int) -> dict:
         """
         Aggregierte Bewertungen für ein Restaurant

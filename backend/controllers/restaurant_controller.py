@@ -24,15 +24,27 @@ router = APIRouter(
 )
 
 # GET /api/restaurants - Get all restaurants WITH kochstil AND bewertungen
+# 🚀 OPTIMIERT: Bulk-Bewertungen statt N+1 Queries
 @router.get("/")
 def get_all_restaurants(db: Session = Depends(get_db)):
     service = RestaurantService(db)
     restaurants = service.get_all()
 
+    # 🚀 Hole ALLE Bewertungen auf einmal (3 Queries statt N Queries!)
+    restaurant_ids = [r.restaurantid for r in restaurants]
+    bulk_bewertungen = service.get_bulk_bewertungen_aggregiert(restaurant_ids)
+
     result = []
     for r in restaurants:
-        # Bewertungen für jedes Restaurant aggregieren
-        bewertungen = service.get_restaurant_bewertungen_aggregiert(r.restaurantid)
+        # Bewertungen aus dem Bulk-Result holen (kein DB-Query mehr!)
+        bewertungen = bulk_bewertungen.get(r.restaurantid, {
+            "durchschnitt_gesamt": 0.0,
+            "anzahl_gesamt": 0,
+            "anzahl_kunden": 0,
+            "anzahl_kritiker": 0,
+            "durchschnitt_kunden": None,
+            "durchschnitt_kritiker": None
+        })
 
         result.append({
             "restaurantid": r.restaurantid,
