@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Query
 
 from services.gericht_service import GerichtService
 from services.labelGericht_service import LabelGerichtService
@@ -12,6 +12,20 @@ router = APIRouter(prefix="/api/gericht", tags=["gericht"])
 @router.get("/", response_model=List[schemas.GerichtResponse])
 def get_all_gericht(db: Session = Depends(get_db)):
     return GerichtService(db).get_all()
+
+# NEU: Search-Endpoint MUSS vor /{gerichtid} stehen!
+@router.get("/search", response_model=List[schemas.GerichtSearchResponse])
+def search_gerichte(
+        q: str = Query(..., min_length=1, description="Suchbegriff"),
+        db: Session = Depends(get_db)
+):
+    """
+    Sucht Gerichte nach Name, Beschreibung oder Kategorie
+    Gibt Restaurant-Informationen mit zurück
+    """
+    service = GerichtService(db)
+    results = service.search_with_restaurant(q)
+    return results
 
 @router.get("/{gerichtid}", response_model=schemas.GerichtResponse)
 def get_by_id(gerichtid: int, db: Session = Depends(get_db)):

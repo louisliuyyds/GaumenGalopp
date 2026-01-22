@@ -21,3 +21,14 @@ class GerichtResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+class GerichtSearchResponse(BaseModel):
+    gerichtid: int
+    name: str
+    beschreibung: Optional[str] = None
+    kategorie: Optional[str] = None
+    restaurantid: int
+    restaurantname: str
+
+    class Config:
+        from_attributes = True

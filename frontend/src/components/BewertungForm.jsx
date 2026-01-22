@@ -214,31 +214,7 @@ function BewertungForm({ gerichtId, onBewertungSubmitted }) {
         <FormContainer>
             <FormTitle>
                 ✍️ Bewertung abgeben
-                {isKritiker && (
-                    <span style={{
-                        fontSize: '0.8em',
-                        color: colors.text.light,
-                        marginLeft: '10px',
-                        fontWeight: '400'
-                    }}>
-                        (als Kunde)
-                    </span>
-                )}
             </FormTitle>
-
-            {isKritiker && (
-                <div style={{
-                    background: colors.status.infoLight,
-                    padding: '12px 16px',
-                    borderRadius: '8px',
-                    marginBottom: '20px',
-                    fontSize: '0.95em',
-                    color: colors.text.secondary
-                }}>
-                    💡 Als Kritiker gibst du hier eine <strong>Kundenbewertung</strong> mit Kommentar ab.
-                    Kritikerbewertungen (nur Rating, kein Kommentar) werden separat verwaltet.
-                </div>
-            )}
 
             <form onSubmit={handleSubmit}>
                 <StarRatingContainer>
