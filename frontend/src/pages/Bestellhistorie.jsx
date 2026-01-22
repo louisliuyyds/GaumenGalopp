@@ -174,7 +174,8 @@ function Bestellhistorie() {
 
         try {
             const data = await bestellungService.getByKunde(kundenId);
-            const relevante = data.filter(b => b.status === 'zugestellt' || b.status === 'storniert');
+            const relevante = data.filter(b => (b.status === 'zugestellt' || b.status === 'storniert') &&
+                b.restaurantid != null);
 
             if (relevante.length === 0) {
                 setStatusMsg('Keine abgeschlossenen Bestellungen gefunden.');

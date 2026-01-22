@@ -6,7 +6,7 @@ from models.gericht import Gericht
 from models.restaurant import Restaurant
 from models.lieferant import Lieferant
 from models.adresse import Adresse
-from typing import List, Optional
+from typing import List, Optional, Type
 from schemas.bestellung_schemas import (
     RestaurantDetail, LieferantDetail, AdresseDetail,
     BestellpositionDetail, GerichtDetail, PreisDetail
@@ -56,10 +56,11 @@ class BestellungService:
         )
         return round(total, 2)
 
-    def get_by_kunde(self, kundenid: int) -> List[Bestellungen]:
+    def get_by_kunde(self, kundenid: int) -> list[Type[Bestellungen]]:
         return self.db.query(Bestellungen).filter(
-            Bestellungen.kundenid == kundenid
-        ).all()
+            Bestellungen.kundenid == kundenid,
+            Bestellungen.status != 'warenkorb'  # Exclude carts!
+        ).order_by(Bestellungen.bestellzeit.desc()).all()
 
     def get_detail_by_id(self, bestellungid: int) -> Optional[dict]:
         """

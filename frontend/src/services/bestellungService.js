@@ -24,6 +24,11 @@ const bestellungService = {
   getTotal: async (bestellungId) => {
     return await apiClient.get(`/api/bestellungen/${bestellungId}/total`);
   },
+
+  getByKunde: async (kundeId) => {
+      return await apiClient.get(`/api/bestellungen/kunde/${kundeId}`);
+  },
+
   // NEU: Hole Details für eine Bestellung
     getDetails: async (bestellungId) => {
         try {
