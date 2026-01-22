@@ -362,8 +362,7 @@ function KundeHome() {
     };
 
     const handleGerichtClick = (gericht) => {
-        // Navigiere zum Restaurant mit dem Gericht
-        navigate(`/restaurants/${gericht.restaurantid}`);
+        navigate(`/restaurants/${gericht.restaurantid}/gericht/${gericht.gerichtid}`);
     };
 
     // ✅ FIX 2: Live-Filterung statt Navigate

@@ -348,7 +348,7 @@ function GerichtDetail() {
                             await kritikerService.getByKundenId(kundenid);
                             isKritiker = true;
                         } catch (err) {
-                            // Kein Kritiker gefunden - ist ok
+                            // Kein Kritiker gefunden - ist ok - sogar geplant lol
                         }
 
                         kundenMap[kundenid] = {

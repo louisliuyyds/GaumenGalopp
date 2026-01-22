@@ -383,7 +383,7 @@ function Register() {
 
                 // Weiterleitung nach 1 Sekunde
                 setTimeout(() => {
-                    navigate('/kunde/restaurants');
+                    navigate('/');
                 }, 1000);
 
             } else {
@@ -420,7 +420,7 @@ function Register() {
                 setSuccess('Registrierung erfolgreich! Du wirst weitergeleitet...');
 
                 setTimeout(() => {
-                    navigate('/restaurants');
+                    navigate('/');
                 }, 1000);
             }
         } catch (err) {

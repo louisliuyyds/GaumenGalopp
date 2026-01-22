@@ -1,6 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import colors from '../theme/colors';
 
@@ -8,7 +8,7 @@ const SidebarContainer = styled.div`
     width: 220px;
     height: 100vh;
     background: ${colors.background.card};
-    border-right: 1px solid ${colors.border.light};
+    border-right: 2px solid ${colors.border.light};
     display: flex;
     flex-direction: column;
     position: fixed;
@@ -20,41 +20,36 @@ const SidebarContainer = styled.div`
 const Logo = styled.div`
     padding: 30px 20px;
     font-size: 1.5em;
-    font-weight: 800;
+    font-weight: 700;
     color: ${colors.primary.main};
-    border-bottom: 1px solid ${colors.border.light};
-    background: ${colors.gradients.primary};
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+    text-align: center;
+    border-bottom: 2px solid ${colors.border.light};
+    background: ${colors.gradients.luxury};
 `;
 
 const UserInfo = styled.div`
-    padding: 15px 20px;
-    border-bottom: 1px solid ${colors.border.light};
-    background: ${colors.background.main};
+    padding: 20px;
+    border-bottom: 2px solid ${colors.border.light};
+    background: ${colors.background.page};
 `;
 
 const UserType = styled.div`
-    font-size: 0.75em;
-    color: ${colors.text.light};
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
+    font-size: 0.9em;
+    font-weight: 700;
+    color: ${colors.text.primary};
     margin-bottom: 5px;
 `;
 
 const UserRole = styled.div`
-    font-size: 0.9em;
-    color: ${colors.text.primary};
-    font-weight: 600;
+    font-size: 0.8em;
+    color: ${colors.text.light};
     display: flex;
     align-items: center;
     gap: 8px;
 `;
 
 const RoleBadge = styled.span`
-    background: ${props => props.type === 'restaurant' ?
-            colors.primary.main : colors.secondary.main};
+    background: ${props => props.type === 'restaurant' ? colors.primary.main : colors.secondary.main};
     color: white;
     padding: 2px 8px;
     border-radius: 4px;
@@ -138,6 +133,9 @@ function Sidebar() {
         if (path === '/') {
             return location.pathname === '/';
         }
+        if (path === '/dashboard') {
+            return location.pathname === '/dashboard' || location.pathname === '/';
+        }
         return location.pathname.startsWith(path);
     };
 
@@ -163,8 +161,8 @@ function Sidebar() {
                     <>
                         <NavSection>
                             <NavItem
-                                to="/"
-                                className={isActive('/') && !isActive('/restaurants') ? 'active' : ''}
+                                to="/dashboard"
+                                className={isActive('/dashboard') ? 'active' : ''}
                             >
                                 Dashboard
                             </NavItem>
@@ -183,6 +181,16 @@ function Sidebar() {
                                 className={isActive('/restaurants') && !isActive(`/restaurants/${user.user_id}`) ? 'active' : ''}
                             >
                                 Alle Restaurants
+                            </NavItem>
+                        </NavSection>
+
+                        <SectionTitle>Bestellungen</SectionTitle>
+                        <NavSection>
+                            <NavItem
+                                to="/bestellhistorie"
+                                className={isActive('/bestellhistorie') ? 'active' : ''}
+                            >
+                                Bestellhistorie
                             </NavItem>
                         </NavSection>
                     </>

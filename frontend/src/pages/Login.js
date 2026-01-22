@@ -181,12 +181,7 @@ function Login() {
         try {
             await login(userType, email, password);
 
-            // Nach erfolgreichem Login weiterleiten
-            if (userType === 'restaurant') {
-                navigate('/restaurants');
-            } else {
-                navigate('/kunde/restaurants');
-            }
+            navigate('/');
         } catch (err) {
             console.error('Login error:', err);
             if (err.response?.status === 401) {
