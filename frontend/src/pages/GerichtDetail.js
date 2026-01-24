@@ -11,6 +11,7 @@ import { preisService } from "../services";  // Preis-Service importieren
 import { kritikerService } from "../services";  // Kritiker-Service importieren
 import BewertungForm from '../components/BewertungForm';  // NEU: Import hinzugefügt
 import {warenkorbService} from "../services/warenkorbService";
+import { useAuth } from '../context/AuthContext';
 
 
 const Button = styled.button`
@@ -263,6 +264,7 @@ const StatLabel = styled.span`
 `;
 
 function GerichtDetail() {
+    const [restaurant, setRestaurant] = useState(null);
     const {restaurantId, gerichtId } = useParams();
     const [gericht, setGericht] = useState(null);
     const [bewertung, setBewertungen] = useState([]);
@@ -276,6 +278,7 @@ function GerichtDetail() {
     const [bewertungError, setBewertungError] = useState(null);
     const [kunden, setKunden] = useState({});
     const [cart, setCart] = useState(null);
+    const { user, isRestaurant } = useAuth();
     const navigate = useNavigate();
 
     const fetchGericht = async () => {
@@ -465,30 +468,47 @@ function GerichtDetail() {
         navigate(`/restaurants/${restaurantId}/gerichte/${gerichtId}/edit`);
     };
 
-    const handleAddToCart = async () => {
-        if (window.confirm('Artikel in den Warenkorb hinzugfügen?')) {
-        const kundenId = 11;
-        try {
-            const itemData = {
-                restaurantid: parseInt(restaurantId),
-                gerichtid: parseInt(gerichtId),
-                preisid: preis?.preisid,
-                menge: 1,
-                aenderungswunsch: null
-            };
-            
-            console.log('Sending to cart:', itemData);
-            
-            const updatedCart = await warenkorbService.addItem(kundenId, itemData);
-            setCart(updatedCart);
-            alert('Artikel wurde dem Warenkorb hinzugefügt!');
-        } catch (err) {
-            console.error('Fehler beim Hinzufügen:', err);
-            console.error('Fehlerdetails:', err.response?.data);
-            alert('Fehler beim Hinzufügen des Artikels');
+        const getActivePriceId = (preisArray) => {
+        if (!preisArray || preisArray.length === 0) return null;
+
+        // Suche aktiven Preis (istaktiv: true)
+        const activePrice = preisArray.find(p => p.istaktiv === true);
+        if (activePrice) {
+            return activePrice.preisid;
         }
-    }
-    }
+
+        // Fallback: Ersten Preis nehmen
+        return preisArray[0].preisid;
+    };
+
+    const handleAddToCart = async (gericht) => {
+            if (!user || !user.user_id) {
+                alert('Bitte melden Sie sich an, um Artikel in den Warenkorb zu legen.');
+                return;
+            }
+            if (window.confirm('Artikel in den Warenkorb hinzufügen?')) {
+                const kundenId = user.user_id; // ✅ Verwende die echte Kunden-ID aus dem Auth-Context
+                try {
+                    const itemData = {
+                        restaurantid: parseInt(restaurant.restaurantid),
+                        gerichtid: parseInt(gericht.gerichtid),
+                        preisid: getActivePriceId(gericht.preis),
+                        menge: 1,
+                        aenderungswunsch: null
+                    };
+                    
+                    console.log('Sending to cart:', itemData);
+                    console.log('KundenID:', kundenId);
+                    
+                    await warenkorbService.addItem(kundenId, itemData);
+                    alert('Artikel wurde dem Warenkorb hinzugefügt!');
+                } catch (err) {
+                    console.error('Fehler beim Hinzufügen:', err);
+                    console.error('Fehlerdetails:', err.response?.data);
+                    alert('Fehler beim Hinzufügen des Artikels');
+                }
+            }
+    };
 
     if (loading) {
         return (
@@ -542,7 +562,7 @@ function GerichtDetail() {
                     onClick={handleAddToCart}
                     disabled={!preis || loadingPreis}  // Disable wenn Preis noch lädt
                     >
-                    🛒
+                    +
                 </Button>
                 <GerichtName>{gericht.name}</GerichtName>
                 {!loadingLabels && labels.length > 0 && (
