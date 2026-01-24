@@ -3,6 +3,8 @@ import styled from 'styled-components';
 import { useParams, useNavigate } from 'react-router-dom';
 import colors from '../theme/colors';
 import { restaurantService } from '../services';
+import restaurantOeffnungszeitService from '../services/restaurantOeffnungszeitService';
+import oeffnungszeitDetailService from '../services/oeffnungszeitDetailService';
 import { useAuth } from '../context/AuthContext';
 import EditNavigationTabs from '../components/EditNavigationTabs';
 import { warenkorbService } from "../services/warenkorbService";
@@ -364,6 +366,38 @@ const EmptyState = styled.div`
     font-size: 1.1em;
 `;
 
+const OpeningHoursSection = styled(Section)`
+    margin-top: 40px;
+`;
+
+const HoursRow = styled.div`
+    display: flex;
+    justify-content: space-between;
+    padding: 15px 20px;
+    border-radius: 8px;
+    margin-bottom: 8px;
+    background: white;
+    border: 1px solid ${colors.border.light};
+    transition: all 0.2s ease;
+
+    &:hover {
+        background: ${colors.background.main};
+        border-color: ${colors.primary.light};
+    }
+`;
+
+const DayLabel = styled.span`
+    font-weight: 600;
+    color: ${colors.text.primary};
+`;
+
+const TimeValue = styled.span`
+    color: ${props => props.closed ? colors.status.error : colors.text.secondary};
+    font-weight: ${props => props.closed ? '600' : '500'};
+`;
+
+const WOCHENTAGE = ['Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag', 'Sonntag'];
+
 function RestaurantDetails() {
     const { id } = useParams();
     const navigate = useNavigate();
@@ -374,11 +408,15 @@ function RestaurantDetails() {
     const [bewertungen, setBewertungen] = useState(null);
     const [kritikerHighlights, setKritikerHighlights] = useState([]);
     const [customerFavorites, setCustomerFavorites] = useState([]);
+    const [openingHours, setOpeningHours] = useState([]);
+    const [loadingHours, setLoadingHours] = useState(true);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
     const { user, isRestaurant } = useAuth();
     const isOwnRestaurant = isRestaurant && user?.user_id === restaurant?.restaurantid;
+
+
 
     useEffect(() => {
         loadRestaurantData();
@@ -394,12 +432,12 @@ function RestaurantDetails() {
                 restaurantData,
                 bewertungenData,
                 highlightsData,
-                favoritesData
+                favoritesData,
             ] = await Promise.all([
                 restaurantService.getById(id),
                 restaurantService.getRestaurantBewertungen(id).catch(() => null),
                 restaurantService.getKritikerHighlights(id).catch(() => []),
-                restaurantService.getCustomerFavorites(id).catch(() => [])
+                restaurantService.getCustomerFavorites(id).catch(() => []),
             ]);
 
             setRestaurant(restaurantData);
@@ -414,6 +452,36 @@ function RestaurantDetails() {
             setLoading(false);
         }
     };
+
+    useEffect(() => {
+        loadRestaurantData();
+    }, [id]);
+
+// Öffnungszeiten laden
+    useEffect(() => {
+        const loadOpeningHours = async () => {
+            try {
+                setLoadingHours(true);
+                const assignments = await restaurantOeffnungszeitService.getActiveForRestaurant(id);
+
+                if (assignments && assignments.length > 0) {
+                    const vorlageId = assignments[0].oeffnungszeitid;
+                    const details = await oeffnungszeitDetailService.getByVorlageId(vorlageId);
+
+                    if (details && details.length > 0) {
+                        const sorted = [...details].sort((a, b) => a.wochentag - b.wochentag);
+                        setOpeningHours(sorted);
+                    }
+                }
+            } catch (err) {
+                console.error('❌ Fehler beim Laden der Öffnungszeiten:', err);
+            } finally {
+                setLoadingHours(false);
+            }
+        };
+
+        if (id) loadOpeningHours();
+    }, [id]);
 
     const handleGerichtClick = (gerichtId) => {
         navigate(`/restaurants/${id}/gericht/${gerichtId}`);
@@ -447,10 +515,10 @@ function RestaurantDetails() {
                     menge: 1,
                     aenderungswunsch: null
                 };
-                
+
                 console.log('Sending to cart:', itemData);
                 console.log('KundenID:', kundenId);
-                
+
                 await warenkorbService.addItem(kundenId, itemData);
                 alert('Artikel wurde dem Warenkorb hinzugefügt!');
             } catch (err) {
@@ -636,6 +704,27 @@ function RestaurantDetails() {
                     </HighlightGrid>
                 </Section>
             )}
+            {/* ÖFFNUNGSZEITEN */}
+            <OpeningHoursSection>
+                <SectionTitle>🕐 Öffnungszeiten</SectionTitle>
+                {loadingHours ? (
+                    <EmptyState>Lade Öffnungszeiten...</EmptyState>
+                ) : openingHours.length > 0 ? (
+                    openingHours.map((day) => (
+                        <HoursRow key={day.wochentag}>
+                            <DayLabel>{WOCHENTAGE[day.wochentag - 1]}</DayLabel>
+                            <TimeValue closed={day.ist_geschlossen}>
+                                {day.ist_geschlossen
+                                    ? 'Geschlossen'
+                                    : `${day.oeffnungszeit?.slice(0, 5)} - ${day.schliessungszeit?.slice(0, 5)} Uhr`
+                                }
+                            </TimeValue>
+                        </HoursRow>
+                    ))
+                ) : (
+                    <EmptyState>Keine Öffnungszeiten hinterlegt</EmptyState>
+                )}
+            </OpeningHoursSection>
 
             {/* MENÜ ÜBERSICHT */}
             {restaurant.menue && restaurant.menue.length > 0 && (
@@ -677,10 +766,10 @@ function RestaurantDetails() {
                                                         minWidth: '80px',
                                                         textAlign: 'right'
                                                     }}>
-                                                        {gericht.preis[0].betrag}€ 
+                                                        {gericht.preis[0].betrag}€
                                                     </div>
                                                 )}
-                                            
+
                                             <AddButton
                                                 title="In den Warenkorb"
                                                 onClick={() => handleAddToCart(gericht)}
@@ -688,7 +777,7 @@ function RestaurantDetails() {
                                              >
                                                 +
                                             </AddButton>
-                                            
+
                                             </div>
 
                                         </GerichtItem>
