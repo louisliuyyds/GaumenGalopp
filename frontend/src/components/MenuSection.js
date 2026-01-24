@@ -233,7 +233,6 @@ function MenuSection({ restaurant }) {
     return (
         <Section>
             <MenuHeader>🍴 Speisekarte</MenuHeader>
-
             {Object.entries(groupedDishes).map(([category, items]) => (
                 <div key={category}>
                     <CategoryTitle>{category}</CategoryTitle>

@@ -5,6 +5,7 @@ import colors from '../theme/colors';
 import { restaurantService } from '../services';
 import { useAuth } from '../context/AuthContext';
 import EditNavigationTabs from '../components/EditNavigationTabs';
+import { warenkorbService } from "../services/warenkorbService";
 
 // ==================== STYLED COMPONENTS ====================
 
@@ -35,6 +36,35 @@ const BackButton = styled.button`
         transform: translateX(-5px);
         border-color: ${colors.accent.orange};
         box-shadow: ${colors.shadows.medium};
+    }
+`;
+
+const AddButton = styled.button`
+    background: ${colors.gradients.accent};
+    color: white;
+    border: none;
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 1.3rem;
+    transition: all 0.2s ease;
+    box-shadow: ${colors.shadows.small};
+
+    &:hover {
+        transform: scale(1.1) rotate(90deg);
+        box-shadow: ${colors.shadows.medium};
+    }
+
+    &:active {
+        transform: scale(0.95);
+    }
+
+    &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        transform: none;
     }
 `;
 
@@ -389,6 +419,48 @@ function RestaurantDetails() {
         navigate(`/restaurants/${id}/gericht/${gerichtId}`);
     };
 
+    const getActivePriceId = (preisArray) => {
+        if (!preisArray || preisArray.length === 0) return null;
+
+        // Suche aktiven Preis (istaktiv: true)
+        const activePrice = preisArray.find(p => p.istaktiv === true);
+        if (activePrice) {
+            return activePrice.preisid;
+        }
+
+        // Fallback: Ersten Preis nehmen
+        return preisArray[0].preisid;
+    };
+
+    const handleAddToCart = async (gericht) => {
+        if (!user || !user.user_id) {
+            alert('Bitte melden Sie sich an, um Artikel in den Warenkorb zu legen.');
+            return;
+        }
+        if (window.confirm('Artikel in den Warenkorb hinzufügen?')) {
+            const kundenId = user.user_id; // ✅ Verwende die echte Kunden-ID aus dem Auth-Context
+            try {
+                const itemData = {
+                    restaurantid: parseInt(restaurant.restaurantid),
+                    gerichtid: parseInt(gericht.gerichtid),
+                    preisid: getActivePriceId(gericht.preis),
+                    menge: 1,
+                    aenderungswunsch: null
+                };
+                
+                console.log('Sending to cart:', itemData);
+                console.log('KundenID:', kundenId);
+                
+                await warenkorbService.addItem(kundenId, itemData);
+                alert('Artikel wurde dem Warenkorb hinzugefügt!');
+            } catch (err) {
+                console.error('Fehler beim Hinzufügen:', err);
+                console.error('Fehlerdetails:', err.response?.data);
+                alert('Fehler beim Hinzufügen des Artikels');
+            }
+        }
+    };
+
     const renderSterne = (rating) => {
         return '⭐'.repeat(Math.round(rating));
     };
@@ -601,13 +673,24 @@ function RestaurantDetails() {
                                                         fontWeight: '700',
                                                         color: colors.accent.orange,
                                                         marginLeft: '20px',
+                                                        marginRight: '10px',
                                                         minWidth: '80px',
                                                         textAlign: 'right'
                                                     }}>
-                                                        {gericht.preis[0].betrag}€
+                                                        {gericht.preis[0].betrag}€ 
                                                     </div>
                                                 )}
+                                            
+                                            <AddButton
+                                                title="In den Warenkorb"
+                                                onClick={() => handleAddToCart(gericht)}
+                                                disabled={!getActivePriceId(gericht.preis)}
+                                             >
+                                                +
+                                            </AddButton>
+                                            
                                             </div>
+
                                         </GerichtItem>
                                     ))}
                                 </MenuCategory>

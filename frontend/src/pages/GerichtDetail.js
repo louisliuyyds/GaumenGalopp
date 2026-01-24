@@ -10,7 +10,49 @@ import { kundeService } from "../services";
 import { preisService } from "../services";  // Preis-Service importieren
 import { kritikerService } from "../services";  // Kritiker-Service importieren
 import BewertungForm from '../components/BewertungForm';  // NEU: Import hinzugefügt
+import {warenkorbService} from "../services/warenkorbService";
 
+
+const Button = styled.button`
+    background: ${({ variant }) => 
+        variant === 'back' ? colors.gradients.primary : 
+        variant === 'add' ? colors.gradients.accent : 
+        colors.accent.orange
+    };
+    color: white;
+    border: none;
+    padding: ${({ variant }) => variant === 'add' ? '0' : '12px 24px'};
+    width: ${({ variant }) => variant === 'add' ? '40px' : 'auto'};
+    height: ${({ variant }) => variant === 'add' ? '40px' : 'auto'};
+    border-radius: ${({ variant }) => variant === 'add' ? '10px' : '8px'};
+    cursor: pointer;
+    margin-bottom: ${({ variant }) => variant === 'back' ? '30px' : '0'};
+    margin-top: ${({ variant }) => variant === 'retry' ? '10px' : '0'};
+    font-size: ${({ variant }) => variant === 'add' ? '1.3rem' : '1em'};
+    font-weight: ${({ variant }) => variant === 'add' ? 'bold' : '600'};
+    transition: all 0.3s ease;
+    box-shadow: ${({ variant }) => 
+        variant === 'back' ? '0 4px 10px rgba(26, 58, 46, 0.2)' : 
+        variant === 'add' ? colors.shadows.small : 
+        'none'
+    };
+
+    &:hover {
+        transform: ${({ variant }) => 
+            variant === 'add' ? 'scale(1.1) rotate(90deg)' : 'translateY(-2px)'
+        };
+        box-shadow: ${({ variant }) => 
+            variant === 'back' ? '0 6px 15px rgba(26, 58, 46, 0.3)' : 
+            variant === 'add' ? colors.shadows.medium : 
+            'none'
+        };
+        opacity: ${({ variant }) => variant === 'retry' ? '0.9' : '1'};
+    }
+
+    &:active {
+        transform: ${({ variant }) => variant === 'add' ? 'scale(0.95)' : 'none'};
+    }
+`;
 
 const InfoSection = styled.div`
     margin: 25px 0;
@@ -233,6 +275,7 @@ function GerichtDetail() {
     const [error, setError] = useState(null);
     const [bewertungError, setBewertungError] = useState(null);
     const [kunden, setKunden] = useState({});
+    const [cart, setCart] = useState(null);
     const navigate = useNavigate();
 
     const fetchGericht = async () => {
@@ -422,6 +465,31 @@ function GerichtDetail() {
         navigate(`/restaurants/${restaurantId}/gerichte/${gerichtId}/edit`);
     };
 
+    const handleAddToCart = async () => {
+        if (window.confirm('Artikel in den Warenkorb hinzugfügen?')) {
+        const kundenId = 11;
+        try {
+            const itemData = {
+                restaurantid: parseInt(restaurantId),
+                gerichtid: parseInt(gerichtId),
+                preisid: preis?.preisid,
+                menge: 1,
+                aenderungswunsch: null
+            };
+            
+            console.log('Sending to cart:', itemData);
+            
+            const updatedCart = await warenkorbService.addItem(kundenId, itemData);
+            setCart(updatedCart);
+            alert('Artikel wurde dem Warenkorb hinzugefügt!');
+        } catch (err) {
+            console.error('Fehler beim Hinzufügen:', err);
+            console.error('Fehlerdetails:', err.response?.data);
+            alert('Fehler beim Hinzufügen des Artikels');
+        }
+    }
+    }
+
     if (loading) {
         return (
             <Container>
@@ -465,7 +533,17 @@ function GerichtDetail() {
                 ← Zurück zum Restaurant
             </BackButton>
 
+
+
             <DetailCard>
+                <Button 
+                    variant="add" 
+                    title="In den Warenkorb" 
+                    onClick={handleAddToCart}
+                    disabled={!preis || loadingPreis}  // Disable wenn Preis noch lädt
+                    >
+                    🛒
+                </Button>
                 <GerichtName>{gericht.name}</GerichtName>
                 {!loadingLabels && labels.length > 0 && (
                     <LabelContainer>
