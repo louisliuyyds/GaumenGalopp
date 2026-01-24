@@ -183,8 +183,6 @@ function Bestellhistorie() {
                 return;
             }
 
-            relevante.sort((a, b) => new Date(b.bestellzeit) - new Date(a.bestellzeit));
-
             const restaurantIds = [...new Set(relevante.map(b => b.restaurantid))];
             const nameMap = {};
 
@@ -236,7 +234,6 @@ function Bestellhistorie() {
             gesamtpreis: bestellung.gesamtpreis,
             restaurantName: bestellung.restaurantName,
             status: bestellung.status,
-            bestellzeit: bestellung.bestellzeit
         };
 
         setSelectedBestellung({...originalData, positionen: []});
@@ -278,9 +275,6 @@ function Bestellhistorie() {
                             <OrderHeader>
                                 <div>
                                     <OrderTitle>{b.restaurantName}</OrderTitle>
-                                    <OrderTime>
-                                        {new Date(b.bestellzeit).toLocaleDateString('de-DE', { day: '2-digit', month: 'short', year: 'numeric' })}
-                                    </OrderTime>
                                 </div>
                                 <div style={{ textAlign: 'right', display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'flex-end' }}>
                                     <StatusBadge $bgColor={getStatusColor(b.status)}>{formatStatus(b.status)}</StatusBadge>

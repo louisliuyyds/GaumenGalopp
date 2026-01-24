@@ -62,7 +62,7 @@ class BestellungService:
         return self.db.query(Bestellungen).filter(
             Bestellungen.kundenid == kundenid,
             Bestellungen.status != 'warenkorb'
-        ).order_by(Bestellungen.bestellzeit.desc()).all()
+        )
 
     def get_detail_by_id(self, bestellungid: int) -> Optional[dict]:
         """
@@ -81,7 +81,6 @@ class BestellungService:
                 "bestellungid": bestellung.bestellungid,
                 "kundenid": bestellung.kundenid,
                 "status": bestellung.status,
-                "bestellzeit": bestellung.bestellzeit,
                 "restaurant": None,
                 "lieferant": None,
                 "adresse": None,
@@ -150,8 +149,6 @@ class BestellungService:
             "bestellungid": bestellung.bestellungid,
             "kundenid": bestellung.kundenid,
             "status": bestellung.status,
-            "bestellzeit": bestellung.bestellzeit,
-
             "restaurant": RestaurantDetail(
                 restaurantid=restaurant.restaurantid,
                 name=restaurant.name,

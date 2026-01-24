@@ -10,7 +10,6 @@ class Bestellungen(Base):
     restaurantid = Column(Integer, ForeignKey('restaurant.restaurantid'), nullable=True)
     lieferantid = Column(Integer, ForeignKey('lieferant.lieferantid'), nullable=True)
     adressid = Column(Integer, ForeignKey('adresse.adresseid'), nullable=True)
-    bestellzeit = Column(DateTime(timezone=True), server_default=func.now(), nullable=True)
 
     bestellposition = relationship("Bestellposition", back_populates="bestellungen")
     kunde = relationship("Kunde", back_populates="bestellungen")
@@ -25,7 +24,6 @@ class Bestellungen(Base):
         return {
             "bestellungid": self.bestellungid,
             "status": self.status,
-            "bestellzeit": self.bestellzeit.isoformat() if self.bestellzeit else None,
             "kunden_id": self.kundenid,
             "restaurant_id": self.restaurantid,
             "lieferant_id": self.lieferantid,

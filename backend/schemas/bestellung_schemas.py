@@ -10,7 +10,6 @@ class BestellungCreate(BaseModel):
     adressid: int
     lieferantid: Optional[int] = None
     status: Optional[str] = "Eingegangen"
-    bestellzeit: datetime
 
 class BestellungUpdate(BaseModel):
     status: Optional[str] = None
@@ -23,7 +22,6 @@ class BestellungResponse(BaseModel):
     restaurantid: int
     adressid: int
     lieferantid: Optional[int] = None
-    bestellzeit: datetime
     status: str
     gesamtpreis: Optional[float] = None
 
@@ -99,7 +97,6 @@ class BestellungDetailResponse(BaseModel):
     bestellungid: int
     kundenid: int
     status: str
-    bestellzeit: datetime
     restaurant: RestaurantDetail
     lieferant: Optional[LieferantDetail] = None
     lieferadresse: AdresseDetail
