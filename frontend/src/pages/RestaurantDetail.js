@@ -634,6 +634,28 @@ function RestaurantDetails() {
                 )}
             </RestaurantHeader>
 
+            {/* ÖFFNUNGSZEITEN */}
+            <OpeningHoursSection>
+                <SectionTitle>🕐 Öffnungszeiten</SectionTitle>
+                {loadingHours ? (
+                    <EmptyState>Lade Öffnungszeiten...</EmptyState>
+                ) : openingHours.length > 0 ? (
+                    openingHours.map((day) => (
+                        <HoursRow key={day.wochentag}>
+                            <DayLabel>{WOCHENTAGE[day.wochentag - 1]}</DayLabel>
+                            <TimeValue closed={day.ist_geschlossen}>
+                                {day.ist_geschlossen
+                                    ? 'Geschlossen'
+                                    : `${day.oeffnungszeit?.slice(0, 5)} - ${day.schliessungszeit?.slice(0, 5)} Uhr`
+                                }
+                            </TimeValue>
+                        </HoursRow>
+                    ))
+                ) : (
+                    <EmptyState>Keine Öffnungszeiten hinterlegt</EmptyState>
+                )}
+            </OpeningHoursSection>
+
             {/* KRITIKER HIGHLIGHTS */}
             {kritikerHighlights.length > 0 && (
                 <Section>
@@ -710,27 +732,6 @@ function RestaurantDetails() {
                     </HighlightGrid>
                 </Section>
             )}
-            {/* ÖFFNUNGSZEITEN */}
-            <OpeningHoursSection>
-                <SectionTitle>🕐 Öffnungszeiten</SectionTitle>
-                {loadingHours ? (
-                    <EmptyState>Lade Öffnungszeiten...</EmptyState>
-                ) : openingHours.length > 0 ? (
-                    openingHours.map((day) => (
-                        <HoursRow key={day.wochentag}>
-                            <DayLabel>{WOCHENTAGE[day.wochentag - 1]}</DayLabel>
-                            <TimeValue closed={day.ist_geschlossen}>
-                                {day.ist_geschlossen
-                                    ? 'Geschlossen'
-                                    : `${day.oeffnungszeit?.slice(0, 5)} - ${day.schliessungszeit?.slice(0, 5)} Uhr`
-                                }
-                            </TimeValue>
-                        </HoursRow>
-                    ))
-                ) : (
-                    <EmptyState>Keine Öffnungszeiten hinterlegt</EmptyState>
-                )}
-            </OpeningHoursSection>
 
             {/* MENÜ ÜBERSICHT */}
             {restaurant.menue && restaurant.menue.length > 0 && (
