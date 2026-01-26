@@ -41,7 +41,6 @@ class WarenkorbService:
                 restaurantid=None,  # Will be set when first item added
                 lieferantid=None,   # Will be set later
                 adressid=None,   # Will be set at checkout
-                bestellzeit=None
             )
             self.db.add(cart)
             self.db.commit()
