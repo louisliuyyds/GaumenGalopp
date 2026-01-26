@@ -7,9 +7,9 @@ import { labelService } from "../services";
 import { labelGerichtService } from "../services";
 import { bewertungService } from "../services";
 import { kundeService } from "../services";
-import { preisService } from "../services";  // Preis-Service importieren
-import { kritikerService } from "../services";  // Kritiker-Service importieren
-import BewertungForm from '../components/BewertungForm';  // NEU: Import hinzugefügt
+import { preisService } from "../services";
+import { kritikerService } from "../services";
+import BewertungForm from '../components/BewertungForm';
 import {warenkorbService} from "../services/warenkorbService";
 import { useAuth } from '../context/AuthContext';
 
@@ -296,7 +296,7 @@ function GerichtDetail() {
         }
     };
 
-    // Neue Funktion zum Abrufen des Preises
+
     const fetchPreis = async () => {
         try {
             setLoadingPreis(true);
@@ -481,18 +481,18 @@ function GerichtDetail() {
         return preisArray[0].preisid;
     };
 
-    const handleAddToCart = async (gericht) => {
+    const handleAddToCart = async () => {
             if (!user || !user.user_id) {
                 alert('Bitte melden Sie sich an, um Artikel in den Warenkorb zu legen.');
                 return;
             }
             if (window.confirm('Artikel in den Warenkorb hinzufügen?')) {
-                const kundenId = user.user_id; // ✅ Verwende die echte Kunden-ID aus dem Auth-Context
+                const kundenId = user.user_id;
                 try {
                     const itemData = {
-                        restaurantid: parseInt(restaurant.restaurantid),
+                        restaurantid: parseInt(restaurantId),
                         gerichtid: parseInt(gericht.gerichtid),
-                        preisid: getActivePriceId(gericht.preis),
+                        preisid: preis.preisid,
                         menge: 1,
                         aenderungswunsch: null
                     };

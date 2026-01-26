@@ -248,8 +248,8 @@ function Warenkorb() {
     };
 
     const handleCheckout = async () => {
-        const data = await kundeService.getAdressIdByKundenId(kundenId);
-        const { adressid } = data;
+        const adressid = await kundeService.getAdressIdByKundenId(kundenId);
+        console.log("AdressID:", adressid);
 
         const lieferantid = 1; // Placeholder
 

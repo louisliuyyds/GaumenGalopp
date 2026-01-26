@@ -487,6 +487,12 @@ function RestaurantDetails() {
         navigate(`/restaurants/${id}/gericht/${gerichtId}`);
     };
 
+    const getActivePrice = (preisArray) => {
+        if (!preisArray || preisArray.length === 0) return null;
+        const activePrice = preisArray.find(p => p.istaktiv === true);
+        return activePrice || preisArray[0]; // Fallback to first if no active
+    };
+
     const getActivePriceId = (preisArray) => {
         if (!preisArray || preisArray.length === 0) return null;
 
@@ -766,7 +772,7 @@ function RestaurantDetails() {
                                                         minWidth: '80px',
                                                         textAlign: 'right'
                                                     }}>
-                                                        {gericht.preis[0].betrag}€
+                                                        {getActivePrice(gericht.preis)?.betrag.toFixed(2)}€
                                                     </div>
                                                 )}
 

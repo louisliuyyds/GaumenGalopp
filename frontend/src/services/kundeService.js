@@ -22,10 +22,10 @@ const kundeService = {
 
   getAdressIdByKundenId: async (kundenId) => {
     const res = await apiClient.get(`/api/kunden/${kundenId}/adressid`);
-    return res
+    return res.data
   },
 
-    getKuerzelById: async (kundenId) => {
+  getKuerzelById: async (kundenId) => {
     return await apiClient.get(`/api/kunde/getKuerzelById/${kundenId}`);
   },
 

@@ -101,13 +101,16 @@ class WarenkorbService:
         """
         cart = self.get_or_create_cart(kundenid)
 
-        # Set restaurant if first item
-        if cart.restaurantid is None:
+        item_count = self.db.query(Bestellposition).filter(
+            Bestellposition.bestellungid == cart.bestellungid
+        ).count()
+
+        if item_count == 0:
             cart.restaurantid = restaurantid
             self.db.commit()
 
         # Check if same restaurant (can't mix restaurants in one order)
-        if cart.restaurantid != restaurantid:
+        elif cart.restaurantid != restaurantid:
             raise ValueError("Cannot add items from different restaurants to cart")
 
         # Check if item already in cart
@@ -141,7 +144,11 @@ class WarenkorbService:
         """
         Update quantity of item in cart
         """
-        cart = self.get_or_create_cart(kundenid)
+        # cart = self.get_or_create_cart(kundenid)
+
+        cart = self.get_cart(kundenid)
+        if not cart:
+            raise ValueError("No cart found")
 
         position = self.db.query(Bestellposition).filter(
             Bestellposition.positionid == positionid,
@@ -152,10 +159,18 @@ class WarenkorbService:
             raise ValueError("Item not found in cart")
 
         if menge <= 0:
-            # Remove item if quantity is 0 or negative
             self.db.delete(position)
+            self.db.flush()
         else:
             position.menge = menge
+
+        remaining = self.db.query(Bestellposition).filter(
+            Bestellposition.bestellungid == cart.bestellungid
+        ).count()
+
+        if remaining == 0:
+            # Cart is empty - reset restaurant ID
+            cart.restaurantid = None
 
         self.db.commit()
         return self.get_cart_items(kundenid)
@@ -186,16 +201,32 @@ class WarenkorbService:
         """
         Remove item from cart
         """
-        cart = self.get_or_create_cart(kundenid)
+        # cart = self.get_or_create_cart(kundenid)
+
+        cart = self.get_cart(kundenid)
+        if not cart:
+            return self.get_cart_items(kundenid)
 
         position = self.db.query(Bestellposition).filter(
             Bestellposition.positionid == positionid,
             Bestellposition.bestellungid == cart.bestellungid
         ).first()
 
-        if position:
-            self.db.delete(position)
-            self.db.commit()
+        if not position:
+            raise ValueError("Item not found in cart")
+
+        self.db.delete(position)
+        self.db.flush()
+
+        remaining = self.db.query(Bestellposition).filter(
+            Bestellposition.bestellungid == cart.bestellungid
+        ).count()
+
+        if remaining == 0:
+            # Cart is empty - reset restaurant ID
+            cart.restaurantid = None
+
+        self.db.commit()
 
         return self.get_cart_items(kundenid)
 
